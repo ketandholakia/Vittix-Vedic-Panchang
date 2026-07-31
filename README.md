@@ -18,6 +18,14 @@ Dependency-free Hindu Panchang calculation engine written in pure PHP.
 
 ## Install
 
+This package is published on [Packagist](https://packagist.org/), so you can install it directly with Composer:
+
+```bash
+composer require vittix/panchang
+```
+
+If you are developing from a local checkout:
+
 ```bash
 composer install
 ```
