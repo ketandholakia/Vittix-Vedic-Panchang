@@ -9,7 +9,7 @@ Dependency-free Hindu Panchang calculation engine written in pure PHP.
 - Tithi, Nakshatra, Yoga, Karana, and Vara support
 - Lunar month and Adhika Masa calculations
 - Festival and Muhurta helpers
-- Localization files for Indian languages including Hindi, Gujarati, Sanskrit, Bengali, and Marathi
+- Localization files for Indian languages including Hindi, Gujarati, Sanskrit, Bengali, Marathi, Telugu, Kannada, and Malayalam
 - Pure PHP astronomy engine with no FFI, native binaries, or network dependency
 
 ## Requirements
