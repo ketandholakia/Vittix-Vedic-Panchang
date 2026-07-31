@@ -40,7 +40,7 @@ final class PanchangDaySmokeTest extends TestCase
         $date = new DateTimeImmutable('2026-07-31', new DateTimeZone('Asia/Kolkata'));
         $this->panchang->day($date, $this->ahmedabad);
 
-        self::assertTrue(true);
+        $this->addToAssertionCount(1);
     }
 
     public function testSunriseIsBeforeSunset(): void
@@ -103,7 +103,7 @@ final class PanchangDaySmokeTest extends TestCase
         $moment = new DateTimeImmutable('2026-07-31 12:00:00', new DateTimeZone('Asia/Kolkata'));
         $this->panchang->moment($moment, $this->ahmedabad);
 
-        self::assertTrue(true);
+        $this->addToAssertionCount(1);
     }
 
     /**
