@@ -10,6 +10,7 @@ use Vittix\Panchang\Astronomy\Engine\PurePhpAstronomyEngine;
 use Vittix\Panchang\Astronomy\Contracts\AstronomyEngineInterface;
 use Vittix\Panchang\Calendar\AdhikaMasaCalculator;
 use Vittix\Panchang\Calendar\LunarMonthCalculator;
+use Vittix\Panchang\Panchanga\JanmarashiCalculator;
 use Vittix\Panchang\Panchanga\KaranaCalculator;
 use Vittix\Panchang\Panchanga\NakshatraCalculator;
 use Vittix\Panchang\Panchanga\PanchangaCalculator;
@@ -17,6 +18,7 @@ use Vittix\Panchang\Panchanga\TithiCalculator;
 use Vittix\Panchang\Panchanga\TransitionFinder;
 use Vittix\Panchang\Panchanga\VaraCalculator;
 use Vittix\Panchang\Panchanga\YogaCalculator;
+use Vittix\Panchang\Time\AstroTimeFactory;
 use Vittix\Panchang\ValueObject\GeoLocation;
 use Vittix\Panchang\ValueObject\PanchangDay;
 use Vittix\Panchang\ValueObject\PanchangMoment;
@@ -42,10 +44,15 @@ use Vittix\Panchang\ValueObject\PanchangMoment;
 final class Panchang
 {
     private readonly PanchangaCalculator $calculator;
+    private readonly JanmarashiCalculator $janmarashi;
 
-    private function __construct(PanchangaCalculator $calculator)
+    private function __construct(
+        PanchangaCalculator $calculator,
+        JanmarashiCalculator $janmarashi,
+    )
     {
         $this->calculator = $calculator;
+        $this->janmarashi = $janmarashi;
     }
 
     /**
@@ -86,7 +93,7 @@ final class Panchang
             adhikaMasaCalc:  $adhikaMasaCalc,
         );
 
-        return new self($calculator);
+        return new self($calculator, new JanmarashiCalculator($engine));
     }
 
     /**
@@ -107,5 +114,15 @@ final class Panchang
         GeoLocation $location
     ): PanchangMoment {
         return $this->calculator->forMoment($moment, $location);
+    }
+
+    /**
+     * Calculate the Janmarashi (Moon sign) at a specific moment.
+     */
+    public function janmarashi(DateTimeImmutable $moment): \Vittix\Panchang\Enum\Rashi
+    {
+        $instant = (new AstroTimeFactory())->fromDateTime($moment);
+
+        return $this->janmarashi->calculate($instant);
     }
 }

@@ -5,6 +5,7 @@ Dependency-free Hindu Panchang calculation engine written in pure PHP.
 ## Features
 
 - Panchang day and moment calculations
+- Janmarashi (Moon sign) calculation
 - Tithi, Nakshatra, Yoga, Karana, and Vara support
 - Lunar month and Adhika Masa calculations
 - Festival and Muhurta helpers
@@ -51,6 +52,7 @@ echo $day->solarEvents->sunrise?->format('H:i:s');
 - `Panchang::create(AstronomyEngineInterface $engine)` injects a custom astronomy engine.
 - `Panchang::day(DateTimeImmutable $date, GeoLocation $location)` returns a sunrise-anchored daily Panchang.
 - `Panchang::moment(DateTimeImmutable $moment, GeoLocation $location)` returns the Panchang state for a specific moment.
+- `Panchang::janmarashi(DateTimeImmutable $moment)` returns the sidereal Moon sign at the given moment.
 
 ## Scripts
 
