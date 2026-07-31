@@ -1,0 +1,44 @@
+# Composer
+/vendor/
+/composer.phar
+
+# PHPUnit / test runner caches
+/.phpunit.cache/
+/.phpunit.result.cache
+/phpunit.xml.cache
+
+# PHPStan cache
+/.phpstan.cache/
+
+# Coverage and build output
+/coverage/
+/build/
+
+# Temporary runtime output
+/tmp/
+/var/
+*.cache
+
+# Local tooling and editor settings
+/.idea/
+/.vscode/
+*.iml
+.fleet/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Project-specific scratch files
+/random_test_results.php
+/debug_*.php
+/check_*.php
+/find_*.php
+/test_*.php
+/update_oracle.php

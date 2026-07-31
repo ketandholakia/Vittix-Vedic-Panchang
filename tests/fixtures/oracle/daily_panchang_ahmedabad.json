@@ -1,0 +1,382 @@
+{
+    "dates": {
+        "2026-07-31": {
+            "tithi": {
+                "index": 16,
+                "name_en": "Dwitiya",
+                "paksha": "Krishna Paksha",
+                "ends_at": "2026-07-31T22:32:27+05:30"
+            },
+            "nakshatra": {
+                "index": 22,
+                "name_en": "Dhanishtha",
+                "pada": 2,
+                "ends_at": "2026-07-31T19:26:18+05:30"
+            },
+            "yoga": {
+                "index": 3,
+                "name_en": "Saubhagya",
+                "ends_at": "2026-07-31T23:52:51+05:30"
+            },
+            "karana": {
+                "index": 3,
+                "name_en": "Taitila",
+                "ends_at": "2026-07-31T10:04:55+05:30"
+            },
+            "vara": {
+                "index": 5,
+                "name_en": "Friday"
+            },
+            "solar_events": {
+                "sunrise": "2026-07-31T06:10:01+05:30",
+                "sunset": "2026-07-31T19:21:59+05:30"
+            },
+            "lunar_month": {
+                "index": 4,
+                "name_en": "Ashadha",
+                "is_adhika": false
+            },
+            "raw": {
+                "sun_tropical_longitude": 0,
+                "moon_tropical_longitude": 0,
+                "ayanamsha": 0,
+                "sun_sidereal_longitude": 0,
+                "moon_sidereal_longitude": 0,
+                "elongation": 0
+            }
+        },
+        "2026-01-14": {
+            "tithi": {
+                "index": 25,
+                "name_en": "Ekadashi",
+                "paksha": "Krishna Paksha",
+                "ends_at": "2026-01-14T17:53:52+05:30"
+            },
+            "nakshatra": {
+                "index": 16,
+                "name_en": "Anuradha",
+                "pada": 2,
+                "ends_at": "2026-01-15T03:03:18+05:30"
+            },
+            "yoga": {
+                "index": 9,
+                "name_en": "Ganda",
+                "ends_at": "2026-01-14T19:54:06+05:30"
+            },
+            "karana": {
+                "index": 1,
+                "name_en": "Balava",
+                "ends_at": "2026-01-14T17:53:52+05:30"
+            },
+            "vara": {
+                "index": 3,
+                "name_en": "Wednesday"
+            },
+            "solar_events": {
+                "sunrise": "2026-01-14T07:22:49+05:30",
+                "sunset": "2026-01-14T18:14:43+05:30"
+            },
+            "lunar_month": {
+                "index": 10,
+                "name_en": "Pausha",
+                "is_adhika": false
+            },
+            "raw": {
+                "sun_tropical_longitude": 0,
+                "moon_tropical_longitude": 0,
+                "ayanamsha": 0,
+                "sun_sidereal_longitude": 0,
+                "moon_sidereal_longitude": 0,
+                "elongation": 0
+            }
+        },
+        "2026-03-30": {
+            "tithi": {
+                "index": 11,
+                "name_en": "Dwadashi",
+                "paksha": "Shukla Paksha",
+                "ends_at": "2026-03-30T07:10:50+05:30"
+            },
+            "nakshatra": {
+                "index": 9,
+                "name_en": "Magha",
+                "pada": 3,
+                "ends_at": "2026-03-30T14:47:31+05:30"
+            },
+            "yoga": {
+                "index": 8,
+                "name_en": "Shoola",
+                "ends_at": "2026-03-30T16:49:37+05:30"
+            },
+            "karana": {
+                "index": 1,
+                "name_en": "Balava",
+                "ends_at": "2026-03-30T07:10:50+05:30"
+            },
+            "vara": {
+                "index": 1,
+                "name_en": "Monday"
+            },
+            "solar_events": {
+                "sunrise": "2026-03-30T06:34:23+05:30",
+                "sunset": "2026-03-30T18:54:27+05:30"
+            },
+            "lunar_month": {
+                "index": 1,
+                "name_en": "Chaitra",
+                "is_adhika": false
+            },
+            "raw": {
+                "sun_tropical_longitude": 0,
+                "moon_tropical_longitude": 0,
+                "ayanamsha": 0,
+                "sun_sidereal_longitude": 0,
+                "moon_sidereal_longitude": 0,
+                "elongation": 0
+            }
+        },
+        "2026-11-01": {
+            "tithi": {
+                "index": 21,
+                "name_en": "Saptami",
+                "paksha": "Krishna Paksha",
+                "ends_at": "2026-11-01T14:52:18+05:30"
+            },
+            "nakshatra": {
+                "index": 7,
+                "name_en": "Pushya",
+                "pada": 1,
+                "ends_at": "2026-11-02T04:30:13+05:30"
+            },
+            "yoga": {
+                "index": 21,
+                "name_en": "Sadhya",
+                "ends_at": "2026-11-01T14:38:07+05:30"
+            },
+            "karana": {
+                "index": 0,
+                "name_en": "Bava",
+                "ends_at": "2026-11-01T14:52:18+05:30"
+            },
+            "vara": {
+                "index": 7,
+                "name_en": "Sunday"
+            },
+            "solar_events": {
+                "sunrise": "2026-11-01T06:44:34+05:30",
+                "sunset": "2026-11-01T18:01:50+05:30"
+            },
+            "lunar_month": {
+                "index": 7,
+                "name_en": "Ashwina",
+                "is_adhika": false
+            },
+            "raw": {
+                "sun_tropical_longitude": 0,
+                "moon_tropical_longitude": 0,
+                "ayanamsha": 0,
+                "sun_sidereal_longitude": 0,
+                "moon_sidereal_longitude": 0,
+                "elongation": 0
+            }
+        },
+        "2023-07-04": {
+            "tithi": {
+                "index": 15,
+                "name_en": "Pratipada",
+                "paksha": "Krishna Paksha",
+                "ends_at": "2023-07-04T13:38:32+05:30"
+            },
+            "nakshatra": {
+                "index": 19,
+                "name_en": "Purva Ashadha",
+                "pada": 4,
+                "ends_at": "2023-07-04T08:25:00+05:30"
+            },
+            "yoga": {
+                "index": 25,
+                "name_en": "Indra",
+                "ends_at": "2023-07-04T11:48:54+05:30"
+            },
+            "karana": {
+                "index": 2,
+                "name_en": "Kaulava",
+                "ends_at": "2023-07-04T13:38:32+05:30"
+            },
+            "vara": {
+                "index": 2,
+                "name_en": "Tuesday"
+            },
+            "solar_events": {
+                "sunrise": "2023-07-04T05:58:41+05:30",
+                "sunset": "2023-07-04T19:29:21+05:30"
+            },
+            "lunar_month": {
+                "index": 4,
+                "name_en": "Ashadha",
+                "is_adhika": false
+            },
+            "raw": {
+                "sun_tropical_longitude": 0,
+                "moon_tropical_longitude": 0,
+                "ayanamsha": 0,
+                "sun_sidereal_longitude": 0,
+                "moon_sidereal_longitude": 0,
+                "elongation": 0
+            }
+        },
+        "2024-01-25": {
+            "tithi": {
+                "index": 14,
+                "name_en": "Purnima",
+                "paksha": "Shukla Paksha",
+                "ends_at": "2024-01-25T23:24:20+05:30"
+            },
+            "nakshatra": {
+                "index": 6,
+                "name_en": "Punarvasu",
+                "pada": 4,
+                "ends_at": "2024-01-25T08:16:15+05:30"
+            },
+            "yoga": {
+                "index": 0,
+                "name_en": "Vishkumbha",
+                "ends_at": "2024-01-25T07:31:04+05:30"
+            },
+            "karana": {
+                "index": 6,
+                "name_en": "Vishti (Bhadra)",
+                "ends_at": "2024-01-25T10:34:42+05:30"
+            },
+            "vara": {
+                "index": 4,
+                "name_en": "Thursday"
+            },
+            "solar_events": {
+                "sunrise": "2024-01-25T07:21:45+05:30",
+                "sunset": "2024-01-25T18:22:08+05:30"
+            },
+            "lunar_month": {
+                "index": 10,
+                "name_en": "Pausha",
+                "is_adhika": false
+            },
+            "raw": {
+                "sun_tropical_longitude": 0,
+                "moon_tropical_longitude": 0,
+                "ayanamsha": 0,
+                "sun_sidereal_longitude": 0,
+                "moon_sidereal_longitude": 0,
+                "elongation": 0
+            }
+        },
+        "2025-08-16": {
+            "tithi": {
+                "index": 22,
+                "name_en": "Ashtami",
+                "paksha": "Krishna Paksha",
+                "ends_at": "2025-08-16T21:35:09+05:30"
+            },
+            "nakshatra": {
+                "index": 2,
+                "name_en": "Krittika",
+                "pada": 1,
+                "ends_at": "2025-08-17T04:38:19+05:30"
+            },
+            "yoga": {
+                "index": 10,
+                "name_en": "Vriddhi",
+                "ends_at": "2025-08-16T07:20:12+05:30"
+            },
+            "karana": {
+                "index": 1,
+                "name_en": "Balava",
+                "ends_at": "2025-08-16T10:42:18+05:30"
+            },
+            "vara": {
+                "index": 6,
+                "name_en": "Saturday"
+            },
+            "solar_events": {
+                "sunrise": "2025-08-16T06:16:31+05:30",
+                "sunset": "2025-08-16T19:11:08+05:30"
+            },
+            "lunar_month": {
+                "index": 5,
+                "name_en": "Shravana",
+                "is_adhika": false
+            },
+            "raw": {
+                "sun_tropical_longitude": 0,
+                "moon_tropical_longitude": 0,
+                "ayanamsha": 0,
+                "sun_sidereal_longitude": 0,
+                "moon_sidereal_longitude": 0,
+                "elongation": 0
+            }
+        },
+        "2000-01-01": {
+            "tithi": {
+                "index": 24,
+                "name_en": "Dashami",
+                "paksha": "Krishna Paksha",
+                "ends_at": "2000-01-01T11:04:34+05:30"
+            },
+            "nakshatra": {
+                "index": 14,
+                "name_en": "Swati",
+                "pada": 3,
+                "ends_at": "2000-01-01T18:33:34+05:30"
+            },
+            "yoga": {
+                "index": 6,
+                "name_en": "Sukarman",
+                "ends_at": "2000-01-01T12:37:05+05:30"
+            },
+            "karana": {
+                "index": 6,
+                "name_en": "Vishti (Bhadra)",
+                "ends_at": "2000-01-01T11:04:34+05:30"
+            },
+            "vara": {
+                "index": 6,
+                "name_en": "Saturday"
+            },
+            "solar_events": {
+                "sunrise": "2000-01-01T07:20:30+05:30",
+                "sunset": "2000-01-01T18:05:23+05:30"
+            },
+            "lunar_month": {
+                "index": 9,
+                "name_en": "Margashirsha",
+                "is_adhika": false
+            },
+            "raw": {
+                "sun_tropical_longitude": 0,
+                "moon_tropical_longitude": 0,
+                "ayanamsha": 0,
+                "sun_sidereal_longitude": 0,
+                "moon_sidereal_longitude": 0,
+                "elongation": 0
+            }
+        }
+    },
+    "metadata": {
+        "fixture_type": "independent_oracle",
+        "location": {
+            "name": "Ahmedabad",
+            "latitude": 23.0225,
+            "longitude": 72.5714,
+            "elevation_m": 53
+        },
+        "timezone": "Asia/Kolkata",
+        "ayanamsha": "Lahiri",
+        "month_system": "Amanta",
+        "evaluation_rule": "local_sunrise",
+        "sources": {
+            "astronomy": "Swiss Ephemeris swetest",
+            "panchang": "manually verified reference"
+        },
+        "verified_on": "2026-07-31"
+    }
+}
