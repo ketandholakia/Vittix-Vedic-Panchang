@@ -19,13 +19,6 @@ use Vittix\Panchang\ValueObject\AstroInstant;
  */
 final class NutationCalculator
 {
-    /**
-     * Nutation table.
-     * Each row: [D, M, M_prime, F, Omega, psiSin0, psiSin1, epsSin0, epsCos0]
-     * Coefficients in units of 0.0001 arcseconds.
-     *
-     * @var array<int, array<int, float>>
-     */
     private const TERMS = [
         //  D   M  M'  F  Om   ΔψS0     ΔψS1   ΔεS0  ΔεC0
         [  0,  0,  0,  0,  1, -171996, -174.2, 92025,  8.9],

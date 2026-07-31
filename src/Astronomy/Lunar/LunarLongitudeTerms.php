@@ -20,10 +20,6 @@ namespace Vittix\Panchang\Astronomy\Lunar;
  */
 final class LunarLongitudeTerms
 {
-    /**
-     * @var array<int, array<int, float>>
-     * Format: [D, M, M', F, sigmaL, sigmaR]
-     */
     public const TERMS = [
         // [D,  M, M', F,  sigmaL,      sigmaR]
         [ 0,  0,  1,  0,  6288774,  -20905355],

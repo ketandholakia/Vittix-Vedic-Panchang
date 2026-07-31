@@ -84,6 +84,9 @@ final class ClassicalMuhurta
         ], 'Gulika Kaal');
     }
 
+    /**
+     * @param array<int, int> $map
+     */
     private function getKarmakalaSegment(
         DateTimeImmutable $sunrise, 
         DateTimeImmutable $sunset, 

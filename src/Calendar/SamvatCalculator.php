@@ -49,7 +49,7 @@ final class SamvatCalculator
 
         // Approximate: Chaitra Shukla Pratipada is usually around March 22 – April 14
         // Use April 1 as a safe approximation for year boundary
-        $afterNewYear = ($month > 4) || ($month === 4 && $day >= 1);
+        $afterNewYear = $month >= 4;
 
         return $afterNewYear ? $year + 57 : $year + 56;
     }

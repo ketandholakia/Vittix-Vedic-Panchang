@@ -41,16 +41,11 @@ final class TimeAwareMockAstronomyEngine implements AstronomyEngineInterface
     public function tropicalLongitude(Body $body, AstroInstant $instant): float
     {
         $days = $instant->julianDayUt - self::J2000;
-        
-        if ($body === Body::Sun) {
-            return Angle::normalize($this->sunEpochLon + ($days * $this->sunDailyMotion));
-        }
-        
-        if ($body === Body::Moon) {
-            return Angle::normalize($this->moonEpochLon + ($days * $this->moonDailyMotion));
-        }
-        
-        return 0.0;
+
+        return match ($body) {
+            Body::Sun => Angle::normalize($this->sunEpochLon + ($days * $this->sunDailyMotion)),
+            Body::Moon => Angle::normalize($this->moonEpochLon + ($days * $this->moonDailyMotion)),
+        };
     }
 
     public function siderealLongitude(Body $body, AstroInstant $instant): float
@@ -65,6 +60,6 @@ final class TimeAwareMockAstronomyEngine implements AstronomyEngineInterface
 
     public function solarEvents(\DateTimeImmutable $localDate, GeoLocation $location, DateTimeZone $timezone): SolarEvents
     {
-        return clone new SolarEvents(null, null);
+        return new SolarEvents(null, null, null);
     }
 }

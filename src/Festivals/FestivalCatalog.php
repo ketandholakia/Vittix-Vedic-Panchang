@@ -37,7 +37,7 @@ final class FestivalCatalog
             ),
             new Festival(
                 'Diwali',
-                new SunriseTithiRule(LunarMonth::Ashvina, Tithi::Amavasya) // Typically Ashvina or Kartika depending on convention, we use Amanta Ashvina here
+                new SunriseTithiRule(LunarMonth::Ashwina, Tithi::Amavasya) // Typically Ashwina or Kartika depending on convention, we use Amanta Ashwina here
             ),
 
             // Time-specific (Viddha) Festivals

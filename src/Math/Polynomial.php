@@ -27,9 +27,6 @@ final class Polynomial
      *   coefficients[0]  → constant term (power 0)
      *   coefficients[1]  → coefficient of x   (power 1)
      *   coefficients[n]  → coefficient of x^n
-     *
-     * @param float   $x            The evaluation point (e.g. Julian centuries T).
-     * @param float[] $coefficients Coefficients in ascending power order.
      */
     public static function evaluate(float $x, float ...$coefficients): float
     {

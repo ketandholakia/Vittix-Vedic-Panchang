@@ -36,6 +36,9 @@ final class NakshatraCalculatorTest extends TestCase
         self::assertSame($expected, $nakshatra);
     }
 
+    /**
+     * @return array<int, array{0: float, 1: Nakshatra}>
+     */
     public static function boundaryProvider(): array
     {
         return [

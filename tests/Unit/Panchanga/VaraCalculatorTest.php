@@ -16,14 +16,11 @@ use Vittix\Panchang\Tests\Support\MockAstronomyEngine;
 final class VaraCalculatorTest extends TestCase
 {
     private VaraCalculator $calculator;
-    private AstroTimeFactory $timeFactory;
 
     protected function setUp(): void
     {
         // Engine is passed in to determine sunrise/sunset
-        $engine = new MockAstronomyEngine();
-        $this->calculator = new VaraCalculator($engine);
-        $this->timeFactory = new AstroTimeFactory();
+        $this->calculator = new VaraCalculator();
     }
 
     public function testVaraAtDifferentTimesOfDay(): void

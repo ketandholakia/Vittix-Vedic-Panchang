@@ -46,6 +46,9 @@ final class LunarMonthCalculatorTest extends TestCase
         self::assertSame($expected, $month);
     }
 
+    /**
+     * @return array<int, array{0: float, 1: LunarMonth}>
+     */
     public static function boundaryProvider(): array
     {
         return [

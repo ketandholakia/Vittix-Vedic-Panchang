@@ -58,7 +58,6 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
         $this->lunarCalculator = new LunarPositionCalculator(
             new LunarArgumentCalculator(),
             $this->nutation,
-            $this->obliquity,
         );
         $this->solarEvents = new SolarEventCalculator($this->solarCalculator);
     }
@@ -91,7 +90,7 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
 
     public function ayanamsa(AstroInstant $instant): float
     {
-        $key = sprintf('%.6F', $instant->julianDayTt);
+        $key = 'jd:' . sprintf('%.6F', $instant->julianDayTt);
 
         if (!isset($this->ayanamshaCache[$key])) {
             $this->ayanamshaCache[$key] = $this->ayanamsha->calculate($instant);

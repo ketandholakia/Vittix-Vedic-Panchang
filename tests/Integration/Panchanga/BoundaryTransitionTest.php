@@ -140,7 +140,9 @@ final class BoundaryTransitionTest extends TestCase
         self::assertSame(Tithi::ShuklaD2, $panchang->tithiAtSunrise);
         
         // And it should end exactly 1 day later (since Moon speed is 12 deg/day)
-        self::assertEqualsWithDelta($dt->getTimestamp() + 86400, $panchang->tithiEndsAt->getTimestamp(), 5);
+        $tithiEndsAt = $panchang->tithiEndsAt;
+        self::assertNotNull($tithiEndsAt);
+        self::assertEqualsWithDelta($dt->getTimestamp() + 86400, $tithiEndsAt->getTimestamp(), 5);
     }
 
     public function testTithiEnds30SecondsAfterSunrise(): void
@@ -155,6 +157,8 @@ final class BoundaryTransitionTest extends TestCase
         $panchang = $this->calculator->forDay($dt, new GeoLocation(0, 0));
         
         // It ends 30 seconds later (with up to 3 seconds of binary search tolerance)
-        self::assertEqualsWithDelta($dt->getTimestamp() + 30, $panchang->tithiEndsAt->getTimestamp(), 5);
+        $tithiEndsAt = $panchang->tithiEndsAt;
+        self::assertNotNull($tithiEndsAt);
+        self::assertEqualsWithDelta($dt->getTimestamp() + 30, $tithiEndsAt->getTimestamp(), 5);
     }
 }

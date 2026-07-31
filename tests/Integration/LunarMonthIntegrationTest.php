@@ -117,6 +117,6 @@ final class LunarMonthIntegrationTest extends TestCase
         $date = new DateTimeImmutable('2026-07-31', new DateTimeZone('Asia/Kolkata'));
         $day  = $this->panchang->day($date, $this->ahmedabad);
 
-        self::assertNotNull($day->paksha);
+        self::assertContains($day->paksha, \Vittix\Panchang\Enum\Paksha::cases());
     }
 }

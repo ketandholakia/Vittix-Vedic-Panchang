@@ -90,7 +90,7 @@ final class LunarMonthCalculator
      * Returns null if the month cannot be determined (should not happen in
      * practice for dates 1900–2100).
      */
-    public function amantaMonth(AstroInstant $instant): ?LunarMonth
+    public function amantaMonth(AstroInstant $instant): LunarMonth
     {
         // Bracket: new moon before and after this moment
         $prevNm = $this->previousNewMoon($instant);

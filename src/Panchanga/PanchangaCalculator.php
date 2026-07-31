@@ -54,7 +54,7 @@ final class PanchangaCalculator
         $solarEvents  = $this->astronomy->solarEvents(
             $moment,
             $location,
-            $moment->getTimezone() ?: new DateTimeZone('UTC')
+            $moment->getTimezone()
         );
 
         $sunLon  = $this->astronomy->tropicalLongitude(Body::Sun,  $instant);
@@ -90,7 +90,7 @@ final class PanchangaCalculator
         DateTimeImmutable $localDate,
         GeoLocation $location
     ): PanchangDay {
-        $timezone = $localDate->getTimezone() ?: new DateTimeZone('UTC');
+        $timezone = $localDate->getTimezone();
 
         // Solar events for today
         $solarEvents = $this->astronomy->solarEvents($localDate, $location, $timezone);

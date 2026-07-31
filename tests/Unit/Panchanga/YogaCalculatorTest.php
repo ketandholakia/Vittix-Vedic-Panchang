@@ -37,6 +37,9 @@ final class YogaCalculatorTest extends TestCase
         self::assertSame($expected, $yoga);
     }
 
+    /**
+     * @return array<int, array{0: float, 1: float, 2: Yoga}>
+     */
     public static function boundaryProvider(): array
     {
         return [

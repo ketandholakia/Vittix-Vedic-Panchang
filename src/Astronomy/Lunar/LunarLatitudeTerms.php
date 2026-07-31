@@ -16,10 +16,6 @@ namespace Vittix\Panchang\Astronomy\Lunar;
  */
 final class LunarLatitudeTerms
 {
-    /**
-     * @var array<int, array<int, float>>
-     * Format: [D, M, M', F, sigmaB]
-     */
     public const TERMS = [
         // [D,  M, M', F,  sigmaB]
         [ 0,  0,  0,  1,  5128122],

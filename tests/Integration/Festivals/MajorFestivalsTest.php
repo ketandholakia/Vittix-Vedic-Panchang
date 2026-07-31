@@ -66,6 +66,9 @@ final class MajorFestivalsTest extends TestCase
         $this->festivalEngine->addFestival(new Festival('Diwali', new SunriseTithiRule(LunarMonth::Ashwina, Tithi::Amavasya)));
     }
 
+    /**
+     * @return array<int, string>
+     */
     private function getFestivalsOnDate(string $dateStr): array
     {
         $dt = new DateTimeImmutable($dateStr . ' 12:00:00', $this->timezone);

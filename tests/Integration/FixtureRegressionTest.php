@@ -18,6 +18,9 @@ final class FixtureRegressionTest extends TestCase
 {
     private Panchang $panchang;
     private GeoLocation $ahmedabad;
+    /**
+     * @var array<string, mixed>
+     */
     private array $snapshots;
 
     protected function setUp(): void
@@ -29,7 +32,9 @@ final class FixtureRegressionTest extends TestCase
         
         self::assertFileExists($snapshotFile, 'Run php scripts/generate_regression_snapshots.php first');
 
-        $data = json_decode(file_get_contents($snapshotFile), true, 512, JSON_THROW_ON_ERROR);
+        $contents = file_get_contents($snapshotFile);
+        self::assertNotFalse($contents);
+        $data = json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
         $this->snapshots = $data['dates'];
     }
 
@@ -101,6 +106,9 @@ final class FixtureRegressionTest extends TestCase
         );
     }
 
+    /**
+     * @return iterable<int, array{0: string}>
+     */
     public static function snapshotDateProvider(): iterable
     {
         $fixtureFile = __DIR__ . '/../fixtures/generated/panchang_snapshots.json';

@@ -15,6 +15,9 @@ final class IndependentOracleTest extends TestCase
 {
     private Panchang $panchang;
     private DateTimeZone $timezone;
+    /**
+     * @var array<string, mixed>
+     */
     private array $oracle;
 
     protected function setUp(): void
@@ -173,7 +176,7 @@ final class IndependentOracleTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{string}>
+     * @return iterable<int, array{0: string}>
      */
     public static function oracleDateProvider(): iterable
     {
@@ -195,7 +198,7 @@ final class IndependentOracleTest extends TestCase
         );
 
         foreach (array_keys($oracle['dates']) as $dateString) {
-            yield $dateString => [$dateString];
+            yield [sprintf('%s', $dateString)];
         }
     }
 

@@ -37,6 +37,9 @@ final class TithiCalculatorTest extends TestCase
         self::assertSame($expected, $tithi);
     }
 
+    /**
+     * @return array<int, array{0: float, 1: float, 2: Tithi}>
+     */
     public static function boundaryProvider(): array
     {
         return [

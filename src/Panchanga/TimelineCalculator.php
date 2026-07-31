@@ -16,8 +16,6 @@ use Vittix\Panchang\ValueObject\AstroInstant;
  */
 final class TimelineCalculator
 {
-    private readonly AstroTimeFactory $timeFactory;
-
     public function __construct(
         private readonly TransitionFinder $finder,
         private readonly TithiCalculator $tithiCalc,
@@ -25,7 +23,6 @@ final class TimelineCalculator
         private readonly YogaCalculator $yogaCalc,
         private readonly KaranaCalculator $karanaCalc,
     ) {
-        $this->timeFactory = new AstroTimeFactory();
     }
 
     /**
@@ -62,6 +59,8 @@ final class TimelineCalculator
 
     /**
      * Get all Nakshatra transitions and their active windows between two instants.
+     *
+     * @return array<int, array{nakshatra: Nakshatra, start: AstroInstant, end: ?AstroInstant}>
      */
     public function getNakshatraWindows(AstroInstant $from, AstroInstant $until): array
     {
@@ -92,6 +91,8 @@ final class TimelineCalculator
 
     /**
      * Get all Yoga transitions and their active windows between two instants.
+     *
+     * @return array<int, array{yoga: Yoga, start: AstroInstant, end: ?AstroInstant}>
      */
     public function getYogaWindows(AstroInstant $from, AstroInstant $until): array
     {
@@ -122,6 +123,8 @@ final class TimelineCalculator
 
     /**
      * Get all Karana transitions and their active windows between two instants.
+     *
+     * @return array<int, array{karana: Karana, start: AstroInstant, end: ?AstroInstant}>
      */
     public function getKaranaWindows(AstroInstant $from, AstroInstant $until): array
     {

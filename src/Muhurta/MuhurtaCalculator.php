@@ -113,10 +113,14 @@ final class MuhurtaCalculator
         return $windows;
     }
 
+    /**
+     * @param array<int, string> $names
+     * @return array<int, TimeWindow>
+     */
     private function divideIntoSegments(
-        DateTimeImmutable $start, 
-        DateTimeImmutable $end, 
-        int $parts, 
+        DateTimeImmutable $start,
+        DateTimeImmutable $end,
+        int $parts,
         array $names
     ): array {
         $totalSeconds = $end->getTimestamp() - $start->getTimestamp();
@@ -139,6 +143,9 @@ final class MuhurtaCalculator
         return $windows;
     }
 
+    /**
+     * @return array<int, string>
+     */
     private function getChoghadiyaSequence(int $weekdayIndex, bool $isDay): array
     {
         // 0 = Sunday, 1 = Monday, etc.
@@ -166,6 +173,9 @@ final class MuhurtaCalculator
         return $isDay ? $baseDaySequence[$weekdayIndex] : $baseNightSequence[$weekdayIndex];
     }
 
+    /**
+     * @return array<int, string>
+     */
     private function getHoraSequence(int $weekdayIndex): array
     {
         // 0 = Sunday, 1 = Monday, 2 = Tuesday, 3 = Wednesday, 4 = Thursday, 5 = Friday, 6 = Saturday

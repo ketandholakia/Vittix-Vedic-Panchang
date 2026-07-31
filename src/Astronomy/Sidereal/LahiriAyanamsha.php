@@ -35,11 +35,6 @@ final class LahiriAyanamsha implements AyanamshaCalculatorInterface
      */
     private const LAHIRI_J2000 = 23.853_749_1;
 
-    /**
-     * Annual precession rate in degrees (≈ 50.29107″ / year).
-     */
-    private const ANNUAL_PRECESSION = 50.29107 / 3600.0;
-
     public function calculate(AstroInstant $instant): float
     {
         $t = $instant->julianCenturiesTt(); // Julian centuries from J2000.0

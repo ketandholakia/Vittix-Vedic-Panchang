@@ -22,7 +22,6 @@ use Vittix\Panchang\Panchanga\VaraCalculator;
 use Vittix\Panchang\Panchanga\YogaCalculator;
 use Vittix\Panchang\Calendar\LunarMonthCalculator;
 use Vittix\Panchang\Calendar\AdhikaMasaCalculator;
-use Vittix\Panchang\Calendar\SamvatCalculator;
 
 final class FestivalEngineTest extends TestCase
 {
@@ -38,8 +37,6 @@ final class FestivalEngineTest extends TestCase
         $varaCalc = new VaraCalculator();
         $lunarMonthCalc = new LunarMonthCalculator($engine);
         $adhikaCalc = new AdhikaMasaCalculator($engine, $lunarMonthCalc);
-        $samvatCalc = new SamvatCalculator($lunarMonthCalc);
-        
         $panchangaCalc = new PanchangaCalculator(
             $engine,
             $tithiCalc,

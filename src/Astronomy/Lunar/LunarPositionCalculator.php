@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Vittix\Panchang\Astronomy\Lunar;
 
 use Vittix\Panchang\Astronomy\Coordinates\NutationCalculator;
-use Vittix\Panchang\Astronomy\Coordinates\ObliquityCalculator;
 use Vittix\Panchang\Math\Angle;
 use Vittix\Panchang\ValueObject\AstroInstant;
 use Vittix\Panchang\ValueObject\EclipticPosition;
@@ -31,7 +30,6 @@ final class LunarPositionCalculator
     public function __construct(
         private readonly LunarArgumentCalculator $arguments,
         private readonly NutationCalculator       $nutation,
-        private readonly ObliquityCalculator      $obliquity,
     ) {
     }
 

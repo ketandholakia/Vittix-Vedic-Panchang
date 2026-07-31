@@ -37,6 +37,9 @@ final class KaranaCalculatorBoundaryTest extends TestCase
         self::assertSame($expected, $karana);
     }
 
+    /**
+     * @return array<int, array{0: float, 1: float, 2: Karana}>
+     */
     public static function boundaryProvider(): array
     {
         return [
