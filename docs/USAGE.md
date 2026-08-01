@@ -9,6 +9,7 @@ This library provides a highly precise Vedic astrology engine alongside a tradit
 - [Divisional Charts (Shodashvargas)](#divisional-charts-shodashvargas)
 - [Vimshottari Dasha (Planetary Periods)](#vimshottari-dasha-planetary-periods)
 - [Shadbala (Planetary Strength)](#shadbala-planetary-strength)
+- [Classical Yogas (Planetary Combinations)](#classical-yogas-planetary-combinations)
 
 ---
 
@@ -151,7 +152,28 @@ $sunStrength = $shadbala->planets[Body::Sun->value];
 echo "Sun Sthana Bala (Positional): " . $sunStrength->sthanaBala . " virupas\n";
 echo "Sun Dik Bala (Directional): " . $sunStrength->dikBala . " virupas\n";
 echo "Sun Naisargika Bala (Natural): " . $sunStrength->naisargikaBala . " virupas\n";
+echo "Sun Ayana Bala (Equinoctial): " . $sunStrength->kalaBala . " virupas\n"; // Currently holding Ayana Bala
+echo "Sun Chesta Bala (Motional): " . $sunStrength->chestaBala . " virupas\n";
 
 echo "Total Sun Strength (Virupas): " . $sunStrength->getTotalVirupas() . "\n";
 echo "Total Sun Strength (Rupas): " . $sunStrength->getTotalRupas() . "\n";
+```
+
+---
+
+## Classical Yogas (Planetary Combinations)
+
+The `Panchang` engine includes a robust `YogaDetector` that can scan a birth chart for powerful classical planetary combinations, like the *Pancha Mahapurusha Yogas* (Ruchaka, Bhadra, Hamsa, Malavya, Sasha) and *Gajakesari Yoga*.
+
+```php
+$yogas = $panchang->yogas($moment, $location);
+
+if (empty($yogas)) {
+    echo "No major planetary yogas detected.\n";
+} else {
+    foreach ($yogas as $yoga) {
+        echo "- **" . $yoga->name . "**\n";
+        echo "  " . $yoga->description . "\n";
+    }
+}
 ```
