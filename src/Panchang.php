@@ -20,6 +20,10 @@ use Vittix\Panchang\Astrology\DignityCalculator;
 use Vittix\Panchang\Astrology\AspectCalculator;
 use Vittix\Panchang\Astrology\VimshottariDashaCalculator;
 use Vittix\Panchang\Astrology\VargaCalculator;
+use Vittix\Panchang\Astrology\ShadbalaCalculator;
+use Vittix\Panchang\Astrology\Shadbala\SthanaBalaCalculator;
+use Vittix\Panchang\Astrology\Shadbala\DikBalaCalculator;
+use Vittix\Panchang\Astrology\Shadbala\NaisargikaBalaCalculator;
 use Vittix\Panchang\Panchanga\JanmarashiCalculator;
 use Vittix\Panchang\Panchanga\KaranaCalculator;
 use Vittix\Panchang\Panchanga\NakshatraCalculator;
@@ -34,6 +38,7 @@ use Vittix\Panchang\ValueObject\PanchangDay;
 use Vittix\Panchang\ValueObject\PanchangMoment;
 use Vittix\Panchang\ValueObject\Kundali;
 use Vittix\Panchang\ValueObject\DashaPeriod;
+use Vittix\Panchang\ValueObject\Shadbala\Shadbala;
 use Vittix\Panchang\Enum\Rashi;
 use Vittix\Panchang\Enum\Varga;
 use Vittix\Panchang\Festivals\FestivalEngine;
@@ -71,6 +76,7 @@ final class Panchang
     private readonly KundaliCalculator $kundali;
     private readonly VimshottariDashaCalculator $dasha;
     private readonly VargaCalculator $varga;
+    private readonly ShadbalaCalculator $shadbala;
 
     private function __construct(
         PanchangaCalculator $calculator,
@@ -80,6 +86,7 @@ final class Panchang
         KundaliCalculator $kundali,
         VimshottariDashaCalculator $dasha,
         VargaCalculator $varga,
+        ShadbalaCalculator $shadbala,
     )
     {
         $this->calculator = $calculator;
@@ -89,6 +96,7 @@ final class Panchang
         $this->kundali = $kundali;
         $this->dasha = $dasha;
         $this->varga = $varga;
+        $this->shadbala = $shadbala;
     }
 
     /**
@@ -145,8 +153,13 @@ final class Panchang
         $kundali = new KundaliCalculator($engine, $ascendant, new DignityCalculator(), new AspectCalculator());
         $dasha = new VimshottariDashaCalculator();
         $varga = new VargaCalculator(new DignityCalculator(), new AspectCalculator());
+        $shadbala = new ShadbalaCalculator(
+            new SthanaBalaCalculator(),
+            new DikBalaCalculator(),
+            new NaisargikaBalaCalculator()
+        );
 
-        return new self($calculator, new JanmarashiCalculator($engine), $calendar, $ascendant, $kundali, $dasha, $varga);
+        return new self($calculator, new JanmarashiCalculator($engine), $calendar, $ascendant, $kundali, $dasha, $varga, $shadbala);
     }
 
     /**
@@ -275,5 +288,15 @@ final class Panchang
         $baseKundali = $this->kundali($moment, $location);
 
         return $this->varga->calculate($baseKundali, $varga);
+    }
+
+    /**
+     * Calculates the Shadbala (Six-fold planetary strength) for the visible planets.
+     */
+    public function shadbala(DateTimeImmutable $moment, GeoLocation $location): Shadbala
+    {
+        $d1Kundali = $this->kundali($moment, $location);
+
+        return $this->shadbala->calculate($d1Kundali);
     }
 }

@@ -21,7 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `Astrology/KundaliCalculator` to map planetary positions to Rashis 
   (Zodiac signs) and calculate houses using the Whole-Sign House system.
 - Added `Astrology/VimshottariDashaCalculator` to generate the 120-year sequence
-  of planetary periods (Mahadashas and Antardashas) based on the Moon's exact Nakshatra.
+- Added `Astrology/ShadbalaCalculator` for computing the Six-fold Planetary
+  Strength (Shadbala). Currently supports Naisargika Bala (Natural), Dik Bala
+  (Directional), and partial Sthana Bala (Exaltation and Kendradi strength).
+- Exposed a new `shadbala()` method on the main `Panchang` facade.
 - Added Divisional Charts (Vargas) generation (`Astrology/VargaCalculator`) with support for
   all 16 traditional Parashari charts (Shodashvargas): D1, D2, D3, D4, D7, D9, D10, D12, 
   D16, D20, D24, D27, D30, D40, D45, and D60.
