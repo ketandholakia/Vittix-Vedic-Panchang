@@ -19,6 +19,7 @@ use Vittix\Panchang\Astrology\KundaliCalculator;
 use Vittix\Panchang\Astrology\DignityCalculator;
 use Vittix\Panchang\Astrology\AspectCalculator;
 use Vittix\Panchang\Astrology\VimshottariDashaCalculator;
+use Vittix\Panchang\Astrology\VargaCalculator;
 use Vittix\Panchang\Panchanga\JanmarashiCalculator;
 use Vittix\Panchang\Panchanga\KaranaCalculator;
 use Vittix\Panchang\Panchanga\NakshatraCalculator;
@@ -34,6 +35,7 @@ use Vittix\Panchang\ValueObject\PanchangMoment;
 use Vittix\Panchang\ValueObject\Kundali;
 use Vittix\Panchang\ValueObject\DashaPeriod;
 use Vittix\Panchang\Enum\Rashi;
+use Vittix\Panchang\Enum\Varga;
 use Vittix\Panchang\Festivals\FestivalEngine;
 use Vittix\Panchang\Festivals\FestivalCatalog;
 use Vittix\Panchang\Muhurta\MuhurtaCalculator;
@@ -68,6 +70,7 @@ final class Panchang
     private readonly AscendantCalculator $ascendant;
     private readonly KundaliCalculator $kundali;
     private readonly VimshottariDashaCalculator $dasha;
+    private readonly VargaCalculator $varga;
 
     private function __construct(
         PanchangaCalculator $calculator,
@@ -76,6 +79,7 @@ final class Panchang
         AscendantCalculator $ascendant,
         KundaliCalculator $kundali,
         VimshottariDashaCalculator $dasha,
+        VargaCalculator $varga,
     )
     {
         $this->calculator = $calculator;
@@ -84,6 +88,7 @@ final class Panchang
         $this->ascendant = $ascendant;
         $this->kundali = $kundali;
         $this->dasha = $dasha;
+        $this->varga = $varga;
     }
 
     /**
@@ -139,8 +144,9 @@ final class Panchang
 
         $kundali = new KundaliCalculator($engine, $ascendant, new DignityCalculator(), new AspectCalculator());
         $dasha = new VimshottariDashaCalculator();
+        $varga = new VargaCalculator(new DignityCalculator(), new AspectCalculator());
 
-        return new self($calculator, new JanmarashiCalculator($engine), $calendar, $ascendant, $kundali, $dasha);
+        return new self($calculator, new JanmarashiCalculator($engine), $calendar, $ascendant, $kundali, $dasha, $varga);
     }
 
     /**
@@ -259,5 +265,15 @@ final class Panchang
         $moonLongitude = $this->calculator->astronomy->siderealLongitude(Body::Moon, $instant);
 
         return $this->dasha->calculate($birthTime, $moonLongitude);
+    }
+
+    /**
+     * Calculate a specific Divisional Chart (Varga) for a given moment and location.
+     */
+    public function varga(DateTimeImmutable $moment, GeoLocation $location, Varga $varga): Kundali
+    {
+        $baseKundali = $this->kundali($moment, $location);
+
+        return $this->varga->calculate($baseKundali, $varga);
     }
 }

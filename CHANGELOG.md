@@ -22,8 +22,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (Zodiac signs) and calculate houses using the Whole-Sign House system.
 - Added `Astrology/VimshottariDashaCalculator` to generate the 120-year sequence
   of planetary periods (Mahadashas and Antardashas) based on the Moon's exact Nakshatra.
+- Added Divisional Charts (Vargas) generation (`Astrology/VargaCalculator`) with support for
+  D1 (Rasi), D2 (Hora), D3 (Drekkana), D9 (Navamsha), and D10 (Dashamsha).
 - Exposed a new `kundali()` method on the main `Panchang` facade for 
   generating complete birth charts.
+- Exposed a new `varga()` method on the main `Panchang` facade to get divisional charts.
 - Exposed a new `vimshottariDasha()` method on the main `Panchang` facade.
 - Added `Astronomy/Sidereal/SiderealTimeCalculator` (Greenwich/Local Mean
   Sidereal Time), extracted from a private method previously duplicated
