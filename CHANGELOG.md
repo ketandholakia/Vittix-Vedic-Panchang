@@ -20,8 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Integrated into the Kundali to calculate which houses a planet aspects.
 - Added `Astrology/KundaliCalculator` to map planetary positions to Rashis 
   (Zodiac signs) and calculate houses using the Whole-Sign House system.
+- Added `Astrology/VimshottariDashaCalculator` to generate the 120-year sequence
+  of planetary periods (Mahadashas and Antardashas) based on the Moon's exact Nakshatra.
 - Exposed a new `kundali()` method on the main `Panchang` facade for 
   generating complete birth charts.
+- Exposed a new `vimshottariDasha()` method on the main `Panchang` facade.
 - Added `Astronomy/Sidereal/SiderealTimeCalculator` (Greenwich/Local Mean
   Sidereal Time), extracted from a private method previously duplicated
   only inside `SolarEventCalculator`.

@@ -18,6 +18,7 @@ use Vittix\Panchang\Calendar\LunarMonthCalculator;
 use Vittix\Panchang\Astrology\KundaliCalculator;
 use Vittix\Panchang\Astrology\DignityCalculator;
 use Vittix\Panchang\Astrology\AspectCalculator;
+use Vittix\Panchang\Astrology\VimshottariDashaCalculator;
 use Vittix\Panchang\Panchanga\JanmarashiCalculator;
 use Vittix\Panchang\Panchanga\KaranaCalculator;
 use Vittix\Panchang\Panchanga\NakshatraCalculator;
@@ -31,6 +32,7 @@ use Vittix\Panchang\ValueObject\GeoLocation;
 use Vittix\Panchang\ValueObject\PanchangDay;
 use Vittix\Panchang\ValueObject\PanchangMoment;
 use Vittix\Panchang\ValueObject\Kundali;
+use Vittix\Panchang\ValueObject\DashaPeriod;
 use Vittix\Panchang\Enum\Rashi;
 use Vittix\Panchang\Festivals\FestivalEngine;
 use Vittix\Panchang\Festivals\FestivalCatalog;
@@ -65,6 +67,7 @@ final class Panchang
     private readonly HinduCalendarCalculator $calendar;
     private readonly AscendantCalculator $ascendant;
     private readonly KundaliCalculator $kundali;
+    private readonly VimshottariDashaCalculator $dasha;
 
     private function __construct(
         PanchangaCalculator $calculator,
@@ -72,6 +75,7 @@ final class Panchang
         HinduCalendarCalculator $calendar,
         AscendantCalculator $ascendant,
         KundaliCalculator $kundali,
+        VimshottariDashaCalculator $dasha,
     )
     {
         $this->calculator = $calculator;
@@ -79,6 +83,7 @@ final class Panchang
         $this->calendar = $calendar;
         $this->ascendant = $ascendant;
         $this->kundali = $kundali;
+        $this->dasha = $dasha;
     }
 
     /**
@@ -133,8 +138,9 @@ final class Panchang
         );
 
         $kundali = new KundaliCalculator($engine, $ascendant, new DignityCalculator(), new AspectCalculator());
+        $dasha = new VimshottariDashaCalculator();
 
-        return new self($calculator, new JanmarashiCalculator($engine), $calendar, $ascendant, $kundali);
+        return new self($calculator, new JanmarashiCalculator($engine), $calendar, $ascendant, $kundali, $dasha);
     }
 
     /**
@@ -240,5 +246,18 @@ final class Panchang
         $instant = (new AstroTimeFactory())->fromDateTime($moment);
 
         return $this->kundali->calculate($instant, $location);
+    }
+
+    /**
+     * Calculates the Vimshottari Dasha (planetary time periods) starting from a specific birth moment.
+     *
+     * @return array<DashaPeriod>
+     */
+    public function vimshottariDasha(DateTimeImmutable $birthTime): array
+    {
+        $instant = (new AstroTimeFactory())->fromDateTime($birthTime);
+        $moonLongitude = $this->calculator->astronomy->siderealLongitude(Body::Moon, $instant);
+
+        return $this->dasha->calculate($birthTime, $moonLongitude);
     }
 }
