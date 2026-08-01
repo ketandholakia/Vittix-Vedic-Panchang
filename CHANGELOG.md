@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added `Body::Mercury` support in the astronomy engine, utilizing truncated VSOP87 theory to achieve highly accurate planetary positions without large data file dependencies.
+- Added a shared `PlanetPositionCalculator` capable of computing apparent geocentric coordinates (with full light-time correction and precession/nutation) from the VSOP87 series. This lays the groundwork for remaining planets.
 - Added `Body::RahuMean` and `Body::KetuMean` — mean lunar node positions,
   computed from the Ω term already used internally for nutation. Supported
   through the existing `AstronomyEngineInterface` (`position()`,

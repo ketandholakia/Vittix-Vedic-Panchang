@@ -13,6 +13,9 @@ use Vittix\Panchang\Astronomy\Coordinates\ObliquityCalculator;
 use Vittix\Panchang\Astronomy\Lunar\LunarArgumentCalculator;
 use Vittix\Panchang\Astronomy\Lunar\LunarPositionCalculator;
 use Vittix\Panchang\Astronomy\Sidereal\LahiriAyanamsha;
+use Vittix\Panchang\Astronomy\Planetary\EarthPositionCalculator;
+use Vittix\Panchang\Astronomy\Planetary\MercuryTerms;
+use Vittix\Panchang\Astronomy\Planetary\PlanetPositionCalculator;
 use Vittix\Panchang\Astronomy\Solar\SolarEventCalculator;
 use Vittix\Panchang\Astronomy\Solar\SolarPositionCalculator;
 use Vittix\Panchang\Enum\Body;
@@ -39,6 +42,7 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
 {
     private readonly SolarPositionCalculator $solarCalculator;
     private readonly LunarPositionCalculator $lunarCalculator;
+    private readonly PlanetPositionCalculator $mercuryCalculator;
     private readonly SolarEventCalculator    $solarEvents;
     private readonly NutationCalculator      $nutation;
     private readonly ObliquityCalculator     $obliquity;
@@ -57,6 +61,14 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
         $this->nutation       = new NutationCalculator();
         $this->obliquity      = new ObliquityCalculator($this->nutation);
         $this->solarCalculator = new SolarPositionCalculator($this->nutation, $this->obliquity);
+        
+        $earth = new EarthPositionCalculator();
+        $this->mercuryCalculator = new PlanetPositionCalculator(
+            MercuryTerms::class,
+            $earth,
+            $this->nutation
+        );
+
         $this->lunarArguments  = new LunarArgumentCalculator();
         $this->lunarCalculator = new LunarPositionCalculator(
             $this->lunarArguments,
@@ -73,6 +85,7 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
             $this->positionCache[$key] = match ($body) {
                 Body::Sun      => $this->solarCalculator->calculate($instant),
                 Body::Moon     => $this->lunarCalculator->calculate($instant),
+                Body::Mercury  => $this->mercuryCalculator->calculate($instant),
                 Body::RahuMean => new EclipticPosition(
                     longitude: $this->lunarArguments->calculate($instant)['omega'],
                     latitude: 0.0,

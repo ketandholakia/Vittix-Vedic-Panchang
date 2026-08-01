@@ -14,6 +14,7 @@ enum Body: string
 {
     case Sun  = 'sun';
     case Moon = 'moon';
+    case Mercury = 'mercury';
 
     /**
      * Mean ascending lunar node (Rahu in Vedic astrology).
