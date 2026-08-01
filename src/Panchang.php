@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Vittix\Panchang;
 
 use DateTimeImmutable;
-use DateTimeZone;
 use Vittix\Panchang\Astronomy\Engine\PurePhpAstronomyEngine;
+use Vittix\Panchang\Enum\Body;
 use Vittix\Panchang\Astronomy\Contracts\AstronomyEngineInterface;
 use Vittix\Panchang\Astronomy\Coordinates\AscendantCalculator;
 use Vittix\Panchang\Astronomy\Coordinates\NutationCalculator;
@@ -81,6 +81,7 @@ final class Panchang
     private readonly VargaCalculator $varga;
     private readonly ShadbalaCalculator $shadbala;
     private readonly YogaDetector $yogaDetector;
+    private readonly AstronomyEngineInterface $astronomy;
 
     private function __construct(
         PanchangaCalculator $calculator,
@@ -92,6 +93,7 @@ final class Panchang
         VargaCalculator $varga,
         ShadbalaCalculator $shadbala,
         YogaDetector $yogaDetector,
+        AstronomyEngineInterface $astronomy,
     )
     {
         $this->calculator = $calculator;
@@ -103,6 +105,7 @@ final class Panchang
         $this->varga = $varga;
         $this->shadbala = $shadbala;
         $this->yogaDetector = $yogaDetector;
+        $this->astronomy = $astronomy;
     }
 
     /**
@@ -168,7 +171,7 @@ final class Panchang
         );
         $yogas = new YogaDetector();
 
-        return new self($calculator, new JanmarashiCalculator($engine), $calendar, $ascendant, $kundali, $dasha, $varga, $shadbala, $yogas);
+        return new self($calculator, new JanmarashiCalculator($engine), $calendar, $ascendant, $kundali, $dasha, $varga, $shadbala, $yogas, $engine);
     }
 
     /**
@@ -284,7 +287,7 @@ final class Panchang
     public function vimshottariDasha(DateTimeImmutable $birthTime): array
     {
         $instant = (new AstroTimeFactory())->fromDateTime($birthTime);
-        $moonLongitude = $this->calculator->astronomy->siderealLongitude(Body::Moon, $instant);
+        $moonLongitude = $this->astronomy->siderealLongitude(Body::Moon, $instant);
 
         return $this->dasha->calculate($birthTime, $moonLongitude);
     }

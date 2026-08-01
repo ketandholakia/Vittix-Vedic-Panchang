@@ -45,6 +45,7 @@ final class TimeAwareMockAstronomyEngine implements AstronomyEngineInterface
         return match ($body) {
             Body::Sun => Angle::normalize($this->sunEpochLon + ($days * $this->sunDailyMotion)),
             Body::Moon => Angle::normalize($this->moonEpochLon + ($days * $this->moonDailyMotion)),
+            default => 0.0,
         };
     }
 
@@ -62,4 +63,15 @@ final class TimeAwareMockAstronomyEngine implements AstronomyEngineInterface
     {
         return new SolarEvents(null, null, null);
     }
+
+    public function equatorialPosition(Body $body, AstroInstant $instant): \Vittix\Panchang\ValueObject\EquatorialPosition
+    {
+        return new \Vittix\Panchang\ValueObject\EquatorialPosition(0.0, 0.0);
+    }
+
+    public function dailyMotion(Body $body, AstroInstant $instant): float
+    {
+        return 1.0;
+    }
 }
+

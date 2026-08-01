@@ -78,3 +78,4 @@ final class EarthPositionCalculator
         return $sum;
     }
 }
+

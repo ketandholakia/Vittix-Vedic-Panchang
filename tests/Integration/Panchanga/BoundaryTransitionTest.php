@@ -77,6 +77,16 @@ class BoundaryMockEngine implements AstronomyEngineInterface
         
         return new SolarEvents($sunriseDt, $sunsetDt, null);
     }
+
+    public function equatorialPosition(Body $body, AstroInstant $instant): \Vittix\Panchang\ValueObject\EquatorialPosition
+    {
+        return new \Vittix\Panchang\ValueObject\EquatorialPosition(0.0, 0.0);
+    }
+
+    public function dailyMotion(Body $body, AstroInstant $instant): float
+    {
+        return 1.0;
+    }
 }
 
 final class BoundaryTransitionTest extends TestCase
@@ -162,3 +172,4 @@ final class BoundaryTransitionTest extends TestCase
         self::assertEqualsWithDelta($dt->getTimestamp() + 30, $tithiEndsAt->getTimestamp(), 5);
     }
 }
+

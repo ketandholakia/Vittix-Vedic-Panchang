@@ -174,3 +174,4 @@ final class DignityCalculator
         return null;
     }
 }
+

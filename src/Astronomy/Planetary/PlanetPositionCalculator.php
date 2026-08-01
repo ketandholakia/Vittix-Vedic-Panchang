@@ -181,3 +181,4 @@ final class PlanetPositionCalculator
         return $sum;
     }
 }
+

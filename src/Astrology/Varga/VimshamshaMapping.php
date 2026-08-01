@@ -31,3 +31,5 @@ final class VimshamshaMapping implements VargaMappingInterface
         return Rashi::fromIndex($mappedIndex);
     }
 }
+
+

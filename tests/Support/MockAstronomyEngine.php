@@ -51,4 +51,15 @@ final class MockAstronomyEngine implements AstronomyEngineInterface
             $localDate->setTime(18, 0)
         );
     }
+
+    public function equatorialPosition(Body $body, AstroInstant $instant): \Vittix\Panchang\ValueObject\EquatorialPosition
+    {
+        return new \Vittix\Panchang\ValueObject\EquatorialPosition(0.0, 0.0);
+    }
+
+    public function dailyMotion(Body $body, AstroInstant $instant): float
+    {
+        return 1.0;
+    }
 }
+

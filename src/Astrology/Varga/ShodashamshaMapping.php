@@ -25,6 +25,7 @@ final class ShodashamshaMapping implements VargaMappingInterface
             0 => 0, // Movable signs start from Aries (0)
             1 => 4, // Fixed signs start from Leo (4)
             2 => 8, // Dual signs start from Sagittarius (8)
+            default => 0,
         };
         
         $mappedIndex = ($startSign + $partIndex) % 12;
@@ -32,3 +33,5 @@ final class ShodashamshaMapping implements VargaMappingInterface
         return Rashi::fromIndex($mappedIndex);
     }
 }
+
+

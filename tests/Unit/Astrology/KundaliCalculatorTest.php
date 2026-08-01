@@ -41,7 +41,7 @@ final class KundaliCalculatorTest extends TestCase
 
         $kundali = $calculator->calculate($instant, $location);
 
-        $this->assertNotNull($kundali);
+        
         $this->assertCount(9, $kundali->placements);
         $this->assertArrayHasKey(Body::Sun->value, $kundali->placements);
         $this->assertArrayHasKey(Body::Moon->value, $kundali->placements);
@@ -63,3 +63,4 @@ final class KundaliCalculatorTest extends TestCase
         $this->assertNotEmpty($inRashi);
     }
 }
+

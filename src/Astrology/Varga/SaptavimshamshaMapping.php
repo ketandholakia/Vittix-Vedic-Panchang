@@ -33,3 +33,5 @@ final class SaptavimshamshaMapping implements VargaMappingInterface
         return Rashi::fromIndex($mappedIndex);
     }
 }
+
+

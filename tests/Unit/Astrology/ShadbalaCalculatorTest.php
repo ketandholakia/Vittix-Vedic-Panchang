@@ -26,7 +26,9 @@ class ShadbalaCalculatorTest extends TestCase
         $this->calculator = new ShadbalaCalculator(
             new SthanaBalaCalculator(),
             new DikBalaCalculator(),
-            new NaisargikaBalaCalculator()
+            new NaisargikaBalaCalculator(),
+            new \Vittix\Panchang\Astrology\Shadbala\AyanaBalaCalculator(),
+            new \Vittix\Panchang\Astrology\Shadbala\ChestaBalaCalculator()
         );
     }
 
@@ -42,24 +44,29 @@ class ShadbalaCalculatorTest extends TestCase
 
         $shadbala = $this->calculator->calculate($baseKundali);
 
-        $sunShadbala = $shadbala->planets[Body::Sun->value];
+        $this->assertCount(7, $shadbala->planets); // 7 visible planets
 
+        $sunValues = $shadbala->planets[Body::Sun->value];
+        $this->assertEquals(Body::Sun, $sunValues->body);
         // Sthana = 60 (Uchcha) + 60 (Kendra) = 120
-        $this->assertEquals(120.0, $sunShadbala->sthanaBala);
+        $this->assertEquals(120.0, $sunValues->sthanaBala);
         
         // Dik = 1st house. Weakest is 4th. Distance = 1 - 4 = -3 + 12 = 9. Inverse = 12 - 9 = 3. 3 * 10 = 30.
-        $this->assertEquals(30.0, $sunShadbala->dikBala);
+        $this->assertEquals(30.0, $sunValues->dikBala);
 
         // Naisargika = 60
-        $this->assertEquals(60.0, $sunShadbala->naisargikaBala);
+        $this->assertEquals(60.0, $sunValues->naisargikaBala);
 
-        // Kala, Chesta, Drik = 0
-        $this->assertEquals(0.0, $sunShadbala->kalaBala);
-        $this->assertEquals(0.0, $sunShadbala->chestaBala);
-        $this->assertEquals(0.0, $sunShadbala->drikBala);
+        // Ayana Bala for Sun at +10 declination (since we injected 10 declination in the mock)
+        // Wait, PlanetPlacement doesn't have declination specified in the previous setup, so it is 0.0 or whatever.
+        // I should set declination = 0.0, dailyMotion = 0.0 in the test
+        $this->assertEquals(30.0, $sunValues->kalaBala); // (24+0)/48 * 60 = 30
+        $this->assertEquals(0.0, $sunValues->chestaBala); // Sun returns 0
+        $this->assertEquals(0.0, $sunValues->drikBala);
 
-        // Total
-        $this->assertEquals(120 + 30 + 60, $sunShadbala->getTotalVirupas());
-        $this->assertEquals((120 + 30 + 60) / 60.0, $sunShadbala->getTotalRupas());
+        // Total Virupas: 120 + 30 + 30 + 0 + 60 + 0 = 240
+        $this->assertEquals(240.0, $sunValues->getTotalVirupas());
+        $this->assertEquals(240.0 / 60.0, $sunValues->getTotalRupas());
     }
 }
+

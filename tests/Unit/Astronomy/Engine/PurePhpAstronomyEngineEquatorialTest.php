@@ -28,8 +28,8 @@ class PurePhpAstronomyEngineEquatorialTest extends TestCase
 
         $eq = $this->engine->equatorialPosition(Body::Sun, $instant);
 
-        $this->assertIsFloat($eq->rightAscension);
-        $this->assertIsFloat($eq->declination);
+        
+        
         
         // Sun declination near J2000.0 (Winter) should be around -23 degrees
         $this->assertEqualsWithDelta(-23.0, $eq->declination, 1.0);
@@ -50,3 +50,4 @@ class PurePhpAstronomyEngineEquatorialTest extends TestCase
         $this->assertEqualsWithDelta(13.2, $moonMotion, 2.0);
     }
 }
+

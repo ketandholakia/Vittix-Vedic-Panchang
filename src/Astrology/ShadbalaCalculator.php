@@ -40,6 +40,7 @@ final class ShadbalaCalculator
 
     public function calculate(Kundali $d1Kundali): Shadbala
     {
+        /** @var array<int, ShadbalaValues> $planets */
         $planets = [];
 
         foreach (self::VISIBLE_PLANETS as $body) {
@@ -77,3 +78,5 @@ final class ShadbalaCalculator
         return new Shadbala($planets);
     }
 }
+
+
