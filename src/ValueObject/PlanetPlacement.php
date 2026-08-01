@@ -21,6 +21,8 @@ final class PlanetPlacement
         /** @var int[] */
         public readonly array $aspectsHouses = [],
         public readonly ?Dignity $dignity = null,
+        public readonly ?float $declination = null,
+        public readonly ?float $dailyMotion = null,
     ) {
     }
 }

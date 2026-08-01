@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Vittix\Panchang\Astrology;
 
+use Vittix\Panchang\Astrology\Shadbala\AyanaBalaCalculator;
+use Vittix\Panchang\Astrology\Shadbala\ChestaBalaCalculator;
 use Vittix\Panchang\Astrology\Shadbala\DikBalaCalculator;
 use Vittix\Panchang\Astrology\Shadbala\NaisargikaBalaCalculator;
 use Vittix\Panchang\Astrology\Shadbala\SthanaBalaCalculator;
@@ -31,6 +33,8 @@ final class ShadbalaCalculator
         private readonly SthanaBalaCalculator $sthanaBala,
         private readonly DikBalaCalculator $dikBala,
         private readonly NaisargikaBalaCalculator $naisargikaBala,
+        private readonly AyanaBalaCalculator $ayanaBala,
+        private readonly ChestaBalaCalculator $chestaBala,
     ) {
     }
 
@@ -49,10 +53,14 @@ final class ShadbalaCalculator
             $dik = $this->dikBala->calculate($placement);
             $naisargika = $this->naisargikaBala->calculate($body);
             
-            // Kala, Chesta, and Drik Bala will return 0.0 until we implement 
-            // the required astronomical primitives (declination, speed, aspects logic).
-            $kala = 0.0;
-            $chesta = 0.0;
+            // Ayana Bala is a sub-component of Kala Bala.
+            // For now, we will inject it directly as the Kala Bala proxy,
+            // since true Kala Bala requires Paksha, Vara, Hora, etc.
+            $kala = $this->ayanaBala->calculate($placement);
+            
+            $chesta = $this->chestaBala->calculate($placement);
+            
+            // Drik Bala requires aspects logic
             $drik = 0.0;
 
             $planets[$body->value] = new ShadbalaValues(

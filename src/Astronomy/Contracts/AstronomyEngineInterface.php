@@ -9,6 +9,7 @@ use DateTimeZone;
 use Vittix\Panchang\Enum\Body;
 use Vittix\Panchang\ValueObject\AstroInstant;
 use Vittix\Panchang\ValueObject\EclipticPosition;
+use Vittix\Panchang\ValueObject\EquatorialPosition;
 use Vittix\Panchang\ValueObject\GeoLocation;
 use Vittix\Panchang\ValueObject\SolarEvents;
 
@@ -59,6 +60,17 @@ interface AstronomyEngineInterface
      * Ayanamsha (Lahiri by default) in degrees at the given instant.
      */
     public function ayanamsa(AstroInstant $instant): float;
+
+    /**
+     * Equatorial position (Right Ascension, Declination) for a body at the given moment.
+     */
+    public function equatorialPosition(Body $body, AstroInstant $instant): EquatorialPosition;
+
+    /**
+     * Instantaneous or daily average speed (daily motion) of a body in degrees/day.
+     * Positive = direct, Negative = retrograde.
+     */
+    public function dailyMotion(Body $body, AstroInstant $instant): float;
 
     /**
      * Sunrise, solar noon, and sunset for a given civil date, observer location,

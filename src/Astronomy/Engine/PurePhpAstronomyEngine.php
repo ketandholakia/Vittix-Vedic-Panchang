@@ -26,6 +26,7 @@ use Vittix\Panchang\Enum\Body;
 use Vittix\Panchang\Math\Angle;
 use Vittix\Panchang\ValueObject\AstroInstant;
 use Vittix\Panchang\ValueObject\EclipticPosition;
+use Vittix\Panchang\ValueObject\EquatorialPosition;
 use Vittix\Panchang\ValueObject\GeoLocation;
 use Vittix\Panchang\ValueObject\SolarEvents;
 
@@ -137,6 +138,40 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
         }
 
         return $this->ayanamshaCache[$key];
+    }
+
+    public function equatorialPosition(Body $body, AstroInstant $instant): EquatorialPosition
+    {
+        $ecliptic = $this->position($body, $instant);
+        $obliquity = $this->obliquity->true($instant);
+
+        $transformer = new \Vittix\Panchang\Astronomy\Coordinates\CoordinateTransformer();
+        return $transformer->eclipticToEquatorial($ecliptic, $obliquity);
+    }
+
+    public function dailyMotion(Body $body, AstroInstant $instant): float
+    {
+        $deltaDays = 0.001; // ~1.44 minutes
+
+        $pos1 = $this->tropicalLongitude($body, $instant);
+
+        $nextInstant = new AstroInstant(
+            $instant->utc->modify('+86 seconds'),
+            $instant->julianDayUt + $deltaDays,
+            $instant->julianDayTt + $deltaDays,
+            $instant->deltaTSeconds
+        );
+
+        $pos2 = $this->tropicalLongitude($body, $nextInstant);
+
+        // Handle crossing the 360 degree boundary
+        $diff = Angle::normalize($pos2 - $pos1);
+        if ($diff > 180.0) {
+            $diff -= 360.0;
+        }
+
+        // Return degrees per day
+        return $diff / $deltaDays;
     }
 
     public function solarEvents(

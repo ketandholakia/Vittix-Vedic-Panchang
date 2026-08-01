@@ -22,9 +22,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (Zodiac signs) and calculate houses using the Whole-Sign House system.
 - Added `Astrology/VimshottariDashaCalculator` to generate the 120-year sequence
 - Added `Astrology/ShadbalaCalculator` for computing the Six-fold Planetary
-  Strength (Shadbala). Currently supports Naisargika Bala (Natural), Dik Bala
-  (Directional), and partial Sthana Bala (Exaltation and Kendradi strength).
-- Exposed a new `shadbala()` method on the main `Panchang` facade.
+  Strength (Shadbala). Includes Naisargika (Natural), Dik (Directional), Sthana 
+  (Positional), Ayana (Equinoctial), and Chesta (Motional) Balas.
+- Added a `YogaDetector` rules engine to scan birth charts for classical planetary
+  combinations. Currently supports the Pancha Mahapurusha Yogas (Ruchaka, Bhadra, 
+  Hamsa, Malavya, Sasha) and Gajakesari Yoga.
+- Exposed `shadbala()` and `yogas()` methods on the main `Panchang` facade.
+- Expanded `AstronomyEngineInterface` with `equatorialPosition()` (Right Ascension/
+  Declination) and `dailyMotion()` primitives.
 - Added Divisional Charts (Vargas) generation (`Astrology/VargaCalculator`) with support for
   all 16 traditional Parashari charts (Shodashvargas): D1, D2, D3, D4, D7, D9, D10, D12, 
   D16, D20, D24, D27, D30, D40, D45, and D60.

@@ -21,9 +21,12 @@ use Vittix\Panchang\Astrology\AspectCalculator;
 use Vittix\Panchang\Astrology\VimshottariDashaCalculator;
 use Vittix\Panchang\Astrology\VargaCalculator;
 use Vittix\Panchang\Astrology\ShadbalaCalculator;
+use Vittix\Panchang\Astrology\Shadbala\AyanaBalaCalculator;
+use Vittix\Panchang\Astrology\Shadbala\ChestaBalaCalculator;
 use Vittix\Panchang\Astrology\Shadbala\SthanaBalaCalculator;
 use Vittix\Panchang\Astrology\Shadbala\DikBalaCalculator;
 use Vittix\Panchang\Astrology\Shadbala\NaisargikaBalaCalculator;
+use Vittix\Panchang\Astrology\YogaDetector;
 use Vittix\Panchang\Panchanga\JanmarashiCalculator;
 use Vittix\Panchang\Panchanga\KaranaCalculator;
 use Vittix\Panchang\Panchanga\NakshatraCalculator;
@@ -77,6 +80,7 @@ final class Panchang
     private readonly VimshottariDashaCalculator $dasha;
     private readonly VargaCalculator $varga;
     private readonly ShadbalaCalculator $shadbala;
+    private readonly YogaDetector $yogaDetector;
 
     private function __construct(
         PanchangaCalculator $calculator,
@@ -87,6 +91,7 @@ final class Panchang
         VimshottariDashaCalculator $dasha,
         VargaCalculator $varga,
         ShadbalaCalculator $shadbala,
+        YogaDetector $yogaDetector,
     )
     {
         $this->calculator = $calculator;
@@ -97,6 +102,7 @@ final class Panchang
         $this->dasha = $dasha;
         $this->varga = $varga;
         $this->shadbala = $shadbala;
+        $this->yogaDetector = $yogaDetector;
     }
 
     /**
@@ -156,10 +162,13 @@ final class Panchang
         $shadbala = new ShadbalaCalculator(
             new SthanaBalaCalculator(),
             new DikBalaCalculator(),
-            new NaisargikaBalaCalculator()
+            new NaisargikaBalaCalculator(),
+            new AyanaBalaCalculator(),
+            new ChestaBalaCalculator()
         );
+        $yogas = new YogaDetector();
 
-        return new self($calculator, new JanmarashiCalculator($engine), $calendar, $ascendant, $kundali, $dasha, $varga, $shadbala);
+        return new self($calculator, new JanmarashiCalculator($engine), $calendar, $ascendant, $kundali, $dasha, $varga, $shadbala, $yogas);
     }
 
     /**
@@ -298,5 +307,17 @@ final class Panchang
         $d1Kundali = $this->kundali($moment, $location);
 
         return $this->shadbala->calculate($d1Kundali);
+    }
+
+    /**
+     * Detects all classical planetary Yogas present in the birth chart.
+     *
+     * @return array<int, \Vittix\Panchang\ValueObject\Yoga>
+     */
+    public function yogas(DateTimeImmutable $moment, GeoLocation $location): array
+    {
+        $d1Kundali = $this->kundali($moment, $location);
+
+        return $this->yogaDetector->detect($d1Kundali);
     }
 }

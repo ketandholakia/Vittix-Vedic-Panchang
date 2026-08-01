@@ -57,13 +57,28 @@ final class KundaliCalculator
             $dignity = $this->dignityCalculator->calculate($body, $rashi, $longitude);
             $aspectsHouses = $this->aspectCalculator->calculateAspectedHouses($body, $house);
 
+            // Advanced Astronomy properties (used by Shadbala)
+            $declination = null;
+            $dailyMotion = null;
+
+            // Rahu and Ketu usually don't need Declination/Speed for classical rules,
+            // but we can compute them if they are true bodies. Our pure PHP engine
+            // currently supports these for all bodies except Rahu/Ketu.
+            if (!in_array($body, [Body::RahuMean, Body::KetuMean], true)) {
+                $eq = $this->astronomy->equatorialPosition($body, $instant);
+                $declination = $eq->declination;
+                $dailyMotion = $this->astronomy->dailyMotion($body, $instant);
+            }
+
             $placements[$body->value] = new PlanetPlacement(
                 body: $body,
                 longitude: $longitude,
                 rashi: $rashi,
                 house: $house,
                 aspectsHouses: $aspectsHouses,
-                dignity: $dignity
+                dignity: $dignity,
+                declination: $declination,
+                dailyMotion: $dailyMotion,
             );
         }
 
