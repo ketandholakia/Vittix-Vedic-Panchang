@@ -49,14 +49,17 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
     /** @var array<string, float> */
     private array $ayanamshaCache = [];
 
+    private readonly LunarArgumentCalculator $lunarArguments;
+
     public function __construct(
         private readonly AyanamshaCalculatorInterface $ayanamsha = new LahiriAyanamsha(),
     ) {
         $this->nutation       = new NutationCalculator();
         $this->obliquity      = new ObliquityCalculator($this->nutation);
         $this->solarCalculator = new SolarPositionCalculator($this->nutation, $this->obliquity);
+        $this->lunarArguments  = new LunarArgumentCalculator();
         $this->lunarCalculator = new LunarPositionCalculator(
-            new LunarArgumentCalculator(),
+            $this->lunarArguments,
             $this->nutation,
         );
         $this->solarEvents = new SolarEventCalculator($this->solarCalculator);
@@ -68,8 +71,20 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
 
         if (!isset($this->positionCache[$key])) {
             $this->positionCache[$key] = match ($body) {
-                Body::Sun  => $this->solarCalculator->calculate($instant),
-                Body::Moon => $this->lunarCalculator->calculate($instant),
+                Body::Sun      => $this->solarCalculator->calculate($instant),
+                Body::Moon     => $this->lunarCalculator->calculate($instant),
+                Body::RahuMean => new EclipticPosition(
+                    longitude: $this->lunarArguments->calculate($instant)['omega'],
+                    latitude: 0.0,
+                    distance: 0.0,
+                ),
+                Body::KetuMean => new EclipticPosition(
+                    longitude: Angle::normalize(
+                        $this->lunarArguments->calculate($instant)['omega'] + 180.0
+                    ),
+                    latitude: 0.0,
+                    distance: 0.0,
+                ),
             };
         }
 

@@ -6,6 +6,7 @@ namespace Vittix\Panchang\Astronomy\Solar;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use Vittix\Panchang\Astronomy\Sidereal\SiderealTimeCalculator;
 use Vittix\Panchang\Math\Angle;
 use Vittix\Panchang\Time\AstroTimeFactory;
 use Vittix\Panchang\Time\JulianDay;
@@ -43,11 +44,14 @@ final class SolarEventCalculator
     private const MAX_ITER = 50;
 
     private readonly AstroTimeFactory $timeFactory;
+    private readonly SiderealTimeCalculator $siderealTime;
 
     public function __construct(
-        private readonly SolarPositionCalculator $solar
+        private readonly SolarPositionCalculator $solar,
+        ?SiderealTimeCalculator $siderealTime = null,
     ) {
-        $this->timeFactory = new AstroTimeFactory();
+        $this->timeFactory  = new AstroTimeFactory();
+        $this->siderealTime = $siderealTime ?? new SiderealTimeCalculator();
     }
 
     /**
@@ -127,8 +131,7 @@ final class SolarEventCalculator
         for ($i = 0; $i < self::MAX_ITER; $i++) {
             $instant = $this->timeFactory->fromJulianDay($jdTransit);
             $ra      = $this->solar->rightAscension($instant);
-            $lmst    = $this->greenwichSiderealTime($jdTransit) + $location->longitude;
-            $lmst    = Angle::normalize($lmst);
+            $lmst    = $this->siderealTime->localMeanSiderealTime($jdTransit, $location->longitude);
 
             // Hour angle at transit = 0
             $correction = ($ra - $lmst) / 360.0; // days
@@ -195,9 +198,7 @@ final class SolarEventCalculator
             $ra      = $this->solar->rightAscension($instant);
             $dec     = $this->solar->declination($instant);
 
-            $lmst = Angle::normalize(
-                $this->greenwichSiderealTime($jdEvent) + $location->longitude
-            );
+            $lmst = $this->siderealTime->localMeanSiderealTime($jdEvent, $location->longitude);
 
             // Hour angle
             $h = Angle::normalize($lmst - $ra);
@@ -233,26 +234,5 @@ final class SolarEventCalculator
         }
 
         return $jdEvent;
-    }
-
-    /**
-     * Apparent Greenwich Sidereal Time in degrees [0, 360).
-     *
-     * Uses the IAU formula for GMST + nutation (approximation without
-     * a full IERS correction, sufficient for Panchang sunrise accuracy).
-     *
-     * Reference: Meeus Ch. 12.
-     */
-    private function greenwichSiderealTime(float $julianDayUt): float
-    {
-        $t = ($julianDayUt - JulianDay::J2000) / JulianDay::DAYS_PER_CENTURY;
-
-        // GMST in degrees at 0h UT
-        $gmst = 280.46061837
-              + 360.98564736629 * ($julianDayUt - JulianDay::J2000)
-              + 0.000387933 * $t ** 2
-              - $t ** 3 / 38710000.0;
-
-        return Angle::normalize($gmst);
     }
 }

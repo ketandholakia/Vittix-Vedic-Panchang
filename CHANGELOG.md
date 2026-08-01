@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added `Body::RahuMean` and `Body::KetuMean` — mean lunar node positions,
+  computed from the Ω term already used internally for nutation. Supported
+  through the existing `AstronomyEngineInterface` (`position()`,
+  `tropicalLongitude()`, `siderealLongitude()`) like any other body.
+- Added `Astronomy/Sidereal/SiderealTimeCalculator` (Greenwich/Local Mean
+  Sidereal Time), extracted from a private method previously duplicated
+  only inside `SolarEventCalculator`.
+- Added `Astronomy/Coordinates/AscendantCalculator` for Ascendant (Lagna)
+  longitude — first-house/whole-sign reference point for Kundali charts.
+- Added `ValueObject\AscendantPosition` and `$panchang->ascendant(DateTimeImmutable $moment, GeoLocation $location): AscendantPosition`
+  on the `Panchang` facade.
+
+### Changed
+- `SolarEventCalculator` now depends on the shared `SiderealTimeCalculator`
+  instead of a private, duplicated GMST implementation. Behavior is
+  unchanged (verified sunrise/sunset outputs identical before/after).
+
 ## [1.1.0] - 2026-08-01
 
 ### Added

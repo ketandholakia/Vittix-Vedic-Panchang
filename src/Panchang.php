@@ -8,6 +8,11 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Vittix\Panchang\Astronomy\Engine\PurePhpAstronomyEngine;
 use Vittix\Panchang\Astronomy\Contracts\AstronomyEngineInterface;
+use Vittix\Panchang\Astronomy\Coordinates\AscendantCalculator;
+use Vittix\Panchang\Astronomy\Coordinates\NutationCalculator;
+use Vittix\Panchang\Astronomy\Coordinates\ObliquityCalculator;
+use Vittix\Panchang\Astronomy\Sidereal\SiderealTimeCalculator;
+use Vittix\Panchang\ValueObject\AscendantPosition;
 use Vittix\Panchang\Calendar\AdhikaMasaCalculator;
 use Vittix\Panchang\Calendar\LunarMonthCalculator;
 use Vittix\Panchang\Panchanga\JanmarashiCalculator;
@@ -54,16 +59,19 @@ final class Panchang
     private readonly PanchangaCalculator $calculator;
     private readonly JanmarashiCalculator $janmarashi;
     private readonly HinduCalendarCalculator $calendar;
+    private readonly AscendantCalculator $ascendant;
 
     private function __construct(
         PanchangaCalculator $calculator,
         JanmarashiCalculator $janmarashi,
         HinduCalendarCalculator $calendar,
+        AscendantCalculator $ascendant,
     )
     {
         $this->calculator = $calculator;
         $this->janmarashi = $janmarashi;
         $this->calendar = $calendar;
+        $this->ascendant = $ascendant;
     }
 
     /**
@@ -110,7 +118,14 @@ final class Panchang
             new SamvatCalculator()
         );
 
-        return new self($calculator, new JanmarashiCalculator($engine), $calendar);
+        $nutation  = new NutationCalculator();
+        $ascendant = new AscendantCalculator(
+            new SiderealTimeCalculator(),
+            new ObliquityCalculator($nutation),
+            $engine,
+        );
+
+        return new self($calculator, new JanmarashiCalculator($engine), $calendar, $ascendant);
     }
 
     /**
@@ -190,5 +205,20 @@ final class Panchang
         $instant = (new AstroTimeFactory())->fromDateTime($date);
 
         return $this->calendar->calculate($instant, $date->getTimezone());
+    }
+
+    /**
+     * Calculate the Ascendant (Lagna) for a specific moment and location.
+     *
+     * This is the foundational reference point for Kundali / natal chart
+     * house assignment (Bhava): once the Ascendant's Rashi is known, each
+     * planet's house is its Rashi position counted from the Ascendant's
+     * Rashi (whole-sign houses).
+     */
+    public function ascendant(DateTimeImmutable $moment, GeoLocation $location): AscendantPosition
+    {
+        $instant = (new AstroTimeFactory())->fromDateTime($moment);
+
+        return $this->ascendant->calculate($instant, $location);
     }
 }
