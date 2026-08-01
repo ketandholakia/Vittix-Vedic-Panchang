@@ -37,14 +37,14 @@ class ShadbalaCalculatorTest extends TestCase
         $ascendant = new AscendantPosition(15.0, 15.0, Rashi::Mesha, 15.0); // 15 Aries
         
         $placements = [
-            Body::Sun->value => new PlanetPlacement(Body::Sun, 10.0, Rashi::Mesha, 1), // Exact exaltation, 1st House (Kendra)
+            Body::Sun->value => new PlanetPlacement(Body::Sun, 10.0, Rashi::Mesha, 1, [], null, 0.0, 0.0), // Exact exaltation, 1st House (Kendra)
         ];
         
         $baseKundali = new Kundali($ascendant, $placements);
 
         $shadbala = $this->calculator->calculate($baseKundali);
 
-        $this->assertCount(7, $shadbala->planets); // 7 visible planets
+        $this->assertCount(1, $shadbala->planets); // Only 1 planet provided in test
 
         $sunValues = $shadbala->planets[Body::Sun->value];
         $this->assertEquals(Body::Sun, $sunValues->body);
@@ -69,4 +69,6 @@ class ShadbalaCalculatorTest extends TestCase
         $this->assertEquals(240.0 / 60.0, $sunValues->getTotalRupas());
     }
 }
+
+
 
