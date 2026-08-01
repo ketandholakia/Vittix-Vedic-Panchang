@@ -67,8 +67,13 @@ final class VargaCalculator
             // Recalculate House based on Varga Lagna
             $vargaHouse = (($rashiIndex - $lagnaRashiIndex + 12) % 12) + 1;
 
-            // Recalculate Dignity and Aspects in the new Varga
-            $dignity = $this->dignityCalculator->calculate($body, $vargaRashi, $longitude);
+            // Recalculate Dignity and Aspects in the new Varga.
+            // Note: $longitude is the D1 longitude, which is *not* a
+            // meaningful degree-within-$vargaRashi (Moolatrikona is a
+            // D1-specific concept) — so degree-based refinement is
+            // explicitly disabled here rather than fed a value that has no
+            // principled connection to the varga sign.
+            $dignity = $this->dignityCalculator->calculate($body, $vargaRashi, $longitude, applyDegreeRefinement: false);
             $aspectsHouses = $this->aspectCalculator->calculateAspectedHouses($body, $vargaHouse);
 
             $vargaPlacements[$bodyValue] = new PlanetPlacement(
