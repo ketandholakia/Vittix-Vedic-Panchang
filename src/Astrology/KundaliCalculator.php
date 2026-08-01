@@ -34,6 +34,7 @@ final class KundaliCalculator
     public function __construct(
         private readonly AstronomyEngineInterface $astronomy,
         private readonly AscendantCalculator $ascendantCalculator,
+        private readonly DignityCalculator $dignityCalculator,
     ) {
     }
 
@@ -52,11 +53,14 @@ final class KundaliCalculator
             // Whole-Sign House Calculation
             $house = (($rashiIndex - $lagnaRashiIndex + 12) % 12) + 1;
 
+            $dignity = $this->dignityCalculator->calculate($body, $rashi, $longitude);
+
             $placements[$body->value] = new PlanetPlacement(
                 body: $body,
                 longitude: $longitude,
                 rashi: $rashi,
-                house: $house
+                house: $house,
+                dignity: $dignity
             );
         }
 

@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   computed from the Ω term already used internally for nutation. Supported
   through the existing `AstronomyEngineInterface` (`position()`,
   `tropicalLongitude()`, `siderealLongitude()`) like any other body.
+- Added `Astrology/DignityCalculator` to evaluate planetary strength (Exalted, 
+  Moolatrikona, Own Sign, Debilitated) and integrated it into the Kundali.
 - Added `Astrology/KundaliCalculator` to map planetary positions to Rashis 
   (Zodiac signs) and calculate houses using the Whole-Sign House system.
 - Exposed a new `kundali()` method on the main `Panchang` facade for 

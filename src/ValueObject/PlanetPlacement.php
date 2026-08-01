@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vittix\Panchang\ValueObject;
 
 use Vittix\Panchang\Enum\Body;
+use Vittix\Panchang\Enum\Dignity;
 use Vittix\Panchang\Enum\Rashi;
 
 /**
@@ -17,6 +18,7 @@ final class PlanetPlacement
         public readonly float $longitude,
         public readonly Rashi $rashi,
         public readonly int $house,
+        public readonly ?Dignity $dignity = null,
     ) {
     }
 }

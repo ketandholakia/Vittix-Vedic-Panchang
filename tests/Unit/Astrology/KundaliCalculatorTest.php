@@ -14,6 +14,7 @@ use Vittix\Panchang\Astronomy\Coordinates\NutationCalculator;
 use Vittix\Panchang\Astronomy\Coordinates\ObliquityCalculator;
 use Vittix\Panchang\Astronomy\Sidereal\LahiriAyanamsha;
 use Vittix\Panchang\Astronomy\Sidereal\SiderealTimeCalculator;
+use Vittix\Panchang\Astrology\DignityCalculator;
 use Vittix\Panchang\Enum\Body;
 use Vittix\Panchang\Time\AstroTimeFactory;
 use Vittix\Panchang\ValueObject\GeoLocation;
@@ -30,7 +31,7 @@ final class KundaliCalculatorTest extends TestCase
             $engine
         );
 
-        $calculator = new KundaliCalculator($engine, $ascendantCalculator);
+        $calculator = new KundaliCalculator($engine, $ascendantCalculator, new DignityCalculator());
         
         $instant = (new AstroTimeFactory())->fromDateTime(
             new DateTimeImmutable('2000-01-01 12:00:00', new DateTimeZone('UTC'))
