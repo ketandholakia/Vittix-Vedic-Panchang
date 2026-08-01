@@ -1,16 +1,16 @@
 <?php
 
 return [
-    'Vishkumbha' => 'വിഷ്കുംഭം',
+    'Vishkumbha' => 'വിഷ്കംഭം',
     'Preeti' => 'പ്രീതി',
     'Ayushman' => 'ആയുഷ്മാൻ',
     'Saubhagya' => 'സൗഭാഗ്യം',
     'Shobhana' => 'ശോഭനം',
     'Atiganda' => 'അതിഗണ്ഡം',
-    'Sukarma' => 'സുകർമ്മം',
+    'Sukarman' => 'സുകർമ്മം',
     'Dhriti' => 'ധൃതി',
     'Shoola' => 'ശൂലം',
-    'Ganda' => 'ഗണ്ട',
+    'Ganda' => 'ഗണ്ഡം',
     'Vriddhi' => 'വൃദ്ധി',
     'Dhruva' => 'ധ്രുവം',
     'Vyaghata' => 'വ്യാഘാതം',
@@ -18,7 +18,7 @@ return [
     'Vajra' => 'വജ്രം',
     'Siddhi' => 'സിദ്ധി',
     'Vyatipata' => 'വ്യതീപാതം',
-    'Variyana' => 'വരിയാനം',
+    'Variyana' => 'വരിയാൻ',
     'Parigha' => 'പരിഘം',
     'Shiva' => 'ശിവം',
     'Siddha' => 'സിദ്ധം',
@@ -26,6 +26,6 @@ return [
     'Shubha' => 'ശുഭം',
     'Shukla' => 'ശുക്ലം',
     'Brahma' => 'ബ്രഹ്മം',
-    'Indra' => 'ഇന്ദ്രം',
+    'Indra' => 'ഇന്ദ്രൻ',
     'Vaidhriti' => 'വൈധൃതി',
 ];

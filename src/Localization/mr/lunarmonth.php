@@ -1,16 +1,16 @@
 <?php
 
 return [
-    'Chaitra' => 'Chaitra',
-    'Vaishakha' => 'Vaishakh',
-    'Jyeshtha' => 'Jyeshtha',
-    'Ashadha' => 'Ashadh',
-    'Shravana' => 'Shravan',
-    'Bhadrapada' => 'Bhadrapad',
-    'Ashwina' => 'Ashwin',
-    'Kartika' => 'Kartik',
-    'Margashirsha' => 'Margashirsha',
-    'Pausha' => 'Pausha',
-    'Magha' => 'Magh',
-    'Phalguna' => 'Phalgun',
+    'Chaitra' => 'चैत्र',
+    'Vaishakha' => 'वैशाख',
+    'Jyeshtha' => 'ज्येष्ठ',
+    'Ashadha' => 'आषाढ',
+    'Shravana' => 'श्रावण',
+    'Bhadrapada' => 'भाद्रपद',
+    'Ashwina' => 'आश्विन',
+    'Kartika' => 'कार्तिक',
+    'Margashirsha' => 'मार्गशीर्ष',
+    'Pausha' => 'पौष',
+    'Magha' => 'माघ',
+    'Phalguna' => 'फाल्गुन',
 ];

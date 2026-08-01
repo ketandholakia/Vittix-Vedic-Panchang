@@ -9,7 +9,7 @@ return [
     'Bhadrapada' => 'ഭാദ്രപദം',
     'Ashwina' => 'ആശ്വിനം',
     'Kartika' => 'കാർത്തികം',
-    'Margashirsha' => 'മാർഗശീർഷം',
+    'Margashirsha' => 'മാർഗ്ഗശീർഷം',
     'Pausha' => 'പൗഷം',
     'Magha' => 'മാഘം',
     'Phalguna' => 'ഫാൽഗുനം',

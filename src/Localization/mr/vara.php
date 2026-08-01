@@ -1,11 +1,11 @@
 <?php
 
 return [
-    'Ravivara' => 'Ravivar',
-    'Somavara' => 'Somvar',
-    'Mangalavara' => 'Mangalvar',
-    'Budhavara' => 'Budhvar',
-    'Guruvara' => 'Guruvar',
-    'Shukravara' => 'Shukravar',
-    'Shanivara' => 'Shanivar',
+    'Ravivara' => 'रविवार',
+    'Somavara' => 'सोमवार',
+    'Mangalavara' => 'मंगळवार',
+    'Budhavara' => 'बुधवार',
+    'Guruvara' => 'गुरुवार',
+    'Shukravara' => 'शुक्रवार',
+    'Shanivara' => 'शनिवार',
 ];

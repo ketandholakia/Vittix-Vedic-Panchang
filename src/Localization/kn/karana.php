@@ -1,14 +1,14 @@
 <?php
 
 return [
-    'Kimstughna' => 'ಕಿಂಸ್ತುಘ್ನ',
     'Bava' => 'ಬವ',
     'Balava' => 'ಬಾಲವ',
     'Kaulava' => 'ಕೌಲವ',
     'Taitila' => 'ತೈತಿಲ',
-    'Garaja' => 'ಗರಜ',
-    'Vanija' => 'ವಾಣಿಜ',
+    'Garija' => 'ಗರಜ',
+    'Vanija' => 'ವಣಿಜ',
     'Vishti' => 'ವಿಷ್ಟಿ',
+    'Kimstughna' => 'ಕಿಂಸ್ತುಘ್ನ',
     'Shakuni' => 'ಶಕುನಿ',
     'Chatushpada' => 'ಚತುಷ್ಪಾದ',
     'Naga' => 'ನಾಗ',

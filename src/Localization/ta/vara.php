@@ -1,11 +1,11 @@
 <?php
 
 return [
-    'Ravivara' => 'Nyayitru Kizhamai',
-    'Somavara' => 'Thingal Kizhamai',
-    'Mangalavara' => 'Chevvai',
-    'Budhavara' => 'Budhan Kizhamai',
-    'Guruvara' => 'Vyazhan Kizhamai',
-    'Shukravara' => 'Velli Kizhamai',
-    'Shanivara' => 'Sani Kizhamai',
+    'Ravivara' => 'ஞாயிறு',
+    'Somavara' => 'திங்கள்',
+    'Mangalavara' => 'செவ்வாய்',
+    'Budhavara' => 'புதன்',
+    'Guruvara' => 'வியாழன்',
+    'Shukravara' => 'வெள்ளி',
+    'Shanivara' => 'சனி',
 ];

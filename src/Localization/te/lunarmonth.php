@@ -1,16 +1,16 @@
 <?php
 
 return [
-    'Chaitra' => 'చైత్ర',
-    'Vaishakha' => 'వైశాఖ',
-    'Jyeshtha' => 'జ్యేష్ఠ',
-    'Ashadha' => 'ఆషాఢ',
-    'Shravana' => 'శ్రావణ',
-    'Bhadrapada' => 'భాద్రపద',
-    'Ashwina' => 'ఆశ్వయుజ',
-    'Kartika' => 'కార్తిక',
-    'Margashirsha' => 'మార్గశిర',
-    'Pausha' => 'పౌష',
-    'Magha' => 'మాఘ',
-    'Phalguna' => 'ఫాల్గున',
+    'Chaitra' => 'చైత్రము',
+    'Vaishakha' => 'వైశాఖము',
+    'Jyeshtha' => 'జ్యేష్ఠము',
+    'Ashadha' => 'ఆషాఢము',
+    'Shravana' => 'శ్రావణము',
+    'Bhadrapada' => 'భాద్రపదము',
+    'Ashwina' => 'ఆశ్వయుజము',
+    'Kartika' => 'కార్తీకము',
+    'Margashirsha' => 'మార్గశిరము',
+    'Pausha' => 'పుష్యము',
+    'Magha' => 'మాఘము',
+    'Phalguna' => 'ఫాల్గుణము',
 ];

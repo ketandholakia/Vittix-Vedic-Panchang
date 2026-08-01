@@ -26,6 +26,6 @@ return [
     'Dhanishtha' => 'അവിട്ടം',
     'Shatabhisha' => 'ചതയം',
     'PurvaBhadrapada' => 'പൂരുരുട്ടാതി',
-    'UttaraBhadrapada' => 'ഉത്രട്ടാതി',
+    'UttaraBhadrapada' => 'ഉത്തൃട്ടാതി',
     'Revati' => 'രേവതി',
 ];

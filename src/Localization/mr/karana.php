@@ -1,15 +1,15 @@
 <?php
 
 return [
-    'Kimstughna' => 'Kimstughna',
-    'Bava' => 'Bava',
-    'Balava' => 'Balava',
-    'Kaulava' => 'Kaulava',
-    'Taitila' => 'Taitila',
-    'Garaja' => 'Garaja',
-    'Vanija' => 'Vanija',
-    'Vishti' => 'Vishti',
-    'Shakuni' => 'Shakuni',
-    'Chatushpada' => 'Chatushpada',
-    'Naga' => 'Naga',
+    'Bava' => 'बव',
+    'Balava' => 'बालव',
+    'Kaulava' => 'कौलव',
+    'Taitila' => 'तैतिल',
+    'Garija' => 'गर',
+    'Vanija' => 'वणिज',
+    'Vishti' => 'विष्टी',
+    'Kimstughna' => 'किंस्तुघ्न',
+    'Shakuni' => 'शकुनी',
+    'Chatushpada' => 'चतुष्पाद',
+    'Naga' => 'नाग',
 ];

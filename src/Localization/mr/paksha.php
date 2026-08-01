@@ -1,6 +1,6 @@
 <?php
 
 return [
-    'Shukla' => 'Shukla Paksha',
-    'Krishna' => 'Krishna Paksha',
+    'Shukla' => 'शुक्ल',
+    'Krishna' => 'कृष्ण',
 ];

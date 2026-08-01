@@ -8,9 +8,9 @@ return [
     'Shravana' => 'ಶ್ರಾವಣ',
     'Bhadrapada' => 'ಭಾದ್ರಪದ',
     'Ashwina' => 'ಆಶ್ವಯುಜ',
-    'Kartika' => 'ಕಾರ್ತಿಕ',
+    'Kartika' => 'ಕಾರ್ತೀಕ',
     'Margashirsha' => 'ಮಾರ್ಗಶಿರ',
-    'Pausha' => 'ಪೌಷ',
+    'Pausha' => 'ಪುಷ್ಯ',
     'Magha' => 'ಮಾಘ',
     'Phalguna' => 'ಫಾಲ್ಗುಣ',
 ];

@@ -9,7 +9,7 @@ return [
     'Ardra' => 'আর্দ্রা',
     'Punarvasu' => 'পুনর্বসু',
     'Pushya' => 'পুষ্যা',
-    'Ashlesha' => 'আশ্লেষা',
+    'Ashlesha' => 'অশ্লেষা',
     'Magha' => 'মঘা',
     'PurvaPhalguni' => 'পূর্ব ফাল্গুনী',
     'UttaraPhalguni' => 'উত্তর ফাল্গুনী',
@@ -25,7 +25,7 @@ return [
     'Shravana' => 'শ্রবণা',
     'Dhanishtha' => 'ধনিষ্ঠা',
     'Shatabhisha' => 'শতভিষা',
-    'PurvaBhadrapada' => 'পূর্বভাদ্রপদা',
-    'UttaraBhadrapada' => 'উত্তরভাদ্রপদা',
+    'PurvaBhadrapada' => 'পূর্ব ভাদ্রপদ',
+    'UttaraBhadrapada' => 'উত্তর ভাদ্রপদ',
     'Revati' => 'রেবতী',
 ];
