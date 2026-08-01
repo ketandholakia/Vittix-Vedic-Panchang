@@ -35,6 +35,7 @@ final class KundaliCalculator
         private readonly AstronomyEngineInterface $astronomy,
         private readonly AscendantCalculator $ascendantCalculator,
         private readonly DignityCalculator $dignityCalculator,
+        private readonly AspectCalculator $aspectCalculator,
     ) {
     }
 
@@ -54,12 +55,14 @@ final class KundaliCalculator
             $house = (($rashiIndex - $lagnaRashiIndex + 12) % 12) + 1;
 
             $dignity = $this->dignityCalculator->calculate($body, $rashi, $longitude);
+            $aspectsHouses = $this->aspectCalculator->calculateAspectedHouses($body, $house);
 
             $placements[$body->value] = new PlanetPlacement(
                 body: $body,
                 longitude: $longitude,
                 rashi: $rashi,
                 house: $house,
+                aspectsHouses: $aspectsHouses,
                 dignity: $dignity
             );
         }

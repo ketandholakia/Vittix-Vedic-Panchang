@@ -48,4 +48,40 @@ final class Kundali
             fn(PlanetPlacement $p) => $p->rashi === $rashi
         );
     }
+
+    /**
+     * Returns an array of PlanetPlacements that cast an aspect on the given house.
+     *
+     * @param int $house 1-12
+     * @return array<PlanetPlacement>
+     */
+    public function getPlanetsAspectingHouse(int $house): array
+    {
+        return array_filter(
+            $this->placements,
+            fn(PlanetPlacement $p) => in_array($house, $p->aspectsHouses, true)
+        );
+    }
+
+    /**
+     * Returns an array of PlanetPlacements that cast an aspect on the given planet.
+     *
+     * @return array<PlanetPlacement>
+     */
+    public function getPlanetsAspectingPlanet(Body $body): array
+    {
+        if (!isset($this->placements[$body->value])) {
+            return [];
+        }
+
+        $targetHouse = $this->placements[$body->value]->house;
+        
+        $aspectingPlanets = $this->getPlanetsAspectingHouse($targetHouse);
+
+        // A planet doesn't aspect itself
+        return array_filter(
+            $aspectingPlanets,
+            fn(PlanetPlacement $p) => $p->body !== $body
+        );
+    }
 }

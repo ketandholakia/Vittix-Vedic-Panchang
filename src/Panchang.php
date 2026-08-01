@@ -17,6 +17,7 @@ use Vittix\Panchang\Calendar\AdhikaMasaCalculator;
 use Vittix\Panchang\Calendar\LunarMonthCalculator;
 use Vittix\Panchang\Astrology\KundaliCalculator;
 use Vittix\Panchang\Astrology\DignityCalculator;
+use Vittix\Panchang\Astrology\AspectCalculator;
 use Vittix\Panchang\Panchanga\JanmarashiCalculator;
 use Vittix\Panchang\Panchanga\KaranaCalculator;
 use Vittix\Panchang\Panchanga\NakshatraCalculator;
@@ -131,7 +132,7 @@ final class Panchang
             $engine,
         );
 
-        $kundali = new KundaliCalculator($engine, $ascendant, new DignityCalculator());
+        $kundali = new KundaliCalculator($engine, $ascendant, new DignityCalculator(), new AspectCalculator());
 
         return new self($calculator, new JanmarashiCalculator($engine), $calendar, $ascendant, $kundali);
     }

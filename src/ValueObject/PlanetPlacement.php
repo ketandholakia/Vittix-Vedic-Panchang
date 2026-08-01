@@ -18,6 +18,8 @@ final class PlanetPlacement
         public readonly float $longitude,
         public readonly Rashi $rashi,
         public readonly int $house,
+        /** @var int[] */
+        public readonly array $aspectsHouses = [],
         public readonly ?Dignity $dignity = null,
     ) {
     }
