@@ -15,6 +15,7 @@ use Vittix\Panchang\Astronomy\Sidereal\SiderealTimeCalculator;
 use Vittix\Panchang\ValueObject\AscendantPosition;
 use Vittix\Panchang\Calendar\AdhikaMasaCalculator;
 use Vittix\Panchang\Calendar\LunarMonthCalculator;
+use Vittix\Panchang\Astrology\KundaliCalculator;
 use Vittix\Panchang\Panchanga\JanmarashiCalculator;
 use Vittix\Panchang\Panchanga\KaranaCalculator;
 use Vittix\Panchang\Panchanga\NakshatraCalculator;
@@ -27,6 +28,7 @@ use Vittix\Panchang\Time\AstroTimeFactory;
 use Vittix\Panchang\ValueObject\GeoLocation;
 use Vittix\Panchang\ValueObject\PanchangDay;
 use Vittix\Panchang\ValueObject\PanchangMoment;
+use Vittix\Panchang\ValueObject\Kundali;
 use Vittix\Panchang\Enum\Rashi;
 use Vittix\Panchang\Festivals\FestivalEngine;
 use Vittix\Panchang\Festivals\FestivalCatalog;
@@ -60,18 +62,21 @@ final class Panchang
     private readonly JanmarashiCalculator $janmarashi;
     private readonly HinduCalendarCalculator $calendar;
     private readonly AscendantCalculator $ascendant;
+    private readonly KundaliCalculator $kundali;
 
     private function __construct(
         PanchangaCalculator $calculator,
         JanmarashiCalculator $janmarashi,
         HinduCalendarCalculator $calendar,
         AscendantCalculator $ascendant,
+        KundaliCalculator $kundali,
     )
     {
         $this->calculator = $calculator;
         $this->janmarashi = $janmarashi;
         $this->calendar = $calendar;
         $this->ascendant = $ascendant;
+        $this->kundali = $kundali;
     }
 
     /**
@@ -125,7 +130,9 @@ final class Panchang
             $engine,
         );
 
-        return new self($calculator, new JanmarashiCalculator($engine), $calendar, $ascendant);
+        $kundali = new KundaliCalculator($engine, $ascendant);
+
+        return new self($calculator, new JanmarashiCalculator($engine), $calendar, $ascendant, $kundali);
     }
 
     /**
@@ -220,5 +227,16 @@ final class Panchang
         $instant = (new AstroTimeFactory())->fromDateTime($moment);
 
         return $this->ascendant->calculate($instant, $location);
+    }
+
+    /**
+     * Calculate the full Kundali (Birth Chart) for a specific moment and location.
+     * Includes the Ascendant and all planetary placements in their respective Rashis and Houses.
+     */
+    public function kundali(DateTimeImmutable $moment, GeoLocation $location): Kundali
+    {
+        $instant = (new AstroTimeFactory())->fromDateTime($moment);
+
+        return $this->kundali->calculate($instant, $location);
     }
 }

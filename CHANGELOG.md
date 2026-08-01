@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   computed from the Ω term already used internally for nutation. Supported
   through the existing `AstronomyEngineInterface` (`position()`,
   `tropicalLongitude()`, `siderealLongitude()`) like any other body.
+- Added `Astrology/KundaliCalculator` to map planetary positions to Rashis 
+  (Zodiac signs) and calculate houses using the Whole-Sign House system.
+- Exposed a new `kundali()` method on the main `Panchang` facade for 
+  generating complete birth charts.
 - Added `Astronomy/Sidereal/SiderealTimeCalculator` (Greenwich/Local Mean
   Sidereal Time), extracted from a private method previously duplicated
   only inside `SolarEventCalculator`.
