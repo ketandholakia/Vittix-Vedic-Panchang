@@ -22,6 +22,14 @@ use Vittix\Panchang\Time\AstroTimeFactory;
 use Vittix\Panchang\ValueObject\GeoLocation;
 use Vittix\Panchang\ValueObject\PanchangDay;
 use Vittix\Panchang\ValueObject\PanchangMoment;
+use Vittix\Panchang\Enum\Rashi;
+use Vittix\Panchang\Festivals\FestivalEngine;
+use Vittix\Panchang\Festivals\FestivalCatalog;
+use Vittix\Panchang\Muhurta\MuhurtaCalculator;
+use Vittix\Panchang\Electional\ElectionalEvaluator;
+use Vittix\Panchang\Calendar\HinduCalendarCalculator;
+use Vittix\Panchang\Calendar\SamvatCalculator;
+use Vittix\Panchang\Calendar\HinduCalendarResult;
 
 /**
  * Public facade for the Panchang engine.
@@ -45,14 +53,17 @@ final class Panchang
 {
     private readonly PanchangaCalculator $calculator;
     private readonly JanmarashiCalculator $janmarashi;
+    private readonly HinduCalendarCalculator $calendar;
 
     private function __construct(
         PanchangaCalculator $calculator,
         JanmarashiCalculator $janmarashi,
+        HinduCalendarCalculator $calendar,
     )
     {
         $this->calculator = $calculator;
         $this->janmarashi = $janmarashi;
+        $this->calendar = $calendar;
     }
 
     /**
@@ -93,7 +104,13 @@ final class Panchang
             adhikaMasaCalc:  $adhikaMasaCalc,
         );
 
-        return new self($calculator, new JanmarashiCalculator($engine));
+        $calendar = new HinduCalendarCalculator(
+            $lunarMonthCalc,
+            $adhikaMasaCalc,
+            new SamvatCalculator()
+        );
+
+        return new self($calculator, new JanmarashiCalculator($engine), $calendar);
     }
 
     /**
@@ -119,10 +136,59 @@ final class Panchang
     /**
      * Calculate the Janmarashi (Moon sign) at a specific moment.
      */
-    public function janmarashi(DateTimeImmutable $moment): \Vittix\Panchang\Enum\Rashi
+    public function janmarashi(DateTimeImmutable $moment): Rashi
     {
         $instant = (new AstroTimeFactory())->fromDateTime($moment);
 
         return $this->janmarashi->calculate($instant);
+    }
+
+    /**
+     * Get the underlying PanchangaCalculator.
+     */
+    public function calculator(): PanchangaCalculator
+    {
+        return $this->calculator;
+    }
+
+    /**
+     * Get the FestivalEngine pre-configured with default festivals.
+     */
+    public function festivals(): FestivalEngine
+    {
+        $muhurta = new MuhurtaCalculator();
+        $engine = new FestivalEngine($this->calculator);
+
+        foreach (FestivalCatalog::getDefaultFestivals($muhurta) as $festival) {
+            $engine->addFestival($festival);
+        }
+
+        return $engine;
+    }
+
+    /**
+     * Get a MuhurtaCalculator instance.
+     */
+    public function muhurta(): MuhurtaCalculator
+    {
+        return new MuhurtaCalculator();
+    }
+
+    /**
+     * Get an ElectionalEvaluator instance.
+     */
+    public function electional(): ElectionalEvaluator
+    {
+        return new ElectionalEvaluator();
+    }
+
+    /**
+     * Get the Hindu Calendar information (Samvat, Adhika Masa, etc) for a specific date.
+     */
+    public function calendar(DateTimeImmutable $date): HinduCalendarResult
+    {
+        $instant = (new AstroTimeFactory())->fromDateTime($date);
+
+        return $this->calendar->calculate($instant, $date->getTimezone());
     }
 }

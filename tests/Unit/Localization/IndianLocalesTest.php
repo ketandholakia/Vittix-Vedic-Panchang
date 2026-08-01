@@ -30,8 +30,8 @@ final class IndianLocalesTest extends TestCase
     {
         $translator = $this->translator();
 
-        self::assertSame('Ravivar', $translator->translate(Vara::Ravivara, 'mr'));
-        self::assertSame('Phalgun', $translator->translate(LunarMonth::Phalguna, 'mr'));
+        self::assertSame('रविवार', $translator->translate(Vara::Ravivara, 'mr'));
+        self::assertSame('फाल्गुन', $translator->translate(LunarMonth::Phalguna, 'mr'));
     }
 
     public function testTeluguLocalesLoad(): void

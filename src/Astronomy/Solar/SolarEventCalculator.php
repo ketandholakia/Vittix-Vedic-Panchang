@@ -218,7 +218,7 @@ final class SolarEventCalculator
                 break; // Avoid division by zero near meridian
             }
 
-        $h0Dip = (1.76 / 60.0) * sqrt((float) max(0, $location->elevationMeters));
+            $h0Dip = (1.76 / 60.0) * sqrt((float) max(0, $location->elevationMeters));
             $effectiveH0 = self::H0 - $h0Dip;
 
             $correction = ($altitude - $effectiveH0) / (360.0 * $denom);
