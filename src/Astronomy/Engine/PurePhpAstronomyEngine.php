@@ -15,6 +15,10 @@ use Vittix\Panchang\Astronomy\Lunar\LunarPositionCalculator;
 use Vittix\Panchang\Astronomy\Sidereal\LahiriAyanamsha;
 use Vittix\Panchang\Astronomy\Planetary\EarthPositionCalculator;
 use Vittix\Panchang\Astronomy\Planetary\MercuryTerms;
+use Vittix\Panchang\Astronomy\Planetary\VenusTerms;
+use Vittix\Panchang\Astronomy\Planetary\MarsTerms;
+use Vittix\Panchang\Astronomy\Planetary\JupiterTerms;
+use Vittix\Panchang\Astronomy\Planetary\SaturnTerms;
 use Vittix\Panchang\Astronomy\Planetary\PlanetPositionCalculator;
 use Vittix\Panchang\Astronomy\Solar\SolarEventCalculator;
 use Vittix\Panchang\Astronomy\Solar\SolarPositionCalculator;
@@ -43,6 +47,10 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
     private readonly SolarPositionCalculator $solarCalculator;
     private readonly LunarPositionCalculator $lunarCalculator;
     private readonly PlanetPositionCalculator $mercuryCalculator;
+    private readonly PlanetPositionCalculator $venusCalculator;
+    private readonly PlanetPositionCalculator $marsCalculator;
+    private readonly PlanetPositionCalculator $jupiterCalculator;
+    private readonly PlanetPositionCalculator $saturnCalculator;
     private readonly SolarEventCalculator    $solarEvents;
     private readonly NutationCalculator      $nutation;
     private readonly ObliquityCalculator     $obliquity;
@@ -63,11 +71,11 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
         $this->solarCalculator = new SolarPositionCalculator($this->nutation, $this->obliquity);
         
         $earth = new EarthPositionCalculator();
-        $this->mercuryCalculator = new PlanetPositionCalculator(
-            MercuryTerms::class,
-            $earth,
-            $this->nutation
-        );
+        $this->mercuryCalculator = new PlanetPositionCalculator(MercuryTerms::class, $earth, $this->nutation);
+        $this->venusCalculator = new PlanetPositionCalculator(VenusTerms::class, $earth, $this->nutation);
+        $this->marsCalculator = new PlanetPositionCalculator(MarsTerms::class, $earth, $this->nutation);
+        $this->jupiterCalculator = new PlanetPositionCalculator(JupiterTerms::class, $earth, $this->nutation);
+        $this->saturnCalculator = new PlanetPositionCalculator(SaturnTerms::class, $earth, $this->nutation);
 
         $this->lunarArguments  = new LunarArgumentCalculator();
         $this->lunarCalculator = new LunarPositionCalculator(
@@ -86,6 +94,10 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
                 Body::Sun      => $this->solarCalculator->calculate($instant),
                 Body::Moon     => $this->lunarCalculator->calculate($instant),
                 Body::Mercury  => $this->mercuryCalculator->calculate($instant),
+                Body::Venus    => $this->venusCalculator->calculate($instant),
+                Body::Mars     => $this->marsCalculator->calculate($instant),
+                Body::Jupiter  => $this->jupiterCalculator->calculate($instant),
+                Body::Saturn   => $this->saturnCalculator->calculate($instant),
                 Body::RahuMean => new EclipticPosition(
                     longitude: $this->lunarArguments->calculate($instant)['omega'],
                     latitude: 0.0,
