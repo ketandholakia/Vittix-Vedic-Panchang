@@ -62,4 +62,51 @@ final class VargaCalculatorTest extends TestCase
         // Since Ascendant is Leo and Sun is Leo, Sun should be in House 1
         $this->assertSame(1, $sunD9->house);
     }
+
+    public function testShodashamshaMapping(): void
+    {
+        $ascendant = new AscendantPosition(15.0, 15.0, Rashi::Mesha, 15.0); // 15 Aries
+        
+        $placements = [
+            Body::Moon->value => new PlanetPlacement(
+                body: Body::Moon,
+                longitude: 195.0, // 15 degrees Libra
+                rashi: Rashi::Tula,
+                house: 7
+            ),
+        ];
+        
+        $baseKundali = new Kundali($ascendant, $placements);
+
+        $d16Kundali = $this->calculator->calculate($baseKundali, Varga::D16);
+
+        // Moon is at 195 degrees. Rashi is 6 (Libra, Movable).
+        // Modality of Libra (6) is 6 % 3 = 0 (Movable). Starts from Aries (0).
+        // 15 degrees in sign / (30/16) = 15 / 1.875 = 8.
+        // Mapped index = (0 + 8) % 12 = 8 (Sagittarius).
+        $this->assertSame(Rashi::Dhanu, $d16Kundali->placements[Body::Moon->value]->rashi);
+    }
+
+    public function testShashtiamshaMapping(): void
+    {
+        $ascendant = new AscendantPosition(15.0, 15.0, Rashi::Mesha, 15.0); // 15 Aries
+        
+        $placements = [
+            Body::Mars->value => new PlanetPlacement(
+                body: Body::Mars,
+                longitude: 76.0, // 16 degrees Gemini
+                rashi: Rashi::Mithuna,
+                house: 3
+            ),
+        ];
+        
+        $baseKundali = new Kundali($ascendant, $placements);
+
+        $d60Kundali = $this->calculator->calculate($baseKundali, Varga::D60);
+
+        // Mars is at 76 degrees. Rashi is 2 (Gemini).
+        // 16 degrees in sign / 0.5 = 32.
+        // Mapped index = (2 + 32) % 12 = 34 % 12 = 10 (Aquarius).
+        $this->assertSame(Rashi::Kumbha, $d60Kundali->placements[Body::Mars->value]->rashi);
+    }
 }

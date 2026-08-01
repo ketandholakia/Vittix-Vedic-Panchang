@@ -9,6 +9,17 @@ use Vittix\Panchang\Astrology\Varga\DrekkanaMapping;
 use Vittix\Panchang\Astrology\Varga\HoraMapping;
 use Vittix\Panchang\Astrology\Varga\NavamshaMapping;
 use Vittix\Panchang\Astrology\Varga\RasiMapping;
+use Vittix\Panchang\Astrology\Varga\ChaturthamshaMapping;
+use Vittix\Panchang\Astrology\Varga\SaptamshaMapping;
+use Vittix\Panchang\Astrology\Varga\DwadashamshaMapping;
+use Vittix\Panchang\Astrology\Varga\ShodashamshaMapping;
+use Vittix\Panchang\Astrology\Varga\VimshamshaMapping;
+use Vittix\Panchang\Astrology\Varga\ChaturvimshamshaMapping;
+use Vittix\Panchang\Astrology\Varga\SaptavimshamshaMapping;
+use Vittix\Panchang\Astrology\Varga\TrimshamshaMapping;
+use Vittix\Panchang\Astrology\Varga\KhavedamshaMapping;
+use Vittix\Panchang\Astrology\Varga\AkshavedamshaMapping;
+use Vittix\Panchang\Astrology\Varga\ShashtiamshaMapping;
 use Vittix\Panchang\Astrology\Varga\VargaMappingInterface;
 use Vittix\Panchang\Enum\Varga;
 use Vittix\Panchang\ValueObject\AscendantPosition;
@@ -79,8 +90,19 @@ final class VargaCalculator
             Varga::D1 => new RasiMapping(),
             Varga::D2 => new HoraMapping(),
             Varga::D3 => new DrekkanaMapping(),
+            Varga::D4 => new ChaturthamshaMapping(),
+            Varga::D7 => new SaptamshaMapping(),
             Varga::D9 => new NavamshaMapping(),
             Varga::D10 => new DashamshaMapping(),
+            Varga::D12 => new DwadashamshaMapping(),
+            Varga::D16 => new ShodashamshaMapping(),
+            Varga::D20 => new VimshamshaMapping(),
+            Varga::D24 => new ChaturvimshamshaMapping(),
+            Varga::D27 => new SaptavimshamshaMapping(),
+            Varga::D30 => new TrimshamshaMapping(),
+            Varga::D40 => new KhavedamshaMapping(),
+            Varga::D45 => new AkshavedamshaMapping(),
+            Varga::D60 => new ShashtiamshaMapping(),
         };
     }
 }

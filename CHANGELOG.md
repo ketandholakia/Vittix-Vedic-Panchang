@@ -23,7 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `Astrology/VimshottariDashaCalculator` to generate the 120-year sequence
   of planetary periods (Mahadashas and Antardashas) based on the Moon's exact Nakshatra.
 - Added Divisional Charts (Vargas) generation (`Astrology/VargaCalculator`) with support for
-  D1 (Rasi), D2 (Hora), D3 (Drekkana), D9 (Navamsha), and D10 (Dashamsha).
+  all 16 traditional Parashari charts (Shodashvargas): D1, D2, D3, D4, D7, D9, D10, D12, 
+  D16, D20, D24, D27, D30, D40, D45, and D60.
 - Exposed a new `kundali()` method on the main `Panchang` facade for 
   generating complete birth charts.
 - Exposed a new `varga()` method on the main `Panchang` facade to get divisional charts.
