@@ -1,9 +1,33 @@
 {
     "name": "vittix/panchang",
-    "description": "Dependency-free Hindu Panchang calculation engine written in pure PHP. No FFI, no C libraries, no external binaries.",
-    "keywords": ["panchang", "hindu", "tithi", "nakshatra", "yoga", "karana", "vara", "vedic", "calendar", "astronomy"],
+    "description": "Vittix Vedic Panchang & Astrology Engine for PHP. Accurate Panchang, Kundli, and astrology calculations without native extensions.",
+    "keywords": [
+        "vedic",
+        "panchang",
+        "hindu",
+        "calendar",
+        "astrology",
+        "kundli",
+        "horoscope",
+        "jyotish",
+        "laravel",
+        "php"
+    ],
+    "homepage": "https://github.com/ketandholakia/Vittix-Vedic-Panchang",
+    "support": {
+        "issues": "https://github.com/ketandholakia/Vittix-Vedic-Panchang/issues",
+        "source": "https://github.com/ketandholakia/Vittix-Vedic-Panchang"
+    },
     "type": "library",
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Vittix Panchang Dev",
+            "email": "dev@vittix.local",
+            "homepage": "https://github.com/ketandholakia",
+            "role": "Developer"
+        }
+    ],
     "require": {
         "php": "^8.2 || ^8.3 || ^8.4"
     },

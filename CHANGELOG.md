@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-08-04
+
 ### Added
 - Added `Body::Mercury`, `Body::Venus`, `Body::Mars`, `Body::Jupiter`, and `Body::Saturn` support in the astronomy engine, utilizing truncated VSOP87 theory to achieve highly accurate planetary positions without large data file dependencies.
 - Added a shared `PlanetPositionCalculator` capable of computing apparent geocentric coordinates (with full light-time correction and precession/nutation) from the VSOP87 series. This lays the groundwork for remaining planets.
@@ -14,26 +16,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   computed from the Ω term already used internally for nutation. Supported
   through the existing `AstronomyEngineInterface` (`position()`,
   `tropicalLongitude()`, `siderealLongitude()`) like any other body.
-- Added `Astrology/DignityCalculator` to evaluate planetary strength (Exalted, 
+- Added `Astrology/DignityCalculator` to evaluate planetary strength (Exalted,
   Moolatrikona, Own Sign, Debilitated) and integrated it into the Kundali.
 - Added `Astrology/AspectCalculator` to evaluate Planetary Aspects (Drishti).
   Integrated into the Kundali to calculate which houses a planet aspects.
-- Added `Astrology/KundaliCalculator` to map planetary positions to Rashis 
+- Added `Astrology/KundaliCalculator` to map planetary positions to Rashis
   (Zodiac signs) and calculate houses using the Whole-Sign House system.
-- Added `Astrology/VimshottariDashaCalculator` to generate the 120-year sequence
+- Added `Astrology/VimshottariDashaCalculator` to generate the 120-year sequence.
 - Added `Astrology/ShadbalaCalculator` for computing the Six-fold Planetary
-  Strength (Shadbala). Includes Naisargika (Natural), Dik (Directional), Sthana 
+  Strength (Shadbala). Includes Naisargika (Natural), Dik (Directional), Sthana
   (Positional), Ayana (Equinoctial), and Chesta (Motional) Balas.
 - Added a `YogaDetector` rules engine to scan birth charts for classical planetary
-  combinations. Currently supports the Pancha Mahapurusha Yogas (Ruchaka, Bhadra, 
+  combinations. Currently supports the Pancha Mahapurusha Yogas (Ruchaka, Bhadra,
   Hamsa, Malavya, Sasha) and Gajakesari Yoga.
 - Exposed `shadbala()` and `yogas()` methods on the main `Panchang` facade.
 - Expanded `AstronomyEngineInterface` with `equatorialPosition()` (Right Ascension/
   Declination) and `dailyMotion()` primitives.
 - Added Divisional Charts (Vargas) generation (`Astrology/VargaCalculator`) with support for
-  all 16 traditional Parashari charts (Shodashvargas): D1, D2, D3, D4, D7, D9, D10, D12, 
+  all 16 traditional Parashari charts (Shodashvargas): D1, D2, D3, D4, D7, D9, D10, D12,
   D16, D20, D24, D27, D30, D40, D45, and D60.
-- Exposed a new `kundali()` method on the main `Panchang` facade for 
+- Exposed a new `kundali()` method on the main `Panchang` facade for
   generating complete birth charts.
 - Exposed a new `varga()` method on the main `Panchang` facade to get divisional charts.
 - Exposed a new `vimshottariDasha()` method on the main `Panchang` facade.
