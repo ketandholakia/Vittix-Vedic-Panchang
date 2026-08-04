@@ -2,6 +2,8 @@
 
 Accurate Vedic Panchang, Kundli, Astrology, Muhurta, and Festival calculations for PHP & Laravel.
 
+Official demo: https://hindutithi.in/
+
 ## Features
 
 ### Panchang

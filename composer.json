@@ -16,7 +16,8 @@
     "homepage": "https://github.com/ketandholakia/Vittix-Vedic-Panchang",
     "support": {
         "issues": "https://github.com/ketandholakia/Vittix-Vedic-Panchang/issues",
-        "source": "https://github.com/ketandholakia/Vittix-Vedic-Panchang"
+        "source": "https://github.com/ketandholakia/Vittix-Vedic-Panchang",
+        "docs": "https://hindutithi.in/"
     },
     "type": "library",
     "license": "MIT",
