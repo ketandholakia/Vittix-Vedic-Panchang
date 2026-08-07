@@ -58,11 +58,18 @@ echo $day->tithiAtSunrise->nameEnglish();
 - [Kundli](docs/kundli.md)
 - [Astrology](docs/astrology.md)
 - [API](docs/api.md)
+- [JSON API Schema](docs/json-api.md)
 - [Accuracy](docs/accuracy.md)
 - [Examples](docs/examples/README.md)
 
 ## Public API
 
+### JSON / REST APIs
+- `PanchangService::createDefault()`
+- `PanchangService::getForDate(DateTimeImmutable $date, GeoLocation $location)`
+- `PanchangService::getAstronomyReport(DateTimeImmutable $date, GeoLocation $location)`
+
+### Object-Oriented APIs
 - `Panchang::createDefault()`
 - `Panchang::create(AstronomyEngineInterface $engine)`
 - `Panchang::day(DateTimeImmutable $date, GeoLocation $location)`

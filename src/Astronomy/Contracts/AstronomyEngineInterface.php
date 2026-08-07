@@ -11,6 +11,7 @@ use Vittix\Panchang\ValueObject\AstroInstant;
 use Vittix\Panchang\ValueObject\EclipticPosition;
 use Vittix\Panchang\ValueObject\EquatorialPosition;
 use Vittix\Panchang\ValueObject\GeoLocation;
+use Vittix\Panchang\ValueObject\LunarEvents;
 use Vittix\Panchang\ValueObject\SolarEvents;
 
 /**
@@ -88,4 +89,34 @@ interface AstronomyEngineInterface
         GeoLocation $location,
         DateTimeZone $timezone
     ): SolarEvents;
+
+    /**
+     * Moonrise, lunar transit, and moonset for a given civil date, observer
+     * location, and local timezone.
+     *
+     * All values in the returned LunarEvents may be null because the Moon's
+     * synodic period exceeds 24 hours, so on some days the Moon may not
+     * rise or set. At extreme latitudes, both may be absent.
+     *
+     * The convention used is:
+     *   • Apparent horizon altitude h₀ = 0.7275 × π − 0°34′ where π is the
+     *     Moon's horizontal parallax. For mean parallax, h₀ ≈ +0.125°.
+     */
+    public function lunarEvents(
+        DateTimeImmutable $localDate,
+        GeoLocation $location,
+        DateTimeZone $timezone
+    ): LunarEvents;
+
+    /**
+     * Local Mean Sidereal Time in degrees [0, 360) at a given moment
+     * and observer location.
+     *
+     * This is the angle from the vernal equinox to the observer's local
+     * meridian, measured westward along the celestial equator.
+     */
+    public function siderealTime(
+        AstroInstant $instant,
+        GeoLocation $location
+    ): float;
 }

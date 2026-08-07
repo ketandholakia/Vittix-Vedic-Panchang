@@ -11,8 +11,10 @@ use Vittix\Panchang\Astronomy\Contracts\AyanamshaCalculatorInterface;
 use Vittix\Panchang\Astronomy\Coordinates\NutationCalculator;
 use Vittix\Panchang\Astronomy\Coordinates\ObliquityCalculator;
 use Vittix\Panchang\Astronomy\Lunar\LunarArgumentCalculator;
+use Vittix\Panchang\Astronomy\Lunar\LunarEventCalculator;
 use Vittix\Panchang\Astronomy\Lunar\LunarPositionCalculator;
 use Vittix\Panchang\Astronomy\Sidereal\LahiriAyanamsha;
+use Vittix\Panchang\Astronomy\Sidereal\SiderealTimeCalculator;
 use Vittix\Panchang\Astronomy\Planetary\EarthPositionCalculator;
 use Vittix\Panchang\Astronomy\Planetary\MercuryTerms;
 use Vittix\Panchang\Astronomy\Planetary\VenusTerms;
@@ -28,6 +30,7 @@ use Vittix\Panchang\ValueObject\AstroInstant;
 use Vittix\Panchang\ValueObject\EclipticPosition;
 use Vittix\Panchang\ValueObject\EquatorialPosition;
 use Vittix\Panchang\ValueObject\GeoLocation;
+use Vittix\Panchang\ValueObject\LunarEvents;
 use Vittix\Panchang\ValueObject\SolarEvents;
 
 /**
@@ -53,6 +56,8 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
     private readonly PlanetPositionCalculator $jupiterCalculator;
     private readonly PlanetPositionCalculator $saturnCalculator;
     private readonly SolarEventCalculator    $solarEvents;
+    private readonly LunarEventCalculator    $lunarEvents;
+    private readonly SiderealTimeCalculator  $siderealTimeCalc;
     private readonly NutationCalculator      $nutation;
     private readonly ObliquityCalculator     $obliquity;
 
@@ -84,6 +89,11 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
             $this->nutation,
         );
         $this->solarEvents = new SolarEventCalculator($this->solarCalculator);
+        $this->siderealTimeCalc = new SiderealTimeCalculator();
+        // LunarEventCalculator is constructed lazily via lunarEvents() because
+        // it depends on $this (the engine itself) — creating it in the
+        // constructor would pass an incompletely initialised instance.
+        $this->lunarEvents = new LunarEventCalculator($this, $this->siderealTimeCalc);
     }
 
     public function position(Body $body, AstroInstant $instant): EclipticPosition
@@ -180,6 +190,24 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
         DateTimeZone $timezone
     ): SolarEvents {
         return $this->solarEvents->calculate($localDate, $location, $timezone);
+    }
+
+    public function lunarEvents(
+        DateTimeImmutable $localDate,
+        GeoLocation $location,
+        DateTimeZone $timezone
+    ): LunarEvents {
+        return $this->lunarEvents->calculate($localDate, $location, $timezone);
+    }
+
+    public function siderealTime(
+        AstroInstant $instant,
+        GeoLocation $location
+    ): float {
+        return $this->siderealTimeCalc->localMeanSiderealTime(
+            $instant->julianDayUt,
+            $location->longitude
+        );
     }
 
     /**

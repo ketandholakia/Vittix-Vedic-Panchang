@@ -61,5 +61,15 @@ final class MockAstronomyEngine implements AstronomyEngineInterface
     {
         return 1.0;
     }
+
+    public function lunarEvents(DateTimeImmutable $localDate, GeoLocation $location, DateTimeZone $timezone): \Vittix\Panchang\ValueObject\LunarEvents
+    {
+        return new \Vittix\Panchang\ValueObject\LunarEvents(null, null, null);
+    }
+
+    public function siderealTime(AstroInstant $instant, GeoLocation $location): float
+    {
+        return 0.0;
+    }
 }
 

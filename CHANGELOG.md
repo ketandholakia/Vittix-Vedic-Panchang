@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-08-07
+
+### Added
+- Phase 1 Core Foundation APIs for external integration.
+- `PanchangService` class providing a composed engine for structured JSON API outputs (`getForDate()`, `getAstronomyReport()`).
+- `AstronomyResult` and `PanchangResult` DTOs with JSON serialization support (`toJson()`, `toArray()`).
+- `LunarEventCalculator` for accurate Moonrise/Moonset and transit calculations.
+- `HinduCalendarCalculator` enhancements for Vikram Samvat, Shaka Samvat, and Gujarati calendar edge cases.
+- Added extensive unit and integration tests against real-world references (USNO) and edge cases across multiple global locations.
+
 ## [2.0.0] - 2026-08-04
 
 ### Added

@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Vittix\Panchang\Enum\CalendarSystem;
 use Vittix\Panchang\Enum\LunarMonth;
+use Vittix\Panchang\Enum\SolarMonth;
 use Vittix\Panchang\ValueObject\AstroInstant;
 
 /**
@@ -24,6 +25,8 @@ final readonly class HinduCalendarResult
         public readonly ?DateTimeImmutable  $nextFullMoon,
         public readonly int                 $vikramSamvat,
         public readonly int                 $shakaSamvat,
+        public readonly int                 $gujaratiSamvat,
+        public readonly ?SolarMonth         $solarMonth,
     ) {
     }
 }
@@ -82,6 +85,8 @@ final class HinduCalendarCalculator
             nextFullMoon: $nextFm->utc->setTimezone($timezone),
             vikramSamvat: $this->samvat->vikramSamvat($gregorianDate),
             shakaSamvat: $this->samvat->shakaSamvat($gregorianDate),
+            gujaratiSamvat: $this->samvat->gujaratiSamvat($gregorianDate),
+            solarMonth: null, // Solar month requires the astronomy engine; set by PanchangService
         );
     }
 

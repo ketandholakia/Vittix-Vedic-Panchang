@@ -59,4 +59,63 @@ final readonly class PanchangDay
         public readonly AccuracyInfo       $accuracy,
     ) {
     }
+
+    /**
+     * Convert to a structured array suitable for JSON encoding.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'date' => $this->date->format('Y-m-d'),
+            'timezone' => $this->timezone->getName(),
+            'location' => [
+                'latitude' => round($this->location->latitude, 4),
+                'longitude' => round($this->location->longitude, 4),
+                'elevation' => $this->location->elevationMeters,
+            ],
+            'sunrise' => $this->solarEvents->sunrise?->format('H:i:s'),
+            'solarNoon' => $this->solarEvents->solarNoon?->format('H:i:s'),
+            'sunset' => $this->solarEvents->sunset?->format('H:i:s'),
+            'tithi' => [
+                'name' => $this->tithiAtSunrise->nameEnglish(),
+                'paksha' => $this->paksha->name,
+                'endsAt' => $this->tithiEndsAt?->format('H:i:s'),
+            ],
+            'tithiSecond' => $this->tithiSecond !== null ? [
+                'name' => $this->tithiSecond->nameEnglish(),
+                'endsAt' => $this->tithiSecondEndsAt?->format('H:i:s'),
+            ] : null,
+            'nakshatra' => [
+                'name' => $this->nakshatraAtSunrise->nameEnglish(),
+                'pada' => $this->padaAtSunrise,
+                'endsAt' => $this->nakshatraEndsAt?->format('H:i:s'),
+            ],
+            'yoga' => [
+                'name' => $this->yogaAtSunrise->nameEnglish(),
+                'endsAt' => $this->yogaEndsAt?->format('H:i:s'),
+            ],
+            'karana' => [
+                'name' => $this->karanaAtSunrise->nameEnglish(),
+                'endsAt' => $this->karanaEndsAt?->format('H:i:s'),
+            ],
+            'vara' => $this->vara->nameEnglish(),
+            'lunarMonth' => $this->lunarMonth?->nameEnglish(),
+            'isAdhikaMasa' => $this->isAdhikaMasa,
+            'accuracy' => [
+                'nearBoundary' => $this->accuracy->nearBoundary,
+                'estimatedErrorDegrees' => $this->accuracy->estimatedAngularErrorDegrees,
+                'estimatedErrorSeconds' => $this->accuracy->estimatedTimeErrorSeconds,
+            ],
+        ];
+    }
+
+    /**
+     * Serialize to JSON.
+     */
+    public function toJson(int $options = JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE): string
+    {
+        return json_encode($this->toArray(), $options) ?: '{}';
+    }
 }

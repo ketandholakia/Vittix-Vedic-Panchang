@@ -1,8 +1,14 @@
 # API
 
-The central entry point is `Vittix\Panchang\Panchang`.
+The central entry points are `Vittix\Panchang\Panchanga\PanchangService` and `Vittix\Panchang\Panchang`.
 
-Common methods:
+Common `PanchangService` methods (ideal for JSON APIs):
+
+- `PanchangService::createDefault()`
+- `PanchangService::getForDate(DateTimeImmutable $date, GeoLocation $location)`
+- `PanchangService::getAstronomyReport(DateTimeImmutable $date, GeoLocation $location)`
+
+Common `Panchang` methods (ideal for internal object-oriented use):
 
 - `Panchang::createDefault()`
 - `Panchang::create(AstronomyEngineInterface $engine)`

@@ -1,5 +1,6 @@
 {
     "name": "vittix/panchang",
+    "version": "2.1.0",
     "description": "Vittix Vedic Panchang & Astrology Engine for PHP. Accurate Panchang, Kundli, and astrology calculations without native extensions.",
     "keywords": [
         "vedic",
