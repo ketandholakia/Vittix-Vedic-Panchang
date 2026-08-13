@@ -56,7 +56,6 @@ final class LunarEventCalculatorTest extends TestCase
         }
 
         // The test primarily verifies no exceptions are thrown
-        self::assertTrue(true);
     }
 
     /**

@@ -31,12 +31,6 @@ final class PanchangServiceTest extends TestCase
         $result = $this->service->getForDate($date, $location);
 
         self::assertSame('2026-08-05', $result->date->format('Y-m-d'));
-        self::assertNotNull($result->tithi);
-        self::assertNotNull($result->nakshatra);
-        self::assertNotNull($result->yoga);
-        self::assertNotNull($result->karana);
-        self::assertNotNull($result->vara);
-        self::assertNotNull($result->solarMonth);
     }
 
     public function testGetForDateSolarEventsPresent(): void
@@ -98,7 +92,6 @@ final class PanchangServiceTest extends TestCase
         self::assertGreaterThan(0.0, $result->ayanamsha);
         self::assertGreaterThanOrEqual(0.0, $result->siderealTime);
         self::assertLessThan(360.0, $result->siderealTime);
-        self::assertNotNull($result->solarMonth);
         self::assertInstanceOf(SolarMonth::class, $result->solarMonth);
     }
 

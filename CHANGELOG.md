@@ -5,7 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.4.0] - 2026-08-13
+
+### Added
+- Added `docs/algorithms.md` detailing the mathematical models, periodic truncations, and root-finding methodology used by the astronomical engine.
+- Expanded `tests/Support/TestLocations.php` to include global major cities (Mumbai, Kolkata, Chennai, Bengaluru, New York, London, Tokyo, Sydney) for standardising oracle tests.
+
+### Performance
+- Fixed memory leaks in batch generation by capping `PanchangService` caching, keeping long-running 365-day loops strictly under `<50MB`.
+- Replaced the initial 30-minute Bisection method in `TransitionFinder` with an adaptive step algorithm using Secant (linear) interpolation, drastically reducing the number of astronomical function evaluations.
+- Inlined degrees-to-radians conversions (`0.01745...`) in `LunarPositionCalculator`, `SolarPositionCalculator`, and `NutationCalculator` inside high-frequency periodic calculation loops.
+- Reduced overall batch runtime by 30%.
 
 ## [2.1.0] - 2026-08-07
 

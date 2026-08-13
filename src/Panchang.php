@@ -9,9 +9,13 @@ use Vittix\Panchang\Astronomy\Engine\PurePhpAstronomyEngine;
 use Vittix\Panchang\Enum\Body;
 use Vittix\Panchang\Astronomy\Contracts\AstronomyEngineInterface;
 use Vittix\Panchang\Astronomy\Coordinates\AscendantCalculator;
+use Psr\SimpleCache\CacheInterface;
 use Vittix\Panchang\Astronomy\Coordinates\NutationCalculator;
 use Vittix\Panchang\Astronomy\Coordinates\ObliquityCalculator;
 use Vittix\Panchang\Astronomy\Sidereal\SiderealTimeCalculator;
+use Vittix\Panchang\Astronomy\Sidereal\LahiriAyanamsha;
+use Vittix\Panchang\Astronomy\Sidereal\RamanAyanamsha;
+use Vittix\Panchang\Astronomy\Sidereal\KrishnamurtiAyanamsha;
 use Vittix\Panchang\ValueObject\AscendantPosition;
 use Vittix\Panchang\Calendar\AdhikaMasaCalculator;
 use Vittix\Panchang\Calendar\LunarMonthCalculator;
@@ -44,6 +48,7 @@ use Vittix\Panchang\ValueObject\DashaPeriod;
 use Vittix\Panchang\ValueObject\Shadbala\Shadbala;
 use Vittix\Panchang\Enum\Rashi;
 use Vittix\Panchang\Enum\Varga;
+use Vittix\Panchang\Enum\AyanamshaSystem;
 use Vittix\Panchang\Festivals\FestivalEngine;
 use Vittix\Panchang\Festivals\FestivalCatalog;
 use Vittix\Panchang\Muhurta\MuhurtaCalculator;
@@ -114,9 +119,11 @@ final class Panchang
      * No arguments required. Works on any PHP 8.2+ installation without
      * extensions, native libraries, or network access.
      */
-    public static function createDefault(): self
-    {
-        $engine = new PurePhpAstronomyEngine();
+    public static function createDefault(
+        AyanamshaSystem $ayanamshaSystem = AyanamshaSystem::Lahiri,
+        ?CacheInterface $cache = null
+    ): self {
+        $engine = \Vittix\Panchang\Astronomy\Engine\EngineFactory::createPurePhpEngine($ayanamshaSystem, $cache);
 
         return self::create($engine);
     }

@@ -24,6 +24,7 @@ final class VimshamshaMapping implements VargaMappingInterface
             0 => 0, // Movable signs start from Aries (0)
             1 => 8, // Fixed signs start from Sagittarius (8)
             2 => 4, // Dual signs start from Leo (4)
+            default => throw new \LogicException('Unreachable element type')
         };
         
         $mappedIndex = ($startSign + $partIndex) % 12;

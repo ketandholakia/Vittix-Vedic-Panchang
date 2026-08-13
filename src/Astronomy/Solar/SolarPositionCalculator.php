@@ -78,8 +78,10 @@ final class SolarPositionCalculator
 
         $lon = $pos->longitude;
 
-        $y = Angle::sin($lon) * Angle::cos($eps);
-        $x = Angle::cos($lon);
+        $lonRad = $lon * 0.017453292519943295;
+        $epsRad = $eps * 0.017453292519943295;
+        $y = sin($lonRad) * cos($epsRad);
+        $x = cos($lonRad);
 
         return Angle::normalize(Angle::atan2($y, $x));
     }
@@ -92,7 +94,9 @@ final class SolarPositionCalculator
         $pos = $this->calculate($instant);
         $eps = $this->obliquity->true($instant);
 
-        $sinDec = Angle::sin($pos->longitude) * Angle::sin($eps);
+        $lonRad = $pos->longitude * 0.017453292519943295;
+        $epsRad = $eps * 0.017453292519943295;
+        $sinDec = sin($lonRad) * sin($epsRad);
 
         return Angle::asin($sinDec);
     }
@@ -116,9 +120,10 @@ final class SolarPositionCalculator
         );
 
         // Equation of centre
-        $c = (1.914602 - 0.004817 * $t - 0.000014 * $t ** 2) * Angle::sin($m)
-           + (0.019993 - 0.000101 * $t) * Angle::sin(2.0 * $m)
-           +  0.000289 * Angle::sin(3.0 * $m);
+        $mRad = $m * 0.017453292519943295;
+        $c = (1.914602 - 0.004817 * $t - 0.000014 * $t ** 2) * sin($mRad)
+           + (0.019993 - 0.000101 * $t) * sin(2.0 * $mRad)
+           +  0.000289 * sin(3.0 * $mRad);
 
         // Sun's true longitude
         $sunLon = $l0 + $c;
@@ -143,10 +148,11 @@ final class SolarPositionCalculator
         $e = Polynomial::evaluate($t, 0.016708634, -0.000042037, -0.0000001267);
 
         // Sun's anomaly
-        $v = $m + (1.9146 - 0.004817 * $t - 0.000014 * $t ** 2) * Angle::sin($m)
-               + (0.019993 - 0.000101 * $t) * Angle::sin(2.0 * $m)
-               +  0.00029 * Angle::sin(3.0 * $m);
+        $mRad = $m * 0.017453292519943295;
+        $v = $m + (1.9146 - 0.004817 * $t - 0.000014 * $t ** 2) * sin($mRad)
+               + (0.019993 - 0.000101 * $t) * sin(2.0 * $mRad)
+               +  0.00029 * sin(3.0 * $mRad);
 
-        return 1.000001018 * (1.0 - $e ** 2) / (1.0 + $e * Angle::cos($v));
+        return 1.000001018 * (1.0 - $e ** 2) / (1.0 + $e * cos($v * 0.017453292519943295));
     }
 }

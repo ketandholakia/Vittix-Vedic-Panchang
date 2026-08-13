@@ -139,8 +139,9 @@ final class NutationCalculator
 
         foreach (self::TERMS as $row) {
             $arg = $row[0] * $d + $row[1] * $m + $row[2] * $mp + $row[3] * $f + $row[4] * $om;
-            $sinArg = Angle::sin($arg);
-            $cosArg = Angle::cos($arg);
+            $argRad = $arg * 0.017453292519943295;
+            $sinArg = sin($argRad);
+            $cosArg = cos($argRad);
 
             $deltaPsi += ($row[5] + $row[6] * $t) * 0.0001 * $sinArg;
             $deltaEps += ($row[7] + $row[8] * $t) * 0.0001 * $cosArg;

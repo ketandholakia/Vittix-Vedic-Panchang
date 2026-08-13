@@ -1,5 +1,7 @@
 # Vittix Vedic Panchang & Astrology Engine
 
+[![PHP CI](https://github.com/ketandholakia/Vittix-Vedic-Panchang/actions/workflows/php.yml/badge.svg)](https://github.com/ketandholakia/Vittix-Vedic-Panchang/actions/workflows/php.yml)
+
 Accurate Vedic Panchang, Kundli, Astrology, Muhurta, and Festival calculations for PHP & Laravel.
 
 Official demo: https://hindutithi.in/

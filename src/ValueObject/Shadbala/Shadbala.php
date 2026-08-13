@@ -10,7 +10,7 @@ namespace Vittix\Panchang\ValueObject\Shadbala;
 final class Shadbala
 {
     /**
-     * @param array<int, ShadbalaValues> $planets Indexed by Body value (e.g. Body::Sun->value)
+     * @param array<string, ShadbalaValues> $planets Indexed by Body value (e.g. Body::Sun->value)
      */
     public function __construct(
         public readonly array $planets

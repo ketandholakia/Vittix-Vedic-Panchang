@@ -55,6 +55,7 @@ final readonly class PanchangDay
         public readonly ?LunarMonth        $lunarMonth,
         public readonly Paksha             $paksha,
         public readonly bool               $isAdhikaMasa,
+        public readonly bool               $isKshayaMasa,
 
         public readonly AccuracyInfo       $accuracy,
     ) {
@@ -103,6 +104,7 @@ final readonly class PanchangDay
             'vara' => $this->vara->nameEnglish(),
             'lunarMonth' => $this->lunarMonth?->nameEnglish(),
             'isAdhikaMasa' => $this->isAdhikaMasa,
+            'isKshayaMasa' => $this->isKshayaMasa,
             'accuracy' => [
                 'nearBoundary' => $this->accuracy->nearBoundary,
                 'estimatedErrorDegrees' => $this->accuracy->estimatedAngularErrorDegrees,

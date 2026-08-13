@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Vittix\Panchang\Astronomy\Contracts\AstronomyEngineInterface;
 use Vittix\Panchang\Astronomy\Contracts\AyanamshaCalculatorInterface;
+use Psr\SimpleCache\CacheInterface;
 use Vittix\Panchang\Astronomy\Coordinates\NutationCalculator;
 use Vittix\Panchang\Astronomy\Coordinates\ObliquityCalculator;
 use Vittix\Panchang\Astronomy\Lunar\LunarArgumentCalculator;
@@ -71,6 +72,7 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
 
     public function __construct(
         private readonly AyanamshaCalculatorInterface $ayanamsha = new LahiriAyanamsha(),
+        private readonly ?CacheInterface $cache = null,
     ) {
         $this->nutation       = new NutationCalculator();
         $this->obliquity      = new ObliquityCalculator($this->nutation);
@@ -90,41 +92,50 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
         );
         $this->solarEvents = new SolarEventCalculator($this->solarCalculator);
         $this->siderealTimeCalc = new SiderealTimeCalculator();
-        // LunarEventCalculator is constructed lazily via lunarEvents() because
-        // it depends on $this (the engine itself) — creating it in the
-        // constructor would pass an incompletely initialised instance.
-        $this->lunarEvents = new LunarEventCalculator($this, $this->siderealTimeCalc);
+        // LunarEventCalculator no longer depends on $this, so it can be fully initialized here.
+        $this->lunarEvents = new LunarEventCalculator($this->lunarCalculator, $this->obliquity, $this->siderealTimeCalc);
     }
 
     public function position(Body $body, AstroInstant $instant): EclipticPosition
     {
         $key = $this->positionKey($body, $instant);
 
-        if (!isset($this->positionCache[$key])) {
-            $this->positionCache[$key] = match ($body) {
-                Body::Sun      => $this->solarCalculator->calculate($instant),
-                Body::Moon     => $this->lunarCalculator->calculate($instant),
-                Body::Mercury  => $this->mercuryCalculator->calculate($instant),
-                Body::Venus    => $this->venusCalculator->calculate($instant),
-                Body::Mars     => $this->marsCalculator->calculate($instant),
-                Body::Jupiter  => $this->jupiterCalculator->calculate($instant),
-                Body::Saturn   => $this->saturnCalculator->calculate($instant),
-                Body::RahuMean => new EclipticPosition(
-                    longitude: $this->lunarArguments->calculate($instant)['omega'],
-                    latitude: 0.0,
-                    distance: 0.0,
-                ),
-                Body::KetuMean => new EclipticPosition(
-                    longitude: Angle::normalize(
-                        $this->lunarArguments->calculate($instant)['omega'] + 180.0
-                    ),
-                    latitude: 0.0,
-                    distance: 0.0,
-                ),
-            };
+        if (isset($this->positionCache[$key])) {
+            return $this->positionCache[$key];
         }
 
-        return $this->positionCache[$key];
+        if ($this->cache !== null && $this->cache->has($key)) {
+            return $this->cache->get($key);
+        }
+
+        $position = match ($body) {
+            Body::Sun      => $this->solarCalculator->calculate($instant),
+            Body::Moon     => $this->lunarCalculator->calculate($instant),
+            Body::Mercury  => $this->mercuryCalculator->calculate($instant),
+            Body::Venus    => $this->venusCalculator->calculate($instant),
+            Body::Mars     => $this->marsCalculator->calculate($instant),
+            Body::Jupiter  => $this->jupiterCalculator->calculate($instant),
+            Body::Saturn   => $this->saturnCalculator->calculate($instant),
+            Body::RahuMean => new EclipticPosition(
+                longitude: $this->lunarArguments->calculate($instant)['omega'],
+                latitude: 0.0,
+                distance: 0.0,
+            ),
+            Body::KetuMean => new EclipticPosition(
+                longitude: Angle::normalize(
+                    $this->lunarArguments->calculate($instant)['omega'] + 180.0
+                ),
+                latitude: 0.0,
+                distance: 0.0,
+            ),
+        };
+
+        $this->positionCache[$key] = $position;
+        if ($this->cache !== null) {
+            $this->cache->set($key, $position);
+        }
+
+        return $position;
     }
 
     public function tropicalLongitude(Body $body, AstroInstant $instant): float
@@ -141,13 +152,25 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
 
     public function ayanamsa(AstroInstant $instant): float
     {
-        $key = 'jd:' . sprintf('%.6F', $instant->julianDayTt);
+        // Add prefix to avoid collision with position keys (though structurally different)
+        $key = 'ayan:jd:' . sprintf('%.6F', $instant->julianDayTt);
 
-        if (!isset($this->ayanamshaCache[$key])) {
-            $this->ayanamshaCache[$key] = $this->ayanamsha->calculate($instant);
+        if (isset($this->ayanamshaCache[$key])) {
+            return $this->ayanamshaCache[$key];
         }
 
-        return $this->ayanamshaCache[$key];
+        if ($this->cache !== null && $this->cache->has($key)) {
+            return $this->cache->get($key);
+        }
+
+        $ayanamsa = $this->ayanamsha->calculate($instant);
+
+        $this->ayanamshaCache[$key] = $ayanamsa;
+        if ($this->cache !== null) {
+            $this->cache->set($key, $ayanamsa);
+        }
+
+        return $ayanamsa;
     }
 
     public function equatorialPosition(Body $body, AstroInstant $instant): EquatorialPosition
@@ -222,6 +245,6 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
 
     private function positionKey(Body $body, AstroInstant $instant): string
     {
-        return sprintf('%s|%.8F', $body->value, $instant->julianDayTt);
+        return sprintf('pos:%s:%.8F', $body->value, $instant->julianDayTt);
     }
 }

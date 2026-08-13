@@ -116,6 +116,27 @@ final class LunarMonthCalculator
         return $this->signToMonth($signAfter);
     }
 
+    /**
+     * Determine if the lunar month containing the given instant is a Kshaya Masa (Decayed Month).
+     *
+     * Kshaya Masa occurs when the Sun transits through two sidereal signs during a single
+     * synodic lunar month (i.e., there are two Sankrantis between two New Moons).
+     */
+    public function isKshayaMasa(AstroInstant $instant): bool
+    {
+        $prevNm = $this->previousNewMoon($instant);
+        $nextNm = $this->nextNewMoon($instant);
+
+        $signAtPrevNm = $this->siderealSolarSign($prevNm);
+        $signAtNextNm = $this->siderealSolarSign($nextNm);
+
+        // Calculate the difference in signs, handling the wrap-around at 11 -> 0
+        $diff = ($signAtNextNm - $signAtPrevNm + 12) % 12;
+
+        // If the Sun entered TWO signs during this lunation, the difference will be 2.
+        return $diff === 2;
+    }
+
     // -------------------------------------------------------------------------
     // Internal helpers
     // -------------------------------------------------------------------------

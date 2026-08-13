@@ -18,6 +18,13 @@ use Vittix\Panchang\ValueObject\AstroInstant;
  */
 final class AstroTimeFactory
 {
+    private readonly DeltaTProviderInterface $deltaTProvider;
+
+    public function __construct(?DeltaTProviderInterface $deltaTProvider = null)
+    {
+        $this->deltaTProvider = $deltaTProvider ?? new PolynomialDeltaTProvider();
+    }
+
     public function fromDateTime(DateTimeImmutable $dateTime): AstroInstant
     {
         // Coerce to UTC first
@@ -28,7 +35,7 @@ final class AstroTimeFactory
         $decimalYear = (float) $utc->format('Y')
             + ((int) $utc->format('z') / 365.25);
 
-        $deltaTSeconds = DeltaT::forYear($decimalYear);
+        $deltaTSeconds = $this->deltaTProvider->getDeltaT($decimalYear);
 
         // JD_TT = JD_UT + ΔT (in days)
         $julianDayTt = $julianDayUt + $deltaTSeconds / 86400.0;

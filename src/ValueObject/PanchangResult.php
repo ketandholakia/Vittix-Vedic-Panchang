@@ -56,6 +56,7 @@ final readonly class PanchangResult
         // Calendar context
         public readonly ?LunarMonth $lunarMonth,
         public readonly bool $isAdhikaMasa,
+        public readonly bool $isKshayaMasa,
         public readonly ?SolarMonth $solarMonth,
         public readonly int $vikramSamvat,
         public readonly int $shakaSamvat,
@@ -111,6 +112,7 @@ final readonly class PanchangResult
             'vara' => $this->vara->nameEnglish(),
             'lunarMonth' => $this->lunarMonth?->nameEnglish(),
             'isAdhikaMasa' => $this->isAdhikaMasa,
+            'isKshayaMasa' => $this->isKshayaMasa,
             'solarMonth' => $this->solarMonth?->nameEnglish(),
             'samvat' => [
                 'vikram' => $this->vikramSamvat,

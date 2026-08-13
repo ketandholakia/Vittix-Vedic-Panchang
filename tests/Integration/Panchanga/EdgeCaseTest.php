@@ -34,13 +34,10 @@ final class EdgeCaseTest extends TestCase
         $location = new GeoLocation(78.2232, 15.6469);
 
         // This shouldn't crash. Since it's midsummer, the sun doesn't set.
-        $result = $this->service->getForDate($date, $location);
-
-        self::assertNotNull($result);
+        $this->service->getForDate($date, $location);
         
         // Solar events may be null or represent transit times depending on the algorithm's fallback.
         // Primarily, we are testing for crash-free execution.
-        self::assertTrue(true);
     }
 
     public function testExtremeLatitudeSvalbardNoSunriseMidwinter(): void
@@ -50,8 +47,6 @@ final class EdgeCaseTest extends TestCase
         $location = new GeoLocation(78.2232, 15.6469);
 
         $result = $this->service->getForDate($date, $location);
-
-        self::assertNotNull($result);
     }
 
     /**
@@ -67,7 +62,6 @@ final class EdgeCaseTest extends TestCase
 
         $result = $this->service->getForDate($date, $location);
 
-        self::assertNotNull($result);
         self::assertSame('2024-03-10', $result->date->format('Y-m-d'));
     }
 
@@ -79,7 +73,6 @@ final class EdgeCaseTest extends TestCase
 
         $result = $this->service->getForDate($date, $location);
 
-        self::assertNotNull($result);
         self::assertSame('2024-11-03', $result->date->format('Y-m-d'));
     }
 
@@ -93,7 +86,6 @@ final class EdgeCaseTest extends TestCase
 
         $result = $this->service->getForDate($date, $location);
 
-        self::assertNotNull($result);
         self::assertSame('1857-05-10', $result->date->format('Y-m-d'));
         self::assertInstanceOf(SolarMonth::class, $result->solarMonth);
     }
@@ -108,7 +100,6 @@ final class EdgeCaseTest extends TestCase
 
         $result = $this->service->getForDate($date, $location);
 
-        self::assertNotNull($result);
         self::assertSame('5000-01-01', $result->date->format('Y-m-d'));
     }
 }

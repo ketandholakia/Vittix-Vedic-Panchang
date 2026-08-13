@@ -38,7 +38,7 @@ final class LunarPositionCalculator
      *
      * @return EclipticPosition  longitude and latitude in degrees, distance in km.
      */
-    public function calculate(AstroInstant $instant): EclipticPosition
+    public function calculate(AstroInstant $instant, bool $longitudeOnly = false): EclipticPosition
     {
         $args = $this->arguments->calculate($instant);
 
@@ -57,8 +57,9 @@ final class LunarPositionCalculator
             [$cd, $cm, $cmp, $cf, $sl, $sr] = $row;
 
             $arg    = $cd * $d + $cm * $m + $cmp * $mp + $cf * $f;
-            $sinArg = Angle::sin($arg);
-            $cosArg = Angle::cos($arg);
+            $argRad = $arg * 0.017453292519943295;
+            $sinArg = sin($argRad);
+            $cosArg = cos($argRad);
 
             // Eccentricity factor for terms involving M
             $eFactor = match (abs((int) $cm)) {
@@ -73,35 +74,37 @@ final class LunarPositionCalculator
 
         // Additional longitude corrections (perturbations by Venus, Jupiter, and
         // the Moon's flattening) — Meeus p.338
-        $sigmaL += 3958.0 * Angle::sin($args['a1'])
-                +  1962.0 * Angle::sin($args['lPrime'] - $f)
-                +   318.0 * Angle::sin($args['a2']);
+        $sigmaL += 3958.0 * sin($args['a1'] * 0.017453292519943295)
+                +  1962.0 * sin(($args['lPrime'] - $f) * 0.017453292519943295)
+                +   318.0 * sin($args['a2'] * 0.017453292519943295);
 
         // --- Latitude ---
         $sigmaB = 0.0;
 
-        foreach (LunarLatitudeTerms::TERMS as $row) {
-            [$cd, $cm, $cmp, $cf, $sb] = $row;
+        if (!$longitudeOnly) {
+            foreach (LunarLatitudeTerms::TERMS as $row) {
+                [$cd, $cm, $cmp, $cf, $sb] = $row;
 
-            $arg    = $cd * $d + $cm * $m + $cmp * $mp + $cf * $f;
-            $sinArg = Angle::sin($arg);
+                $arg    = $cd * $d + $cm * $m + $cmp * $mp + $cf * $f;
+                $sinArg = sin($arg * 0.017453292519943295);
 
-            $eFactor = match (abs((int) $cm)) {
-                1 => $e,
-                2 => $e2,
-                default => 1.0,
-            };
+                $eFactor = match (abs((int) $cm)) {
+                    1 => $e,
+                    2 => $e2,
+                    default => 1.0,
+                };
 
-            $sigmaB += $sb * $eFactor * $sinArg;
+                $sigmaB += $sb * $eFactor * $sinArg;
+            }
+
+            // Additional latitude corrections (Meeus p.342)
+            $sigmaB -= 2235.0 * sin($args['lPrime'] * 0.017453292519943295)
+                     +    382.0 * sin($args['a3'] * 0.017453292519943295)
+                     +    175.0 * sin(($args['a1'] - $f) * 0.017453292519943295)
+                     +    175.0 * sin(($args['a1'] + $f) * 0.017453292519943295)
+                     +    127.0 * sin(($args['lPrime'] - $args['mPrime']) * 0.017453292519943295)
+                     -    115.0 * sin(($args['lPrime'] + $args['mPrime']) * 0.017453292519943295);
         }
-
-        // Additional latitude corrections (Meeus p.342)
-        $sigmaB -= 2235.0 * Angle::sin($args['lPrime'])
-                 +    382.0 * Angle::sin($args['a3'])
-                 +    175.0 * Angle::sin($args['a1'] - $f)
-                 +    175.0 * Angle::sin($args['a1'] + $f)
-                 +    127.0 * Angle::sin($args['lPrime'] - $args['mPrime'])
-                 -    115.0 * Angle::sin($args['lPrime'] + $args['mPrime']);
 
         // Geometric (mean) longitude + corrections → true longitude
         $longitude = $args['lPrime'] + ($sigmaL / 1_000_000.0);
@@ -126,6 +129,6 @@ final class LunarPositionCalculator
      */
     public function apparentLongitude(AstroInstant $instant): float
     {
-        return $this->calculate($instant)->longitude;
+        return $this->calculate($instant, true)->longitude;
     }
 }

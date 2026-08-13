@@ -26,6 +26,7 @@ final class SaptavimshamshaMapping implements VargaMappingInterface
             1 => 3, // Earthy signs start from Cancer (3)
             2 => 6, // Airy signs start from Libra (6)
             3 => 9, // Watery signs start from Capricorn (9)
+            default => throw new \LogicException('Unreachable element type')
         };
         
         $mappedIndex = ($startSign + $partIndex) % 12;

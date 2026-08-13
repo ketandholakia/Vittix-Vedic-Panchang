@@ -9,6 +9,10 @@ use Vittix\Panchang\Astronomy\Contracts\AstronomyEngineInterface;
 use Vittix\Panchang\Calendar\HinduCalendarCalculator;
 use Vittix\Panchang\Enum\Body;
 use Vittix\Panchang\Enum\SolarMonth;
+use Vittix\Panchang\Enum\MonthSystem;
+use Vittix\Panchang\Enum\AyanamshaSystem;
+use Psr\SimpleCache\CacheInterface;
+use Vittix\Panchang\Festivals\FestivalEngine;
 use Vittix\Panchang\Time\AstroTimeFactory;
 use Vittix\Panchang\ValueObject\AstronomyResult;
 use Vittix\Panchang\ValueObject\GeoLocation;
@@ -50,13 +54,15 @@ final class PanchangService
      * This is a convenience factory that creates all required dependencies
      * using the standard pure-PHP Lahiri engine.
      */
-    public static function createDefault(): self
-    {
-        $panchang = \Vittix\Panchang\Panchang::createDefault();
+    public static function createDefault(
+        AyanamshaSystem $ayanamshaSystem = AyanamshaSystem::Lahiri,
+        ?\Psr\SimpleCache\CacheInterface $cache = null
+    ): self {
+        $panchang = \Vittix\Panchang\Panchang::createDefault($ayanamshaSystem, $cache);
 
         // Extract internal dependencies from the Panchang facade.
         // We re-create using the same pattern as Panchang::create().
-        $engine = new \Vittix\Panchang\Astronomy\Engine\PurePhpAstronomyEngine();
+        $engine = \Vittix\Panchang\Astronomy\Engine\EngineFactory::createPurePhpEngine($ayanamshaSystem, $cache);
 
         $lunarMonthCalc = new \Vittix\Panchang\Calendar\LunarMonthCalculator($engine);
         $adhikaMasaCalc = new \Vittix\Panchang\Calendar\AdhikaMasaCalculator($engine, $lunarMonthCalc);
@@ -90,12 +96,13 @@ final class PanchangService
      */
     public function getForDate(
         DateTimeImmutable $date,
-        GeoLocation $location
+        GeoLocation $location,
+        MonthSystem $monthSystem = MonthSystem::Amanta
     ): PanchangResult {
         $timezone = $date->getTimezone();
 
         // Calculate the full PanchangDay (sunrise-anchored)
-        $panchangDay = $this->panchangaCalculator->forDay($date, $location);
+        $panchangDay = $this->panchangaCalculator->forDay($date, $location, $monthSystem);
 
         // Lunar events (moonrise/moonset)
         $lunarEvents = $this->astronomy->lunarEvents($date, $location, $timezone);
@@ -110,7 +117,7 @@ final class PanchangService
         $sunSiderealLon = $this->astronomy->siderealLongitude(Body::Sun, $instant);
         $solarMonth = SolarMonth::fromSiderealLongitude($sunSiderealLon);
 
-        return new PanchangResult(
+        $result = new PanchangResult(
             date: $date,
             location: $location,
             solarEvents: $panchangDay->solarEvents,
@@ -130,12 +137,19 @@ final class PanchangService
             paksha: $panchangDay->paksha,
             lunarMonth: $panchangDay->lunarMonth,
             isAdhikaMasa: $panchangDay->isAdhikaMasa,
+            isKshayaMasa: $panchangDay->isKshayaMasa,
             solarMonth: $solarMonth,
             vikramSamvat: $calendarResult->vikramSamvat,
             shakaSamvat: $calendarResult->shakaSamvat,
             ayanamsha: $this->astronomy->ayanamsa($instant),
             accuracy: $panchangDay->accuracy,
         );
+
+        if (method_exists($this->astronomy, 'clearCache')) {
+            $this->astronomy->clearCache();
+        }
+
+        return $result;
     }
 
     /**

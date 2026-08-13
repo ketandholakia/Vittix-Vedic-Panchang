@@ -6,7 +6,8 @@ namespace Vittix\Panchang\Astronomy\Lunar;
 
 use DateTimeImmutable;
 use DateTimeZone;
-use Vittix\Panchang\Astronomy\Contracts\AstronomyEngineInterface;
+use Vittix\Panchang\Astronomy\Coordinates\CoordinateTransformer;
+use Vittix\Panchang\Astronomy\Coordinates\ObliquityCalculator;
 use Vittix\Panchang\Astronomy\Sidereal\SiderealTimeCalculator;
 use Vittix\Panchang\Enum\Body;
 use Vittix\Panchang\Math\Angle;
@@ -56,7 +57,8 @@ final class LunarEventCalculator
     private readonly SiderealTimeCalculator $siderealTime;
 
     public function __construct(
-        private readonly AstronomyEngineInterface $astronomy,
+        private readonly LunarPositionCalculator $lunarPosition,
+        private readonly ObliquityCalculator $obliquity,
         ?SiderealTimeCalculator $siderealTime = null,
     ) {
         $this->timeFactory = new AstroTimeFactory();
@@ -143,7 +145,11 @@ final class LunarEventCalculator
     private function moonRA(float $jd): float
     {
         $instant = $this->timeFactory->fromJulianDay($jd);
-        $eq = $this->astronomy->equatorialPosition(Body::Moon, $instant);
+        $ecliptic = $this->lunarPosition->calculate($instant);
+        $obl = $this->obliquity->true($instant);
+
+        $transformer = new CoordinateTransformer();
+        $eq = $transformer->eclipticToEquatorial($ecliptic, $obl);
 
         return $eq->rightAscension;
     }
@@ -154,7 +160,11 @@ final class LunarEventCalculator
     private function moonDec(float $jd): float
     {
         $instant = $this->timeFactory->fromJulianDay($jd);
-        $eq = $this->astronomy->equatorialPosition(Body::Moon, $instant);
+        $ecliptic = $this->lunarPosition->calculate($instant);
+        $obl = $this->obliquity->true($instant);
+
+        $transformer = new CoordinateTransformer();
+        $eq = $transformer->eclipticToEquatorial($ecliptic, $obl);
 
         return $eq->declination;
     }
@@ -168,7 +178,7 @@ final class LunarEventCalculator
     private function moonHorizontalParallax(float $jd): float
     {
         $instant = $this->timeFactory->fromJulianDay($jd);
-        $pos = $this->astronomy->position(Body::Moon, $instant);
+        $pos = $this->lunarPosition->calculate($instant);
 
         // Moon distance is in km in our EclipticPosition
         $distanceKm = $pos->distance;
@@ -278,7 +288,10 @@ final class LunarEventCalculator
 
         for ($i = 0; $i < self::MAX_ITER; $i++) {
             $instant = $this->timeFactory->fromJulianDay($jdEvent);
-            $eq = $this->astronomy->equatorialPosition(Body::Moon, $instant);
+            $ecliptic = $this->lunarPosition->calculate($instant);
+            $obl = $this->obliquity->true($instant);
+            $transformer = new CoordinateTransformer();
+            $eq = $transformer->eclipticToEquatorial($ecliptic, $obl);
             $ra  = $eq->rightAscension;
             $dec = $eq->declination;
 

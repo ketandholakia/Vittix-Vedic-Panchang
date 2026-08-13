@@ -42,6 +42,7 @@ final class LunarOracleTest extends TestCase
 
         if ($expectedRiseTime !== null) {
             self::assertTrue($events->hasMoonrise(), "Expected moonrise on {$dateStr} but got none");
+            self::assertNotNull($events->moonrise);
             
             $expectedDt = new DateTimeImmutable("{$dateStr} {$expectedRiseTime}", new DateTimeZone($timezone));
             
@@ -62,6 +63,7 @@ final class LunarOracleTest extends TestCase
 
         if ($expectedSetTime !== null) {
             self::assertTrue($events->hasMoonset(), "Expected moonset on {$dateStr} but got none");
+            self::assertNotNull($events->moonset);
             
             $expectedDt = new DateTimeImmutable("{$dateStr} {$expectedSetTime}", new DateTimeZone($timezone));
             
@@ -72,8 +74,6 @@ final class LunarOracleTest extends TestCase
                 "Moonset mismatch. Expected {$expectedSetTime}, got {$events->moonset->format('H:i:s')}"
             );
         }
-        
-        self::assertTrue(true);
     }
 
     /**

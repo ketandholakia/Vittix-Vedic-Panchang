@@ -55,7 +55,6 @@ final class DignityCalculator
             Body::Saturn => $this->saturnDignity($rashi, $degree),
             Body::RahuMean => $this->rahuDignity($rashi),
             Body::KetuMean => $this->ketuDignity($rashi),
-            default => null,
         };
     }
 

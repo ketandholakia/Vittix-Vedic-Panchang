@@ -164,6 +164,9 @@ final class PlanetPositionCalculator
         ];
     }
 
+    /**
+     * @param array<int, array<int, array{float, float, float}>> $series
+     */
     private function evaluateSeries(array $series, float $t): float
     {
         $sum = 0.0;

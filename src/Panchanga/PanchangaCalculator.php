@@ -12,6 +12,8 @@ use Vittix\Panchang\Calendar\LunarMonthCalculator;
 use Vittix\Panchang\Enum\Body;
 use Vittix\Panchang\Enum\Tithi;
 use Vittix\Panchang\Time\AstroTimeFactory;
+use Vittix\Panchang\Enum\MonthSystem;
+use Vittix\Panchang\Calendar\PurnimantaMonthCalculator;
 use Vittix\Panchang\ValueObject\AccuracyInfo;
 use Vittix\Panchang\ValueObject\AstroInstant;
 use Vittix\Panchang\ValueObject\GeoLocation;
@@ -88,7 +90,8 @@ final class PanchangaCalculator
      */
     public function forDay(
         DateTimeImmutable $localDate,
-        GeoLocation $location
+        GeoLocation $location,
+        MonthSystem $monthSystem = MonthSystem::Amanta
     ): PanchangDay {
         $timezone = $localDate->getTimezone();
 
@@ -156,12 +159,21 @@ final class PanchangaCalculator
 
         $accuracy = AccuracyInfo::standard()->withNearBoundary($nearBoundary);
 
-        // Lunar month and Adhika Masa (Milestone 8)
+        // Lunar month, Adhika Masa, and Kshaya Masa (Milestone 8)
         $lunarMonth = null;
         $isAdhika   = false;
+        $isKshaya   = false;
 
         if ($this->lunarMonthCalc !== null) {
-            $lunarMonth = $this->lunarMonthCalc->amantaMonth($referenceInstant);
+            $amantaMonth = $this->lunarMonthCalc->amantaMonth($referenceInstant);
+            $isKshaya    = $this->lunarMonthCalc->isKshayaMasa($referenceInstant);
+            
+            if ($monthSystem === MonthSystem::Purnimanta) {
+                $purnimantaCalc = new PurnimantaMonthCalculator();
+                $lunarMonth = $purnimantaCalc->purnimantaMonth($amantaMonth, $tithiAtSunrise->paksha());
+            } else {
+                $lunarMonth = $amantaMonth;
+            }
         }
 
         if ($this->adhikaMasaCalc !== null) {
@@ -188,6 +200,7 @@ final class PanchangaCalculator
             lunarMonth: $lunarMonth,
             paksha: $tithiAtSunrise->paksha(),
             isAdhikaMasa: $isAdhika,
+            isKshayaMasa: $isKshaya,
             accuracy: $accuracy,
         );
     }
