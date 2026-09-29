@@ -10,8 +10,11 @@ use Vittix\Panchang\ValueObject\AstroInstant;
 
 /**
  * Calculates Earth's heliocentric spherical coordinates using VSOP87.
- * 
- * Returns J2000 heliocentric longitude, latitude, and distance.
+ *
+ * The term series are the VSOP87 "D" variant: geometric heliocentric
+ * coordinates referred to the mean ecliptic and equinox of date.
+ *
+ * Returns heliocentric longitude, latitude, and distance (of date).
  */
 final class EarthPositionCalculator
 {

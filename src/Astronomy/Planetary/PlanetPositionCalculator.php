@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Vittix\Panchang\Astronomy\Planetary;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use Vittix\Panchang\Astronomy\Coordinates\NutationCalculator;
 use Vittix\Panchang\Math\Angle;
 use Vittix\Panchang\Time\JulianDay;
@@ -12,8 +14,22 @@ use Vittix\Panchang\ValueObject\EclipticPosition;
 use Vittix\Panchang\Time\AstroTimeFactory;
 
 /**
- * Calculates geocentric apparent position for a planet using VSOP87.
- * 
+ * Calculates the geocentric apparent position of a planet using VSOP87.
+ *
+ * The term series used here are the VSOP87 "D" variant: geometric
+ * heliocentric coordinates referred to the MEAN ECLIPTIC AND EQUINOX OF
+ * DATE (the same variant tabulated by Meeus). The pipeline therefore is:
+ *
+ *   heliocentric (of date)
+ *     → geocentric rectangular difference with light-time correction
+ *       (planet at t−τ, Earth at t: this is planetary aberration)
+ *     → nutation in longitude
+ *     → annual aberration of the observer
+ *     → apparent geocentric longitude of date
+ *
+ * No J2000→date precession step is applied — the series are already of
+ * date.
+ *
  * Supports Mercury, Venus, Mars, Jupiter, Saturn.
  */
 final class PlanetPositionCalculator
@@ -56,8 +72,19 @@ final class PlanetPositionCalculator
         $distance = sqrt($dx * $dx + $dy * $dy + $dz * $dz);
 
         // 3. Light-time correction (Meeus Ch 33, p. 224)
+        //
+        // The emission instant is (observation TT − τ). Build it by shifting
+        // the UTC instant by τ so the normal ΔT conversion path is used
+        // exactly once. (Passing julianDayTt − τ back through
+        // AstroTimeFactory::fromJulianDay() would treat it as UT and add ΔT
+        // a second time, placing the emission instant ≈ ΔT too late — up to
+        // ~200 s by 2100, which showed up as tens of arcseconds on fast
+        // inner planets.)
         $tau = self::LIGHT_TIME_DAYS_PER_AU * $distance;
-        $delayedInstant = $this->timeFactory->fromJulianDay($instant->julianDayTt - $tau);
+        $delayedUnix = (float) $instant->utc->format('U.u') - $tau * 86400.0;
+        $delayedUtc = (new DateTimeImmutable('@' . sprintf('%.6F', $delayedUnix)))
+            ->setTimezone(new DateTimeZone('UTC'));
+        $delayedInstant = $this->timeFactory->fromDateTime($delayedUtc);
 
         // Re-evaluate planet position at (JD - tau)
         [$l, $b, $r] = $this->heliocentric($delayedInstant);
@@ -66,50 +93,34 @@ final class PlanetPositionCalculator
         $y = $r * Angle::cos($b) * Angle::sin($l);
         $z = $r * Angle::sin($b);
 
-        // 4. Geocentric coordinates (J2000 equinox)
+        // 4. Geocentric coordinates referred to the mean ecliptic and
+        //    equinox of date. The VSOP87 term series used above are the "D"
+        //    variant (equinox of date), so no J2000→date precession step is
+        //    required here.
         $X = $x - $x0;
         $Y = $y - $y0;
         $Z = $z - $z0;
 
-        $geoLonJ2000 = Angle::normalize(Angle::atan2($Y, $X));
-        $geoLatJ2000 = Angle::atan2($Z, sqrt($X * $X + $Y * $Y));
+        $geoLonDate = Angle::normalize(Angle::atan2($Y, $X));
+        $geoLatDate = Angle::atan2($Z, sqrt($X * $X + $Y * $Y));
         $distance = sqrt($X * $X + $Y * $Y + $Z * $Z); // True distance
 
-        // 5. Precess from J2000 to mean equinox of date (Meeus Ch 21)
-        $T = $instant->julianCenturiesTt();
-        
-        $eta = (47.0029 * $T - 0.03302 * $T ** 2 + 0.000060 * $T ** 3) / 3600.0;
-        $pi  = (174.876384 * 3600.0 + 3289.4789 * $T + 0.60622 * $T ** 2 - 0.00120 * $T ** 3) / 3600.0;
-        $p   = (5029.0966 * $T + 1.11113 * $T ** 2 - 0.000132 * $T ** 3) / 3600.0;
-
-        $sinEta = Angle::sin($eta);
-        $cosEta = Angle::cos($eta);
-        $sinBeta0 = Angle::sin($geoLatJ2000);
-        $cosBeta0 = Angle::cos($geoLatJ2000);
-        $sinLonPi = Angle::sin($geoLonJ2000 - $pi);
-        $cosLonPi = Angle::cos($geoLonJ2000 - $pi);
-
-        $A = $cosEta * $cosBeta0 * $sinLonPi - $sinEta * $sinBeta0;
-        $B = $cosBeta0 * $cosLonPi;
-        $C = $cosEta * $sinBeta0 + $sinEta * $cosBeta0 * $sinLonPi;
-
-        $geoLonDate = Angle::normalize($p + $pi + Angle::atan2($A, $B));
-        $geoLatDate = Angle::asin($C);
-
-        // 6. Nutation
+        // 5. Nutation in longitude (Δψ) — apparent from mean equinox of date.
         [$deltaPsi] = $this->nutation->calculate($instant);
 
-        // 7. Aberration (Low accuracy correction: -20.4898" / R)
-        // Meeus Ch 33 notes that full aberration is complex, but for Vedic astrology, 
-        // light-time correction already accounts for planetary aberration. 
-        // The remaining annual aberration is tiny, but standard approximation:
-        // Actually, simple aberration is just -20.4898" / cos(beta). But wait!
-        // Planetary aberration is ALREADY handled by using the geometric position 
-        // of the Earth at the time of observation, and the geometric position of 
-        // the planet at the time of emission (JD - tau). This yields the APPARENT 
-        // position directly! No extra aberration needed except nutation.
+        // 6. Annual aberration of the observer (Meeus Ch. 23, low-precision
+        //    form). The planetary aberration from the light-time correction
+        //    above is already included; this adds the observer's own motion:
+        //        Δλ = −20.4898″ · cos(λ − ⊙) / cos β
+        //    where ⊙ is the Sun's geometric longitude of date (Earth's
+        //    heliocentric longitude + 180°).
+        $sunGeometricLon = Angle::normalize($l0 + 180.0);
+        $aberration = -20.4898
+            * Angle::cos($geoLonDate - $sunGeometricLon)
+            / Angle::cos($geoLatDate)
+            / 3600.0;
 
-        $apparentLon = Angle::normalize($geoLonDate + $deltaPsi);
+        $apparentLon = Angle::normalize($geoLonDate + $deltaPsi + $aberration);
 
         return new EclipticPosition(
             longitude: $apparentLon,
