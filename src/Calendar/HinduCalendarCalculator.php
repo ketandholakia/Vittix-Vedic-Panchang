@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Vittix\Panchang\Enum\CalendarSystem;
 use Vittix\Panchang\Enum\LunarMonth;
+use Vittix\Panchang\Enum\Paksha;
 use Vittix\Panchang\Enum\SolarMonth;
 use Vittix\Panchang\ValueObject\AstroInstant;
 
@@ -49,6 +50,7 @@ final class HinduCalendarCalculator
         private readonly LunarMonthCalculator  $lunarMonth,
         private readonly AdhikaMasaCalculator  $adhikaMasa,
         private readonly SamvatCalculator      $samvat,
+        private readonly PurnimantaMonthCalculator $purnimantaMonthCalc = new PurnimantaMonthCalculator(),
     ) {
     }
 
@@ -102,8 +104,9 @@ final class HinduCalendarCalculator
      *  • Krishna Paksha: the month name is ONE AHEAD of Amanta.
      *    (The Purnimanta Krishna Paksha "belongs" to the next month.)
      *
-     * Simple heuristic: check if the query moment is between full moon and
-     * the next new moon (= Krishna Paksha).
+     * The month-shift rule itself is single-sourced in
+     * {@see PurnimantaMonthCalculator}; this method only detects the Paksha
+     * (by phase-event order: past the full moon = Krishna) and delegates.
      */
     private function derivePurnimantaMonth(
         AstroInstant $instant,
@@ -119,13 +122,9 @@ final class HinduCalendarCalculator
 
         $inKrishnaPaksha = $prevFm->julianDayUt > $prevNm->julianDayUt;
 
-        if (!$inKrishnaPaksha) {
-            return $amantaMonth; // Shukla Paksha: same month
-        }
-
-        // Krishna Paksha: Purnimanta month = next Amanta month
-        $nextMonthNum = ($amantaMonth->value % 12) + 1;
-
-        return LunarMonth::from($nextMonthNum);
+        return $this->purnimantaMonthCalc->purnimantaMonth(
+            $amantaMonth,
+            $inKrishnaPaksha ? Paksha::Krishna : Paksha::Shukla,
+        );
     }
 }

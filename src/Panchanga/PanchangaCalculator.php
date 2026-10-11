@@ -40,6 +40,7 @@ final class PanchangaCalculator
         private readonly TransitionFinder         $transitions,
         private readonly ?LunarMonthCalculator    $lunarMonthCalc = null,
         private readonly ?AdhikaMasaCalculator    $adhikaMasaCalc = null,
+        private readonly PurnimantaMonthCalculator $purnimantaMonthCalc = new PurnimantaMonthCalculator(),
     ) {
         $this->timeFactory = new AstroTimeFactory();
     }
@@ -169,8 +170,7 @@ final class PanchangaCalculator
             $isKshaya    = $this->lunarMonthCalc->isKshayaMasa($referenceInstant);
             
             if ($monthSystem === MonthSystem::Purnimanta) {
-                $purnimantaCalc = new PurnimantaMonthCalculator();
-                $lunarMonth = $purnimantaCalc->purnimantaMonth($amantaMonth, $tithiAtSunrise->paksha());
+                $lunarMonth = $this->purnimantaMonthCalc->purnimantaMonth($amantaMonth, $tithiAtSunrise->paksha());
             } else {
                 $lunarMonth = $amantaMonth;
             }
