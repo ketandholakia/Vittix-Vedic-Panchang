@@ -4,49 +4,65 @@ declare(strict_types=1);
 
 namespace Vittix\Panchang\Panchanga;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use Vittix\Panchang\Astronomy\Contracts\AstronomyEngineInterface;
 use Vittix\Panchang\Enum\Body;
 use Vittix\Panchang\Math\Angle;
-use Vittix\Panchang\Time\AstroTimeFactory;
-use Vittix\Panchang\Time\JulianDay;
+use Vittix\Panchang\Time\DeltaTProviderInterface;
+use Vittix\Panchang\Time\PolynomialDeltaTProvider;
 use Vittix\Panchang\ValueObject\AstroInstant;
 
 /**
  * Numerical root finder for Panchang limb transitions.
  *
  * Strategy:
- *  1. Coarse scan in 30-minute steps to detect an index change.
- *  2. Once a bracket [prev, curr] is found, refine using bisection.
+ *  1. Coarse scan in ≤ 0.2-day steps to bracket the first index change.
+ *     The scan step is capped at 0.2 days so that a bracket can never
+ *     contain more than one boundary (the shortest limb — karana — lasts
+ *     ≈ 0.42 days even at the Moon's maximum speed).
+ *  2. Refinement with a bracketed root finder on the limb fraction:
+ *       • the signed distance g = fractionRemaining (inside the limb) or
+ *         fractionRemaining − 1 (past the boundary) is smooth and monotone
+ *         through the crossing, including the 360°→0° wraparound;
+ *       • a secant (regula falsi) step proposes the next iterate;
+ *       • if a step does not shrink the bracket by at least half, an
+ *         unconditional bisection step is taken;
+ *       • evaluation happens at full (fractional) Julian Day precision —
+ *         instants are never rounded to whole seconds;
+ *       • convergence target is 0.5 s; if the loop fails to converge a
+ *         TransitionSearchException is thrown instead of silently returning
+ *         an unrefined bound.
  *
  * The solver is generic: the caller provides a callable that maps an
  * AstroInstant to an integer index (Tithi, Nakshatra, Yoga, or Karana).
- *
- * Why bisection rather than Newton-Raphson?
- *  • Bisection is unconditionally convergent.
- *  • Angular functions are nearly linear over one limb, so bisection
- *    converges in ≈ 15–20 iterations for 1-second accuracy.
- *  • The coarse scan cost dominates; refinement cost is negligible.
- *
- * Brent's method can be added as an optimisation later without changing
- * the calling interface.
  */
 final class TransitionFinder
 {
-    /** Coarse scan step in minutes. */
+    /** Minimum coarse scan step in minutes (safety floor for progress). */
     private const SCAN_STEP_MINUTES = 30;
 
-    /** Bisection tolerance in seconds. */
-    private const TOLERANCE_SECONDS = 5.0;
+    /**
+     * Maximum coarse scan step in days. Must stay well below the duration of
+     * the shortest limb so a bracket never contains two boundaries.
+     */
+    private const MAX_SCAN_STEP_DAYS = 0.2;
 
-    /** Maximum bisection iterations. */
-    private const MAX_BISECT = 50;
+    /** Refinement convergence tolerance in seconds. */
+    private const TOLERANCE_SECONDS = 0.5;
 
-    private readonly AstroTimeFactory $timeFactory;
+    /** Maximum refinement iterations before failing loudly. */
+    private const MAX_ITERATIONS = 100;
+
+    /** Seconds between the JD and Unix epochs. */
+    private const UNIX_EPOCH_JD = 2440587.5;
+
+    private readonly DeltaTProviderInterface $deltaTProvider;
 
     public function __construct(
         private readonly AstronomyEngineInterface $astronomy,
     ) {
-        $this->timeFactory = new AstroTimeFactory();
+        $this->deltaTProvider = new PolynomialDeltaTProvider();
     }
 
     // -------------------------------------------------------------------------
@@ -89,6 +105,8 @@ final class TransitionFinder
      * Find the first transition of $indexFn() within [from, until].
      *
      * @param callable(AstroInstant): int $indexFn
+     * @param (callable(AstroInstant): float)|null $fractionFn
+     * @throws TransitionSearchException when refinement cannot converge.
      */
     public function find(
         AstroInstant $from,
@@ -103,39 +121,43 @@ final class TransitionFinder
         }
 
         $startIndex = $indexFn($from);
-        
+
         $prevJd = $from->julianDayUt;
         $jd = $prevJd;
 
         while ($jd <= $until->julianDayUt) {
-            $instant = $this->timeFactory->fromJulianDay($jd);
+            $instant = $this->instantAtJd($jd);
 
             if ($indexFn($instant) !== $startIndex) {
                 // Found a bracket [$prevJd, $jd]
-                return $this->bisect($prevJd, $jd, $startIndex, $indexFn, $fractionFn);
+                return $this->refine($prevJd, $jd, $startIndex, $indexFn, $fractionFn);
             }
 
             $prevJd = $jd;
 
-            // Adaptive step size based on remaining fraction of the limb
+            // Adaptive step size based on the remaining fraction of the limb,
+            // capped so that a single step cannot skip a whole limb boundary.
             $step = self::SCAN_STEP_MINUTES / 1440.0;
             if ($fractionFn !== null) {
                 $fractionRemaining = $fractionFn($instant);
-                // Safe minimum speed estimate (e.g. slowest Tithi is ~1.06 days, so * 0.8 is safe)
-                // If we are 0.5 through the limb, we can safely jump 0.5 * 0.8 = 0.4 days.
-                // We cap the minimum jump at SCAN_STEP_MINUTES to ensure progress.
-                $adaptiveStep = $fractionRemaining * 0.8; 
+                $adaptiveStep = $fractionRemaining * 0.8;
                 if ($adaptiveStep > $step) {
                     $step = $adaptiveStep;
                 }
+            }
+            if (!is_finite($step) || $step <= 0.0) {
+                $step = self::SCAN_STEP_MINUTES / 1440.0;
+            }
+            if ($step > self::MAX_SCAN_STEP_DAYS) {
+                $step = self::MAX_SCAN_STEP_DAYS;
             }
 
             $jd += $step;
         }
 
-        // Check if transition happens exactly at the very end
+        // Check if the transition happens exactly at the very end of the window.
         if ($indexFn($until) !== $startIndex) {
-            return $this->bisect($prevJd, $until->julianDayUt, $startIndex, $indexFn, $fractionFn);
+            return $this->refine($prevJd, $until->julianDayUt, $startIndex, $indexFn, $fractionFn);
         }
 
         return null;
@@ -145,6 +167,7 @@ final class TransitionFinder
      * Find all transitions within the given window [from, until].
      *
      * @param callable(AstroInstant): int $indexFn
+     * @param (callable(AstroInstant): float)|null $fractionFn
      * @return AstroInstant[]
      */
     public function findAll(
@@ -158,16 +181,16 @@ final class TransitionFinder
 
         while (true) {
             $transition = $this->find($currentStart, $until, $indexFn, $fractionFn);
-            
+
             if ($transition === null) {
                 break;
             }
 
             $transitions[] = $transition;
-            
-            // Advance the search start by 1 minute to clear the boundary
+
+            // Advance the search start by 1 minute to clear the boundary.
             $nextJd = $transition->julianDayUt + (1.0 / 1440.0);
-            $currentStart = $this->timeFactory->fromJulianDay($nextJd);
+            $currentStart = $this->instantAtJd($nextJd);
 
             if ($currentStart->julianDayUt >= $until->julianDayUt) {
                 break;
@@ -178,91 +201,170 @@ final class TransitionFinder
     }
 
     // -------------------------------------------------------------------------
-    // Bisection refiner
+    // Bracketed refinement
     // -------------------------------------------------------------------------
 
     /**
+     * Refine the first boundary between $lowerJd (index == startIndex) and
+     * $upperJd (index != startIndex).
+     *
      * @param callable(AstroInstant): int $indexFn
+     * @param (callable(AstroInstant): float)|null $fractionFn
+     * @throws TransitionSearchException when the bracket is invalid or convergence fails.
      */
-    private function bisect(
+    private function refine(
         float $lowerJd,
         float $upperJd,
         int $startIndex,
         callable $indexFn,
-        ?callable $fractionFn = null
+        ?callable $fractionFn
     ): AstroInstant {
-        $tolerance = self::TOLERANCE_SECONDS / 86400.0; // days
-        
-        // If we don't have a fraction function to interpolate with, fallback to pure bisection
-        if ($fractionFn === null) {
-            for ($i = 0; $i < self::MAX_BISECT; $i++) {
-                $midJd   = ($lowerJd + $upperJd) / 2.0;
-                $midInst = $this->timeFactory->fromJulianDay($midJd);
+        $tolerance = self::TOLERANCE_SECONDS / 86400.0;
 
-                if ($indexFn($midInst) === $startIndex) {
+        if ($fractionFn === null) {
+            // Pure bisection: no auxiliary function to interpolate with.
+            for ($i = 0; $i < self::MAX_ITERATIONS; $i++) {
+                if (($upperJd - $lowerJd) <= $tolerance) {
+                    return $this->instantAtJd($upperJd);
+                }
+                $midJd = ($lowerJd + $upperJd) / 2.0;
+                if ($indexFn($this->instantAtJd($midJd)) === $startIndex) {
                     $lowerJd = $midJd;
                 } else {
                     $upperJd = $midJd;
                 }
+            }
 
-                if (($upperJd - $lowerJd) < $tolerance) {
-                    break;
+            throw new TransitionSearchException(sprintf(
+                'Transition refinement (bisection) failed to converge to %.1f s after %d iterations.',
+                self::TOLERANCE_SECONDS,
+                self::MAX_ITERATIONS
+            ));
+        }
+
+        $lo = $lowerJd;
+        $hi = $upperJd;
+        $gLo = $this->signedFraction($fractionFn, $indexFn, $startIndex, $lo);
+        $gHi = $this->signedFraction($fractionFn, $indexFn, $startIndex, $hi);
+
+        if ($gLo <= 0.0 || $gHi > 0.0) {
+            throw new TransitionSearchException(sprintf(
+                'Invalid transition bracket: expected signed fraction > 0 at the lower bound and <= 0 at the upper bound, got %.6F and %.6F.',
+                $gLo,
+                $gHi
+            ));
+        }
+
+        for ($i = 0; $i < self::MAX_ITERATIONS; $i++) {
+            if (($hi - $lo) <= $tolerance) {
+                return $this->instantAtJd($hi);
+            }
+            if ($gHi === 0.0) {
+                // The upper bound sits exactly on the boundary.
+                return $this->instantAtJd($hi);
+            }
+
+            $width = $hi - $lo;
+
+            // Secant (regula falsi) step on the signed limb fraction.
+            $x = $hi - $gHi * ($hi - $lo) / ($gHi - $gLo);
+            if (!($x > $lo + 1e-12 && $x < $hi - 1e-12)) {
+                $x = $lo + $width / 2.0;
+            }
+
+            $gx = $this->signedFraction($fractionFn, $indexFn, $startIndex, $x);
+            if ($gx > 0.0) {
+                $lo = $x;
+                $gLo = $gx;
+            } else {
+                $hi = $x;
+                $gHi = $gx;
+            }
+
+            // Safeguard: if the step did not shrink the bracket by at least
+            // half, take an unconditional bisection step.
+            if (($hi - $lo) > 0.5 * $width) {
+                $x = ($lo + $hi) / 2.0;
+                $gx = $this->signedFraction($fractionFn, $indexFn, $startIndex, $x);
+                if ($gx > 0.0) {
+                    $lo = $x;
+                    $gLo = $gx;
+                } else {
+                    $hi = $x;
+                    $gHi = $gx;
                 }
             }
-            return $this->timeFactory->fromJulianDay($upperJd);
         }
 
-        // Secant method (Linear interpolation)
-        // fractionFn goes from ~1.0 down to 0.0 as it approaches the boundary.
-        // We want to find the root where fractionFn is 0.
-        
-        $x0 = $lowerJd;
-        $x1 = $upperJd;
-        
-        $f0 = $fractionFn($this->timeFactory->fromJulianDay($x0));
-        // If the bracket crossed the boundary, f1 will be close to 1.0 (wrapped around)
-        // We want to treat it as a negative fraction remaining.
-        $f1 = $fractionFn($this->timeFactory->fromJulianDay($x1));
-        if ($f1 > 0.5) {
-            $f1 = $f1 - 1.0; 
+        throw new TransitionSearchException(sprintf(
+            'Transition refinement failed to converge to %.1f s after %d iterations (bracket width %.3F s).',
+            self::TOLERANCE_SECONDS,
+            self::MAX_ITERATIONS,
+            ($hi - $lo) * 86400.0
+        ));
+    }
+
+    /**
+     * Signed distance to the limb boundary, in limb-fraction units:
+     *   +fractionRemaining  before the boundary (g → 0+ at the crossing)
+     *   fractionRemaining−1 after it          (g → 0− at the crossing)
+     * The function is continuous and monotone through the crossing,
+     * including the 360°→0° wraparound, because the underlying longitude is
+     * monotone (mod 360°) across a single boundary.
+     *
+     * @param callable(AstroInstant): int $indexFn
+     * @param callable(AstroInstant): float $fractionFn
+     */
+    private function signedFraction(
+        callable $fractionFn,
+        callable $indexFn,
+        int $startIndex,
+        float $jd
+    ): float {
+        $instant = $this->instantAtJd($jd);
+        $remaining = $fractionFn($instant);
+
+        if ($indexFn($instant) !== $startIndex) {
+            return $remaining - 1.0;
         }
 
-        for ($i = 0; $i < self::MAX_BISECT; $i++) {
-            if (abs($f1 - $f0) < 1e-9) {
-                // Prevent division by zero
-                $x2 = ($x0 + $x1) / 2.0;
-            } else {
-                // Secant formula
-                $x2 = $x1 - $f1 * ($x1 - $x0) / ($f1 - $f0);
-            }
-            
-            // Ensure x2 stays within reasonable bounds, otherwise fallback to bisection
-            if ($x2 < $lowerJd || $x2 > $upperJd) {
-                $x2 = ($lowerJd + $upperJd) / 2.0;
-            }
+        return $remaining;
+    }
 
-            $inst = $this->timeFactory->fromJulianDay($x2);
-            $idx = $indexFn($inst);
-            
-            if ($idx === $startIndex) {
-                $lowerJd = $x2;
-                $x0 = $x2;
-                $f0 = $fractionFn($inst);
-            } else {
-                $upperJd = $x2;
-                $x1 = $x2;
-                $f1 = $fractionFn($inst);
-                if ($f1 > 0.5) {
-                    $f1 = $f1 - 1.0; 
-                }
-            }
+    // -------------------------------------------------------------------------
+    // Fractional-precision instants
+    // -------------------------------------------------------------------------
 
-            if (($upperJd - $lowerJd) < $tolerance) {
-                break;
-            }
+    /**
+     * Build an AstroInstant at full (fractional) Julian Day precision.
+     *
+     * Unlike AstroTimeFactory::fromJulianDay(), the instant is NOT rounded to
+     * whole seconds: the root finder needs sub-second resolution to converge
+     * to its 0.5 s tolerance. Position calculations only depend on
+     * julianDayTt, so the microsecond-precision UTC presentation is exact
+     * enough for display purposes.
+     */
+    private function instantAtJd(float $julianDayUt): AstroInstant
+    {
+        $unixSeconds = ($julianDayUt - self::UNIX_EPOCH_JD) * 86400.0;
+        $seconds = (int) floor($unixSeconds);
+        $microseconds = (int) round(($unixSeconds - $seconds) * 1_000_000);
+        if ($microseconds >= 1_000_000) {
+            $seconds++;
+            $microseconds -= 1_000_000;
         }
 
-        return $this->timeFactory->fromJulianDay($upperJd);
+        $utc = (new DateTimeImmutable('@' . $seconds))->modify("+{$microseconds} microseconds");
+
+        $decimalYear = (float) $utc->format('Y') + ((int) $utc->format('z')) / 365.25;
+        $deltaT = $this->deltaTProvider->getDeltaT($decimalYear);
+
+        return new AstroInstant(
+            utc: $utc,
+            julianDayUt: $julianDayUt,
+            julianDayTt: $julianDayUt + $deltaT / 86400.0,
+            deltaTSeconds: $deltaT,
+        );
     }
 
     // -------------------------------------------------------------------------
