@@ -46,6 +46,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Test hygiene: resolved 4 PHPStan level-8 findings and 3 risky tests in existing integration tests.
 
 ### Notes
+- The generated reference fixtures are committed under `tests/fixtures/reference/`, so a fresh clone
+  runs `composer test`, `composer analyse` and `composer accuracy` without installing Python or
+  `pyswisseph` (Python is only needed to regenerate fixtures via `tools/reference/generate_fixtures.py`).
 - Documented comparator differences vs Swiss Ephemeris in `docs/accuracy.md`: the ΔT model divergence
   after ~2050 (engine Espenak–Meeus vs Swiss's flatter prediction — +18 s by 2050, ~+110 s by 2100;
   it dominates late-century residuals for the Moon and inner planets despite the ephemeris agreeing
