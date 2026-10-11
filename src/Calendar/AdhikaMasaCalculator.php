@@ -17,7 +17,7 @@ use Vittix\Panchang\ValueObject\AstroInstant;
  * transition) occurs between two consecutive new moons.
  *
  * This is the most common Adhika Masa rule (Amanta convention).
- * Kshaya Masa (lost month) is not handled in this version.
+ * Kshaya Masa (lost month) detection lives with the lunar month logic.
  *
  * Frequency: approximately once every 2.7 years.
  */
@@ -46,42 +46,6 @@ final class AdhikaMasaCalculator
         return $signAtPrev === $signAtNext;
     }
 
-    /**
-     * Find the Sankranti (solar-sign transition) time between two AstroInstants,
-     * or return null if none occurs.
-     */
-    public function findSankranti(
-        AstroInstant $from,
-        AstroInstant $until
-    ): ?AstroInstant {
-        $signAt = fn (AstroInstant $i): int => $this->siderealSolarSign($i);
-
-        $startSign = $signAt($from);
-        $step      = 0.5; // 12-hour scan steps (days)
-
-        $prevJd = $from->julianDayUt;
-        $factory = $this->lunarMonth; // used only for its AstroTimeFactory via property
-
-        // Inline factory use (avoid exposing it)
-        $factory2 = new \Vittix\Panchang\Time\AstroTimeFactory();
-
-        for (
-            $jd = $from->julianDayUt + $step;
-            $jd <= $until->julianDayUt;
-            $jd += $step
-        ) {
-            $instant = $factory2->fromJulianDay($jd);
-
-            if ($signAt($instant) !== $startSign) {
-                return $this->bisectSankranti($prevJd, $jd, $startSign, $signAt);
-            }
-
-            $prevJd = $jd;
-        }
-
-        return null;
-    }
-
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
@@ -91,35 +55,5 @@ final class AdhikaMasaCalculator
         $lon = $this->astronomy->siderealLongitude(Body::Sun, $instant);
 
         return (int) floor($lon / 30.0);
-    }
-
-    /**
-     * @param callable(AstroInstant): int $signFn
-     */
-    private function bisectSankranti(
-        float $lowerJd,
-        float $upperJd,
-        int $startSign,
-        callable $signFn
-    ): AstroInstant {
-        $tolerance = 30.0 / 86400.0; // 30-second tolerance
-        $factory   = new \Vittix\Panchang\Time\AstroTimeFactory();
-
-        for ($i = 0; $i < 60; $i++) {
-            $midJd   = ($lowerJd + $upperJd) / 2.0;
-            $midInst = $factory->fromJulianDay($midJd);
-
-            if ($signFn($midInst) === $startSign) {
-                $lowerJd = $midJd;
-            } else {
-                $upperJd = $midJd;
-            }
-
-            if (($upperJd - $lowerJd) < $tolerance) {
-                break;
-            }
-        }
-
-        return $factory->fromJulianDay($upperJd);
     }
 }
