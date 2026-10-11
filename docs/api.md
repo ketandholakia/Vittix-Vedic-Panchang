@@ -63,6 +63,31 @@ $service = PanchangService::createDefault(
 | `getForDate(DateTimeImmutable $date, GeoLocation $location, MonthSystem $monthSystem = MonthSystem::Amanta)` | `PanchangResult` | Complete structured Panchang for API |
 | `getAstronomyReport(DateTimeImmutable $date, GeoLocation $location)` | `AstronomyResult` | Raw astronomy data (no Panchang logic) |
 
+The service also exposes pass-throughs for every `Panchang` facade feature
+(one engine graph is shared between them — see `PanchangService::fromPanchang()`):
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `day(DateTimeImmutable $date, GeoLocation $location)` | `PanchangDay` | Sunrise-anchored daily Panchang |
+| `moment(DateTimeImmutable $moment, GeoLocation $location)` | `PanchangMoment` | Five limbs at an instant |
+| `janmarashi(DateTimeImmutable $moment)` | `Rashi` | Moon sign |
+| `festivals()` | `FestivalEngine` | Default festival catalog |
+| `muhurta()` | `MuhurtaCalculator` | Muhurta evaluation |
+| `electional()` | `ElectionalEvaluator` | Electional astrology |
+| `calendar(DateTimeImmutable $date)` | `HinduCalendarResult` | Samvat, Adhika Masa context |
+| `ascendant(DateTimeImmutable $moment, GeoLocation $location)` | `AscendantPosition` | Lagna |
+| `kundali(DateTimeImmutable $moment, GeoLocation $location)` | `Kundali` | Birth chart |
+| `vimshottariDasha(DateTimeImmutable $birthTime)` | `array<DashaPeriod>` | Dasha periods |
+| `varga(DateTimeImmutable $moment, GeoLocation $location, Varga $varga)` | `Kundali` | Divisional chart |
+| `shadbala(DateTimeImmutable $moment, GeoLocation $location)` | `Shadbala` | Six-fold strength |
+| `yogas(DateTimeImmutable $moment, GeoLocation $location)` | `array<Yoga>` | Detected yogas |
+| `clearCache()` | `void` | Clears the result cache and engine memory caches (PSR-16 untouched) |
+
+`getForDate()` / `getAstronomyReport()` results are memoised in a bounded
+512-entry LRU cache keyed by date, timezone, location and month system;
+repeat calls with identical inputs return the memoised result. Call
+`clearCache()` to force recomputation.
+
 ---
 
 ## Value Objects
@@ -281,5 +306,9 @@ Creates the default pure-PHP engine (no extensions required).
 
 - **First call**: ~50-100ms (cold cache)
 - **Subsequent calls**: ~5-10ms (warm cache)
-- **Batch operations**: Reuse `Panchang` instance, call `clearCache()` periodically
+- **Batch operations**: reuse one `Panchang` / `PanchangService` instance — both
+  use bounded LRU caches (engine: 512 position entries, configurable via
+  `PurePhpAstronomyEngine`'s `$memoryCacheCapacity`; service: 512 results), so
+  memory stays flat no matter how many dates you generate. Call `clearCache()`
+  only to force recomputation.
 - **Caching**: PSR-16 cache persists across requests (recommended for production)

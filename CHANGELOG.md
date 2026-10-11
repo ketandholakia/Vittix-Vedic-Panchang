@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.5.0] - 2026-10-11
 
 ### Added
 - Accuracy validation harness that measures the engine against Swiss Ephemeris:
@@ -21,6 +21,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   returning an unrefined (up to hours-off) time.
 - New tests: transition-refinement regression + randomized boundary checks; lunar tests for DST transition
   days (23/25 h), UTC+14 (Kiritimati), high-latitude grazing windows, and skip-day nulls.
+- `PanchangService` is now the complete API surface its docblock claims: 13 one-line pass-throughs to the
+  shared `Panchang` facade — `day()`, `moment()`, `janmarashi()`, `festivals()`, `muhurta()`, `electional()`,
+  `calendar()`, `ascendant()`, `kundali()`, `vimshottariDasha()`, `varga()`, `shadbala()`, `yogas()`. Parity
+  tests assert each pass-through equals the direct facade call.
+- `PanchangService::fromPanchang(Panchang)` factory and additive `Panchang::engine()` /
+  `Panchang::calendarCalculator()` getters (object-identity sharing asserted by wiring tests).
+- `PanchangService::clearCache()` — clears the service result cache plus the engine's in-memory caches;
+  the PSR-16 persistent store is deliberately untouched.
+- `PurePhpAstronomyEngine` accepts a `memoryCacheCapacity` constructor argument (default 512) to tune the
+  bounded in-memory caches.
+- `BatchMemoryTest` (bounded memory, flat across passes, warm-pass speedup) and
+  `PurnimantaAgreementPropertyTest` (exhaustive shift-formula check, paksha-strategy agreement on 300
+  random dates, tithi/elongation equivalence over 1000 instants).
 
 ### Fixed
 - **Planet pipeline** — apparent planet longitudes were off by up to ~37′ (growing linearly from J2000,
@@ -39,11 +52,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   brief (< 45 min) grazing windows at high latitudes are found instead of being missed entirely.
 - Corrected three swapped rise/set labels in `LunarOracleTest` (verified against Swiss Ephemeris — the
   previous engine happened to match the swapped labels).
+- `PanchangService::createDefault()` built a `Panchang`, discarded it, and hand-wired a second engine into
+  a subset graph (~2× construction, wiring-drift risk). It now builds the facade graph once and shares the
+  facade's own calculator instances. The raw 3-argument constructor remains supported; it builds the
+  facade lazily on first astrology call.
+- `composer.lock` content-hash resynced with `composer.json` (the lock committed at v2.4.0 was already
+  stale; fresh clones saw a "lock file is not up to date" warning).
 
 ### Changed
 - Composer scripts: `test` excludes the `accuracy` group; new `accuracy` and `accuracy:report` scripts;
   `analyse` now includes `tools/` (PHPStan level 8 stays green everywhere).
 - Test hygiene: resolved 4 PHPStan level-8 findings and 3 risky tests in existing integration tests.
+- **Caching**: the per-call `clearCache()` in `getForDate()` (the v2.4.0 memory-leak fix that defeated all
+  cross-date memoization) is replaced by bounded LRU caches at both levels — engine position/ayanamsha
+  caches (512 entries, geocentric keys are location-independent) and a service result cache (512 entries
+  keyed by date, timezone, location and month system). Measured over 400 consecutive days: +2.33 MB total,
+  6 MB process peak (budget 100 MB), zero growth between passes; a warm 30-day pass is served entirely
+  from the result cache. Cold per-day cost vs unbounded cache is ~10% (98 vs 89 ms/day); tune
+  `memoryCacheCapacity` if cold throughput matters more.
+- The Purnimanta "+1 month in Krishna Paksha" rule is single-sourced in `PurnimantaMonthCalculator`;
+  `HinduCalendarCalculator::derivePurnimantaMonth()` now only detects the paksha and delegates.
+- Root hygiene: `ascendant.patch` removed (content already merged), `.gitattributes` no-op negation lines
+  removed, assistant-workspace files gitignored.
+
+### Removed
+- `AdhikaMasaCalculator::findSankranti()` and its private `bisectSankranti()` helper — dead code with zero
+  callers (sankranti logic is inlined and tested in `PanchangService::getAstronomyReport()` /
+  `LunarMonthCalculator`).
 
 ### Notes
 - The generated reference fixtures are committed under `tests/fixtures/reference/`, so a fresh clone
