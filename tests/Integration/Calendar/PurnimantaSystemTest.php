@@ -71,7 +71,9 @@ final class PurnimantaSystemTest extends TestCase
         // Let's assert based on whatever Amanta returns
         $purnimanta = $this->service->getForDate($date, $this->ahmedabad, MonthSystem::Purnimanta);
         
-        $expectedIndex = ($amanta->lunarMonth->value % 12) + 1;
+        $amantaMonth = $amanta->lunarMonth;
+        self::assertNotNull($amantaMonth, 'Amanta lunar month should be resolved for this date');
+        $expectedIndex = ($amantaMonth->value % 12) + 1;
         
         self::assertSame(
             LunarMonth::from($expectedIndex), 

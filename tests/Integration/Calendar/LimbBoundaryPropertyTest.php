@@ -41,7 +41,7 @@ final class LimbBoundaryPropertyTest extends TestCase
                     self::assertContains($currentTithiIndex, [29, 0, 1], "Invalid transition from Tithi 29 to {$currentTithiIndex}");
                 } else if ($previousTithiIndex === 28 && $currentTithiIndex === 0) {
                     // Valid Kshaya Tithi skipping 29
-                    self::assertTrue(true); 
+                    self::assertLessThan(0, $diff, 'Kshaya Tithi must decrease the index (28 -> 0)');
                 } else {
                     self::assertGreaterThanOrEqual(0, $diff, "Tithi index should not decrease normally (was {$previousTithiIndex}, now {$currentTithiIndex})");
                     self::assertLessThanOrEqual(2, $diff, "Tithi index skipped more than one day (was {$previousTithiIndex}, now {$currentTithiIndex})");

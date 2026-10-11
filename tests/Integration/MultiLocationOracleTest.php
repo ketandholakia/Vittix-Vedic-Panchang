@@ -42,9 +42,8 @@ final class MultiLocationOracleTest extends TestCase
         // Attempt to calculate the full panchang day.
         $day = $panchang->day($date, $location);
 
-        // Verify some basic sanity checks (that it returned valid objects)
-        self::assertNotNull($day->tithiAtSunrise);
-        self::assertNotNull($day->nakshatraAtSunrise);
+        // Verify some basic sanity checks: tithiAtSunrise / nakshatraAtSunrise
+        // are non-nullable typed properties, so nothing to assert for them here.
         
         // Assert sunrise and sunset might be null for extreme latitudes during certain times of year,
         // but they should be defined for most of our test cases (March 1 is close to equinox, so all should have them).

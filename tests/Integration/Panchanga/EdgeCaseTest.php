@@ -34,10 +34,11 @@ final class EdgeCaseTest extends TestCase
         $location = new GeoLocation(78.2232, 15.6469);
 
         // This shouldn't crash. Since it's midsummer, the sun doesn't set.
-        $this->service->getForDate($date, $location);
-        
+        $result = $this->service->getForDate($date, $location);
+
         // Solar events may be null or represent transit times depending on the algorithm's fallback.
-        // Primarily, we are testing for crash-free execution.
+        // Primarily, we are testing for crash-free execution with a sane result date.
+        self::assertSame('2026-06-21', $result->date->format('Y-m-d'));
     }
 
     public function testExtremeLatitudeSvalbardNoSunriseMidwinter(): void
@@ -47,6 +48,8 @@ final class EdgeCaseTest extends TestCase
         $location = new GeoLocation(78.2232, 15.6469);
 
         $result = $this->service->getForDate($date, $location);
+
+        self::assertSame('2026-12-21', $result->date->format('Y-m-d'));
     }
 
     /**
