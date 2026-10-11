@@ -5,6 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Accuracy validation harness that measures the engine against Swiss Ephemeris:
+  - `tools/reference/generate_fixtures.py` (+ `requirements-dev.txt`) generates deterministic reference
+    fixtures — 2000 random instants (1950–2100) of tropical/sidereal longitudes and ayanamsha, 300 limb
+    transition records (sub-second, root-found), and sunrise/sunset/moonrise/moonset for 10 cities × 60 dates
+    in two rise/set conventions — into `tests/fixtures/reference/`.
+  - `tools/accuracy_report.php` renders a Markdown or JSON accuracy report (per body / limb / city / decade
+    breakdowns, worst cases with inputs) and writes `docs/accuracy-report.md`.
+  - PHPUnit `accuracy` group in `tests/Accuracy/` with configurable tolerances (`composer accuracy`),
+    plus `composer accuracy:report`.
+- `TransitionSearchException` — thrown when transition refinement cannot converge, instead of silently
+  returning an unrefined (up to hours-off) time.
+- New tests: transition-refinement regression + randomized boundary checks; lunar tests for DST transition
+  days (23/25 h), UTC+14 (Kiritimati), high-latitude grazing windows, and skip-day nulls.
+
+### Fixed
+- **Planet pipeline** — apparent planet longitudes were off by up to ~37′ (growing linearly from J2000,
+  ~5100″ max at the extremes); now ≤ ~9″ worst case vs Swiss Ephemeris (≤ ~3″ with the ΔT model matched):
+  - Removed the J2000→date precession step that double-transformed VSOP87D coordinates (the term series
+    are already referred to the mean ecliptic and equinox of date).
+  - Fixed the light-time correction, which built the emission instant via a UT conversion and therefore
+    added ΔT a second time (up to ~30″ on Mercury/Venus by 2100).
+  - Added the observer's annual aberration term (−20.4898″·cos(λ−⊙)/cos β).
+- **TransitionFinder** — replaced the secant refinement that could stall and return the coarse scan bound
+  (up to ~3.7 h late) with a bracketed secant refiner with forced-bisection safeguard, evaluated at
+  fractional-JD precision, converging to 0.5 s; zero anomalies across all 1200 harness checks.
+- **LunarEventCalculator** — moonrise/moonset now follow civil-date semantics (the first event whose local
+  time falls in [00:00, 24:00) of the requested date; null only on true skip days; previously 344 of 1200
+  records missed real events and 424 matched a neighbouring day); added a parabola-checked fine re-scan so
+  brief (< 45 min) grazing windows at high latitudes are found instead of being missed entirely.
+- Corrected three swapped rise/set labels in `LunarOracleTest` (verified against Swiss Ephemeris — the
+  previous engine happened to match the swapped labels).
+
+### Changed
+- Composer scripts: `test` excludes the `accuracy` group; new `accuracy` and `accuracy:report` scripts;
+  `analyse` now includes `tools/` (PHPStan level 8 stays green everywhere).
+- Test hygiene: resolved 4 PHPStan level-8 findings and 3 risky tests in existing integration tests.
+
+### Notes
+- Documented comparator differences vs Swiss Ephemeris in `docs/accuracy.md`: the ΔT model divergence
+  after ~2050 (engine Espenak–Meeus vs Swiss's flatter prediction — +18 s by 2050, ~+110 s by 2100;
+  it dominates late-century residuals for the Moon and inner planets despite the ephemeris agreeing
+  within ≈1″ when ΔT is matched), and horizon-convention differences at razor-graze latitudes.
+- Lahiri ayanamsha reviewed (constant deliberately unchanged): the current polynomial sits ≈12″ below the
+  IAE/Swiss mean value; recommendation recorded in `docs/accuracy.md`.
+- Transition searches do more work per transition (≈2.3× per search, ≈12 ms per panchang day) in exchange
+  for guaranteed convergence and fail-loud behavior.
+
 ## [2.4.0] - 2026-08-13
 
 ### Added

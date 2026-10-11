@@ -1,0 +1,11 @@
+# Development requirements for the accuracy reference-fixture generator.
+#
+#   pip install -r tools/reference/requirements-dev.txt
+#   python tools/reference/generate_fixtures.py
+#
+# pyswisseph bundles the Swiss Ephemeris C library (Moshier ephemeris works
+# without data files; the Swiss Ephemeris .se1 files are optional).
+pyswisseph==2.10.3.2
+
+# Windows only: zoneinfo needs the IANA tz database package.
+tzdata>=2024.1; sys_platform == "win32"

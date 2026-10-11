@@ -49,8 +49,10 @@
         }
     },
     "scripts": {
-        "test": "phpunit --testdox",
-        "analyse": "phpstan analyse src tests --level=8",
+        "test": "phpunit --testdox --no-coverage --exclude-group accuracy",
+        "accuracy": "phpunit --group accuracy --testdox --no-coverage",
+        "accuracy:report": "php tools/accuracy_report.php",
+        "analyse": "phpstan analyse src tests tools --level=8 --memory-limit=1G",
         "quality": [
             "@analyse",
             "@test"
