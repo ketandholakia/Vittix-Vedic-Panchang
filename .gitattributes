@@ -7,14 +7,8 @@
 /.github export-ignore
 /scratch export-ignore
 /docs export-ignore
+/tools export-ignore
 /*.php export-ignore
-!/check_month.php export-ignore
-!/debug_month.php export-ignore
-!/find_adhika.php export-ignore
-!/find_chaturthi.php export-ignore
-!/random_test_results.php export-ignore
-!/test_sign.php export-ignore
-!/update_oracle.php export-ignore
 .gitignore export-ignore
 .gitattributes export-ignore
 phpstan.neon export-ignore
