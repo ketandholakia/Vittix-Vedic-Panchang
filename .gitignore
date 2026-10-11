@@ -42,3 +42,17 @@ Desktop.ini
 /find_*.php
 /test_*.php
 /update_oracle.php
+
+# Local assistant-workspace files (never commit)
+/.agents/
+/.commandcode/
+/.openclaw/
+/.openclaw-attachments/
+/.zcode/
+/.zcodeignore
+/AGENTS.md
+/HEARTBEAT.md
+/IDENTITY.md
+/SOUL.md
+/TOOLS.md
+/USER.md
