@@ -44,11 +44,19 @@ use Vittix\Panchang\ValueObject\SolarEvents;
  * All calculations use only PHP built-in math functions. No extensions,
  * no FFI, no external libraries.
  *
- * Cache strategy: position results are memoised per (body, JD_TT) string key
- * within a single request/calculation cycle. The cache is not persisted.
+ * Cache strategy: position results are memoised per (body, JD_TT) string key.
+ * Positions are geocentric, so the keys are location-independent by nature;
+ * the ayanamsha is fixed per engine instance (one AyanamshaCalculatorInterface).
+ * Both in-memory caches are bounded LRU caches (default 512 entries) so that
+ * long-running batch generation cannot grow without limit; evicted entries are
+ * recomputed (or re-fetched from the optional PSR-16 cache). The in-memory
+ * caches are not persisted.
  */
 final class PurePhpAstronomyEngine implements AstronomyEngineInterface
 {
+    /** Default bound for each in-memory LRU cache (positions, ayanamsha). */
+    public const DEFAULT_MEMORY_CACHE_CAPACITY = 512;
+
     private readonly SolarPositionCalculator $solarCalculator;
     private readonly LunarPositionCalculator $lunarCalculator;
     private readonly PlanetPositionCalculator $mercuryCalculator;
@@ -62,18 +70,33 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
     private readonly NutationCalculator      $nutation;
     private readonly ObliquityCalculator     $obliquity;
 
-    /** @var array<string, EclipticPosition> */
+    /**
+     * Bounded LRU cache (oldest first); entries moved to the end on hit.
+     *
+     * @var array<string, EclipticPosition>
+     */
     private array $positionCache = [];
 
-    /** @var array<string, float> */
+    /**
+     * Bounded LRU cache (oldest first); entries moved to the end on hit.
+     *
+     * @var array<string, float>
+     */
     private array $ayanamshaCache = [];
+
+    private readonly int $memoryCacheCapacity;
 
     private readonly LunarArgumentCalculator $lunarArguments;
 
     public function __construct(
         private readonly AyanamshaCalculatorInterface $ayanamsha = new LahiriAyanamsha(),
         private readonly ?CacheInterface $cache = null,
+        int $memoryCacheCapacity = self::DEFAULT_MEMORY_CACHE_CAPACITY,
     ) {
+        if ($memoryCacheCapacity < 1) {
+            throw new \InvalidArgumentException('Memory cache capacity must be at least 1.');
+        }
+        $this->memoryCacheCapacity = $memoryCacheCapacity;
         $this->nutation       = new NutationCalculator();
         $this->obliquity      = new ObliquityCalculator($this->nutation);
         $this->solarCalculator = new SolarPositionCalculator($this->nutation, $this->obliquity);
@@ -100,12 +123,15 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
     {
         $key = $this->positionKey($body, $instant);
 
-        if (isset($this->positionCache[$key])) {
-            return $this->positionCache[$key];
+        if (array_key_exists($key, $this->positionCache)) {
+            return $this->cacheTouch($this->positionCache, $key);
         }
 
         if ($this->cache !== null && $this->cache->has($key)) {
-            return $this->cache->get($key);
+            $position = $this->cache->get($key);
+            $this->cacheStore($this->positionCache, $key, $position);
+
+            return $position;
         }
 
         $position = match ($body) {
@@ -130,7 +156,7 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
             ),
         };
 
-        $this->positionCache[$key] = $position;
+        $this->cacheStore($this->positionCache, $key, $position);
         if ($this->cache !== null) {
             $this->cache->set($key, $position);
         }
@@ -155,17 +181,20 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
         // Add prefix to avoid collision with position keys (though structurally different)
         $key = 'ayan:jd:' . sprintf('%.6F', $instant->julianDayTt);
 
-        if (isset($this->ayanamshaCache[$key])) {
-            return $this->ayanamshaCache[$key];
+        if (array_key_exists($key, $this->ayanamshaCache)) {
+            return $this->cacheTouch($this->ayanamshaCache, $key);
         }
 
         if ($this->cache !== null && $this->cache->has($key)) {
-            return $this->cache->get($key);
+            $ayanamsa = $this->cache->get($key);
+            $this->cacheStore($this->ayanamshaCache, $key, $ayanamsa);
+
+            return $ayanamsa;
         }
 
         $ayanamsa = $this->ayanamsha->calculate($instant);
 
-        $this->ayanamshaCache[$key] = $ayanamsa;
+        $this->cacheStore($this->ayanamshaCache, $key, $ayanamsa);
         if ($this->cache !== null) {
             $this->cache->set($key, $ayanamsa);
         }
@@ -241,6 +270,41 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
     {
         $this->positionCache  = [];
         $this->ayanamshaCache = [];
+    }
+
+    /**
+     * Move an existing entry to the most-recently-used end and return it.
+     *
+     * @template T
+     * @param array<string, T> $cache
+     * @return T
+     */
+    private function cacheTouch(array &$cache, string $key): mixed
+    {
+        $value = $cache[$key];
+        unset($cache[$key]);
+        $cache[$key] = $value;
+
+        return $value;
+    }
+
+    /**
+     * Insert an entry at the most-recently-used end, evicting the least
+     * recently used entries beyond the capacity bound.
+     *
+     * @template T
+     * @param array<string, T> $cache
+     * @param T $value
+     */
+    private function cacheStore(array &$cache, string $key, mixed $value): void
+    {
+        unset($cache[$key]);
+        $cache[$key] = $value;
+
+        while (count($cache) > $this->memoryCacheCapacity) {
+            $oldest = array_key_first($cache);
+            unset($cache[$oldest]);
+        }
     }
 
     private function positionKey(Body $body, AstroInstant $instant): string

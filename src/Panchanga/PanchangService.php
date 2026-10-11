@@ -43,10 +43,22 @@ use Vittix\Panchang\ValueObject\PanchangResult;
  */
 final class PanchangService
 {
+    /** Bound of the in-memory result LRU cache (per service instance). */
+    public const RESULT_CACHE_CAPACITY = 512;
+
     private readonly AstroTimeFactory $timeFactory;
 
     /** Lazily shared facade, always present for factories; built on demand for the raw constructor. */
     private ?Panchang $panchang = null;
+
+    /**
+     * Bounded LRU cache of computed results (PanchangResult / AstronomyResult),
+     * keyed by result kind + date + timezone + location (+ month system).
+     * Oldest entries first; moved to the end on hit; evicted beyond capacity.
+     *
+     * @var array<string, object>
+     */
+    private array $resultCache = [];
 
     public function __construct(
         private readonly AstronomyEngineInterface $astronomy,
@@ -102,12 +114,23 @@ final class PanchangService
      *
      * This is the main public method. Returns a PanchangResult that can
      * be serialized to JSON via `$result->toJson()` or inspected directly.
+     *
+     * Results are memoised in a bounded LRU cache keyed by date, timezone,
+     * location and month system; repeat calls with identical inputs are
+     * served from memory. Call {@see clearCache()} to force recomputation.
      */
     public function getForDate(
         DateTimeImmutable $date,
         GeoLocation $location,
         MonthSystem $monthSystem = MonthSystem::Amanta
     ): PanchangResult {
+        $key = $this->resultCacheKey('day', $date, $location) . '|' . $monthSystem->name;
+
+        $cached = $this->cacheGet($key);
+        if ($cached instanceof PanchangResult) {
+            return $cached;
+        }
+
         $timezone = $date->getTimezone();
 
         // Calculate the full PanchangDay (sunrise-anchored)
@@ -154,11 +177,24 @@ final class PanchangService
             accuracy: $panchangDay->accuracy,
         );
 
+        $this->cacheSet($key, $result);
+
+        return $result;
+    }
+
+    /**
+     * Clear the service-level result cache and the engine's in-memory caches.
+     *
+     * Useful in long-running processes that prefer to reclaim memory at
+     * explicit points instead of relying on the bounded LRU eviction.
+     */
+    public function clearCache(): void
+    {
+        $this->resultCache = [];
+
         if (method_exists($this->astronomy, 'clearCache')) {
             $this->astronomy->clearCache();
         }
-
-        return $result;
     }
 
     /**
@@ -166,12 +202,19 @@ final class PanchangService
      *
      * This is the "AstronomyResult" output — solar events, lunar events,
      * ayanamsha, sidereal time, and longitudes without any calendar or
-     * Panchang overlay.
+     * Panchang overlay. Results are memoised like {@see getForDate()}.
      */
     public function getAstronomyReport(
         DateTimeImmutable $date,
         GeoLocation $location
     ): AstronomyResult {
+        $key = $this->resultCacheKey('astro', $date, $location);
+
+        $cached = $this->cacheGet($key);
+        if ($cached instanceof AstronomyResult) {
+            return $cached;
+        }
+
         $timezone = $date->getTimezone();
 
         $solarEvents = $this->astronomy->solarEvents($date, $location, $timezone);
@@ -187,7 +230,7 @@ final class PanchangService
         $moonSiderealLon = $this->astronomy->siderealLongitude(Body::Moon, $instant);
         $solarMonth = SolarMonth::fromSiderealLongitude($sunSiderealLon);
 
-        return new AstronomyResult(
+        $result = new AstronomyResult(
             date: $date,
             location: $location,
             solarEvents: $solarEvents,
@@ -198,6 +241,67 @@ final class PanchangService
             moonSiderealLongitude: $moonSiderealLon,
             solarMonth: $solarMonth,
         );
+
+        $this->cacheSet($key, $result);
+
+        return $result;
+    }
+
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Build a cache key that fully determines the computation inputs:
+     * result kind, date (with offset), timezone name, and the full location
+     * (latitude, longitude, elevation). The engine configuration is constant
+     * per service instance, so it does not need to enter the key.
+     */
+    private function resultCacheKey(
+        string $kind,
+        DateTimeImmutable $date,
+        GeoLocation $location
+    ): string {
+        return sprintf(
+            '%s|%s|%s|%.6F,%.6F,%.2F',
+            $kind,
+            $date->format('c'),
+            $date->getTimezone()->getName(),
+            $location->latitude,
+            $location->longitude,
+            $location->elevationMeters,
+        );
+    }
+
+    /**
+     * Fetch a cached result, moving it to the most-recently-used end.
+     */
+    private function cacheGet(string $key): ?object
+    {
+        if (!array_key_exists($key, $this->resultCache)) {
+            return null;
+        }
+
+        $value = $this->resultCache[$key];
+        unset($this->resultCache[$key]);
+        $this->resultCache[$key] = $value;
+
+        return $value;
+    }
+
+    /**
+     * Insert a result at the most-recently-used end, evicting the least
+     * recently used entries beyond {@see RESULT_CACHE_CAPACITY}.
+     */
+    private function cacheSet(string $key, object $value): void
+    {
+        unset($this->resultCache[$key]);
+        $this->resultCache[$key] = $value;
+
+        while (count($this->resultCache) > self::RESULT_CACHE_CAPACITY) {
+            $oldest = array_key_first($this->resultCache);
+            unset($this->resultCache[$oldest]);
+        }
     }
 
     // -------------------------------------------------------------------------
