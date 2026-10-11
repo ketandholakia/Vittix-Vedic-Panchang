@@ -9,7 +9,6 @@ use DateTimeZone;
 use Vittix\Panchang\Astronomy\Coordinates\CoordinateTransformer;
 use Vittix\Panchang\Astronomy\Coordinates\ObliquityCalculator;
 use Vittix\Panchang\Astronomy\Sidereal\SiderealTimeCalculator;
-use Vittix\Panchang\Enum\Body;
 use Vittix\Panchang\Math\Angle;
 use Vittix\Panchang\Time\AstroTimeFactory;
 use Vittix\Panchang\Time\JulianDay;
@@ -19,16 +18,21 @@ use Vittix\Panchang\ValueObject\LunarEvents;
 /**
  * Iterative moonrise, lunar transit, and moonset calculator.
  *
- * Unlike solar events, the Moon's large horizontal parallax (~0.95°) and
- * rapid daily motion (~13.2°/day in longitude) require topocentric
- * corrections for accurate rise/set times.
+ * Civil-date semantics (the rule this calculator implements):
+ *   • The moonrise (moonset) for a civil date D is the FIRST moonrise
+ *     (moonset) whose local time falls within [00:00, 24:00) of D in the
+ *     given timezone.
+ *   • It is null only when the Moon does not rise (or set) at all during
+ *     that local day. Because the Moon's transit-to-transit period averages
+ *     ≈ 24 h 50 m, roughly one local day per lunation has no moonrise (or
+ *     no moonset).
+ *   • Internally the calculator scans a UTC window of at least 36 h around
+ *     the local day (local midnight − 8 h … next local midnight + 8 h) with
+ *     a 45-minute step, refines each horizon crossing by bisection, and
+ *     then selects the first event belonging to the requested local date.
  *
- * Algorithm:
- *  1. Estimate lunar transit from the Moon's RA and observer longitude.
- *  2. Estimate moonrise/moonset using the Moon's hour angle at the
- *     apparent horizon altitude.
- *  3. Recalculate the Moon's equatorial coordinates at the estimated
- *     event times and iterate until convergence.
+ * The lunar transit keeps its historical meaning: the meridian passage
+ * nearest 00:00 UT of the civil date.
  *
  * Apparent horizon altitude for the Moon:
  *   h₀ = 0.7275 × π − 0°34′
@@ -47,11 +51,25 @@ final class LunarEventCalculator
     /** Moon's angular radius coefficient. */
     private const PARALLAX_FACTOR = 0.7275;
 
-    /** Convergence tolerance in minutes. */
-    private const TOLERANCE_MINUTES = 0.5;
+    /** Coarse scan step in minutes for the horizon-crossing search. */
+    private const SCAN_STEP_MINUTES = 45.0;
 
-    /** Maximum iterations per event. */
-    private const MAX_ITER = 50;
+    /**
+     * Fine scan step in minutes. Used to re-scan short intervals around
+     * grazing extrema of the Moon's altitude, where two crossings can be
+     * closer together than the coarse step (at high latitudes the Moon can
+     * graze the horizon for only a handful of minutes).
+     */
+    private const FINE_SCAN_STEP_MINUTES = 5.0;
+
+    /** Crossing refinement tolerance in seconds. */
+    private const CROSSING_TOLERANCE_SECONDS = 2.0;
+
+    /** Maximum bisection iterations per crossing. */
+    private const MAX_CROSSING_ITERATIONS = 20;
+
+    /** Buffer around the local day when scanning, in hours (window ≥ 36 h). */
+    private const WINDOW_BUFFER_HOURS = 8.0;
 
     private readonly AstroTimeFactory $timeFactory;
     private readonly SiderealTimeCalculator $siderealTime;
@@ -68,61 +86,42 @@ final class LunarEventCalculator
     /**
      * Calculate moonrise, lunar transit, and moonset for a civil date and location.
      *
-     * The Moon's synodic period exceeds 24 hours, so on some days there may be
-     * no moonrise or no moonset. These are returned as null.
+     * Moonrise/moonset follow the civil-date rule documented on the class:
+     * the first event whose local time falls in [00:00, 24:00) of the
+     * requested date; null only when no such event exists.
      */
     public function calculate(
         DateTimeImmutable $localDate,
         GeoLocation $location,
         DateTimeZone $timezone
     ): LunarEvents {
-        // Anchor: 0h UT of the target civil date
-        $midnight = new DateTimeImmutable(
-            $localDate->format('Y-m-d 00:00:00'),
-            new DateTimeZone('UTC')
+        $dateKey = $localDate->format('Y-m-d');
+
+        // Local day boundaries in universal time.
+        $localMidnight = new DateTimeImmutable($dateKey . ' 00:00:00', $timezone);
+        $nextMidnight = $localMidnight->modify('+1 day');
+
+        $utc = new DateTimeZone('UTC');
+        $windowStart = JulianDay::fromUtc($localMidnight->setTimezone($utc))
+            - self::WINDOW_BUFFER_HOURS / 24.0;
+        $windowEnd = JulianDay::fromUtc($nextMidnight->setTimezone($utc))
+            + self::WINDOW_BUFFER_HOURS / 24.0;
+
+        [$rises, $sets] = $this->findRiseSetInWindow($windowStart, $windowEnd, $location);
+
+        $rises = self::dedupeEvents($rises);
+        $sets = self::dedupeEvents($sets);
+
+        $moonriseJd = $this->selectForLocalDate($rises, $dateKey, $timezone);
+        $moonsetJd = $this->selectForLocalDate($sets, $dateKey, $timezone);
+
+        // Lunar transit: meridian passage nearest 00:00 UT of the civil date.
+        $midnightUtc = new DateTimeImmutable($dateKey . ' 00:00:00', $utc);
+        $jd0 = JulianDay::fromUtc($midnightUtc);
+        $transitJd = $this->refineTransit(
+            $this->estimateTransit($jd0, $this->moonRA($jd0), $location),
+            $location
         );
-        $jd0 = JulianDay::fromUtc($midnight);
-
-        // Get Moon's equatorial coordinates at 0h, 12h, 24h for interpolation
-        $ra0  = $this->moonRA($jd0);
-        $dec0 = $this->moonDec($jd0);
-        $hp0  = $this->moonHorizontalParallax($jd0);
-
-        // Estimate transit (lunar meridian passage)
-        $transitJd = $this->estimateTransit($jd0, $ra0, $location);
-
-        // Get Moon's parallax at transit for the h₀ calculation
-        $hp = $this->moonHorizontalParallax($transitJd);
-        $h0 = self::PARALLAX_FACTOR * $hp - self::REFRACTION;
-
-        // Estimate rise/set from transit
-        [$riseJd, $setJd] = $this->estimateRiseset($transitJd, $location, $h0);
-
-        // Refine transit
-        $transitJd = $this->refineTransit($transitJd, $location);
-
-        // Refine moonrise
-        $moonriseJd = null;
-        if ($riseJd !== null) {
-            $moonriseJd = $this->refineEvent($riseJd, $location, 'rise');
-        }
-
-        // Refine moonset
-        $moonsetJd = null;
-        if ($setJd !== null) {
-            $moonsetJd = $this->refineEvent($setJd, $location, 'set');
-        }
-
-        // Validate: events should be within ±1 day of the target date
-        $dayStart = $jd0;
-        $dayEnd   = $jd0 + 1.5; // allow generous window for moonset after midnight
-
-        if ($moonriseJd !== null && ($moonriseJd < $dayStart - 0.5 || $moonriseJd > $dayEnd)) {
-            $moonriseJd = null;
-        }
-        if ($moonsetJd !== null && ($moonsetJd < $dayStart - 0.5 || $moonsetJd > $dayEnd)) {
-            $moonsetJd = null;
-        }
 
         return new LunarEvents(
             moonrise: $moonriseJd !== null
@@ -136,7 +135,251 @@ final class LunarEventCalculator
     }
 
     // -------------------------------------------------------------------------
-    // Private helpers
+    // Rise/set search
+    // -------------------------------------------------------------------------
+
+    /**
+     * Scan a UTC window for all moonrise and moonset events, ascending.
+     *
+     * The scan runs on a 45-minute grid. Because the Moon can graze the
+     * horizon at high latitudes — with both crossings of a short window
+     * falling between two grid samples — every three consecutive samples
+     * additionally get a parabola check: the parabola through the samples
+     * predicts the value at a grazing extremum, and whenever that prediction
+     * would cross the horizon, the interval is re-scanned on a 5-minute grid
+     * so the brief window is not missed. All crossings are then refined by
+     * bisection.
+     *
+     * @return array{0: list<float>, 1: list<float>} [rise JDs, set JDs] (UT)
+     */
+    private function findRiseSetInWindow(float $fromJd, float $toJd, GeoLocation $location): array
+    {
+        $step = self::SCAN_STEP_MINUTES / 1440.0;
+        $rises = [];
+        $sets = [];
+
+        /** @var float|null $prevPrevJd */
+        $prevPrevJd = null;
+        /** @var float|null $prevPrevAltitude */
+        $prevPrevAltitude = null;
+        $prevJd = $fromJd;
+        $prevAltitude = $this->altitudeMinusH0($prevJd, $location);
+        /** @var float|null $lastGrazingRescanEnd */
+        $lastGrazingRescanEnd = null;
+
+        for ($jd = $fromJd + $step; $jd <= $toJd; $jd += $step) {
+            $altitude = $this->altitudeMinusH0($jd, $location);
+
+            if ($prevAltitude < 0.0 && $altitude >= 0.0) {
+                $rises[] = $this->refineCrossing($prevJd, $jd, true, $location);
+            } elseif ($prevAltitude > 0.0 && $altitude <= 0.0) {
+                $sets[] = $this->refineCrossing($prevJd, $jd, false, $location);
+            } elseif ($prevPrevJd !== null && $prevPrevAltitude !== null) {
+                $crossed = $this->grazingExtremumCrossesHorizon(
+                    $prevPrevAltitude,
+                    $prevAltitude,
+                    $altitude
+                );
+
+                if ($crossed) {
+                    $rescanStart = $lastGrazingRescanEnd === null
+                        ? $prevPrevJd
+                        : max($prevPrevJd, $lastGrazingRescanEnd);
+
+                    if ($rescanStart < $jd) {
+                        $this->scanIntervalFinely($rescanStart, $jd, $location, $rises, $sets);
+                    }
+
+                    $lastGrazingRescanEnd = $jd;
+                }
+            }
+
+            $prevPrevJd = $prevJd;
+            $prevPrevAltitude = $prevAltitude;
+            $prevJd = $jd;
+            $prevAltitude = $altitude;
+        }
+
+        return [$rises, $sets];
+    }
+
+    /**
+     * Does the parabola through three equally spaced samples predict a
+     * grazing extremum that crosses the horizon between the outer samples?
+     *
+     * A below-horizon window hides between three above-horizon samples when
+     * the predicted vertex value is negative; an above-horizon window hides
+     * between three below-horizon samples when it is positive.
+     */
+    private function grazingExtremumCrossesHorizon(
+        float $first,
+        float $middle,
+        float $last
+    ): bool {
+        $allAbove = $first > 0.0 && $middle > 0.0 && $last > 0.0;
+        $allBelow = $first < 0.0 && $middle < 0.0 && $last < 0.0;
+
+        if (!$allAbove && !$allBelow) {
+            return false;
+        }
+
+        $denominator = $first - 2.0 * $middle + $last;
+        if (abs($denominator) < 1e-12) {
+            return false;
+        }
+
+        // Vertex offset from the middle sample, in units of the sample spacing.
+        $vertexOffset = ($first - $last) / (2.0 * $denominator);
+        if (abs($vertexOffset) > 2.0) {
+            return false;
+        }
+
+        $vertexValue = $middle - ($first - $last) ** 2 / (8.0 * $denominator);
+
+        return $allAbove ? ($vertexValue < 0.0) : ($vertexValue > 0.0);
+    }
+
+    /**
+     * Re-scan [startJd, endJd] on the fine grid and collect crossings.
+     *
+     * @param list<float> $rises
+     * @param list<float> $sets
+     */
+    private function scanIntervalFinely(
+        float $startJd,
+        float $endJd,
+        GeoLocation $location,
+        array &$rises,
+        array &$sets
+    ): void {
+        $step = self::FINE_SCAN_STEP_MINUTES / 1440.0;
+
+        $prevJd = $startJd;
+        $prevAltitude = $this->altitudeMinusH0($prevJd, $location);
+        $jd = $startJd + $step;
+
+        while (true) {
+            $currentJd = min($jd, $endJd);
+            $altitude = $this->altitudeMinusH0($currentJd, $location);
+
+            if ($prevAltitude < 0.0 && $altitude >= 0.0) {
+                $rises[] = $this->refineCrossing($prevJd, $currentJd, true, $location);
+            } elseif ($prevAltitude > 0.0 && $altitude <= 0.0) {
+                $sets[] = $this->refineCrossing($prevJd, $currentJd, false, $location);
+            }
+
+            if ($currentJd >= $endJd) {
+                return;
+            }
+
+            $prevJd = $currentJd;
+            $prevAltitude = $altitude;
+            $jd += $step;
+        }
+    }
+
+    /**
+     * Collapse near-identical event times (possible when overlapping
+     * parabola-checked intervals are re-scanned) and sort ascending.
+     *
+     * @param list<float> $events
+     * @return list<float>
+     */
+    private static function dedupeEvents(array $events): array
+    {
+        sort($events);
+        $result = [];
+        foreach ($events as $event) {
+            if ($result === [] || ($event - $result[count($result) - 1]) > 3.5e-5) {
+                $result[] = $event;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * First event whose local calendar date equals the requested date.
+     *
+     * @param list<float> $events ascending event times (JD, UT)
+     */
+    private function selectForLocalDate(array $events, string $localDate, DateTimeZone $timezone): ?float
+    {
+        foreach ($events as $eventJd) {
+            $local = JulianDay::toUtc($eventJd)->setTimezone($timezone);
+            if ($local->format('Y-m-d') === $localDate) {
+                return $eventJd;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Altitude of the Moon's centre above the apparent horizon, in degrees:
+     *   alt(jd) − h₀,  h₀ = 0.7275·π − 34′
+     * Positive when the Moon is up, negative when it is down.
+     */
+    private function altitudeMinusH0(float $jd, GeoLocation $location): float
+    {
+        $instant = $this->timeFactory->fromJulianDay($jd);
+        $ecliptic = $this->lunarPosition->calculate($instant);
+        $obliquity = $this->obliquity->true($instant);
+
+        $transformer = new CoordinateTransformer();
+        $equatorial = $transformer->eclipticToEquatorial($ecliptic, $obliquity);
+
+        $distanceKm = $ecliptic->distance;
+        $parallax = $distanceKm > 0.0 ? Angle::asin(6378.14 / $distanceKm) : 0.9508;
+        $h0 = self::PARALLAX_FACTOR * $parallax - self::REFRACTION;
+
+        $lmst = $this->siderealTime->localMeanSiderealTime($jd, $location->longitude);
+
+        $hourAngle = Angle::normalize($lmst - $equatorial->rightAscension);
+        if ($hourAngle > 180.0) {
+            $hourAngle -= 360.0;
+        }
+
+        $sinAltitude = Angle::sin($location->latitude) * Angle::sin($equatorial->declination)
+                     + Angle::cos($location->latitude) * Angle::cos($equatorial->declination)
+                       * Angle::cos($hourAngle);
+        $sinAltitude = max(-1.0, min(1.0, $sinAltitude));
+
+        return Angle::asin($sinAltitude) - $h0;
+    }
+
+    /**
+     * Bisect a bracketed horizon crossing to sub-2-second accuracy.
+     *
+     * The bracket [lo, hi] must straddle the crossing in the direction of
+     * travel (rise: below → above; set: above → below). Returns an instant
+     * on the "after" side of the crossing.
+     */
+    private function refineCrossing(float $loJd, float $hiJd, bool $isRise, GeoLocation $location): float
+    {
+        $tolerance = self::CROSSING_TOLERANCE_SECONDS / 86400.0;
+
+        for ($i = 0; $i < self::MAX_CROSSING_ITERATIONS; $i++) {
+            if (($hiJd - $loJd) <= $tolerance) {
+                break;
+            }
+
+            $midJd = ($loJd + $hiJd) / 2.0;
+            $midAltitude = $this->altitudeMinusH0($midJd, $location);
+            $midPast = $isRise ? ($midAltitude >= 0.0) : ($midAltitude <= 0.0);
+
+            if ($midPast) {
+                $hiJd = $midJd;
+            } else {
+                $loJd = $midJd;
+            }
+        }
+
+        return $hiJd;
+    }
+
+    // -------------------------------------------------------------------------
+    // Lunar transit
     // -------------------------------------------------------------------------
 
     /**
@@ -155,49 +398,14 @@ final class LunarEventCalculator
     }
 
     /**
-     * Moon's geocentric declination in degrees at a given JD.
-     */
-    private function moonDec(float $jd): float
-    {
-        $instant = $this->timeFactory->fromJulianDay($jd);
-        $ecliptic = $this->lunarPosition->calculate($instant);
-        $obl = $this->obliquity->true($instant);
-
-        $transformer = new CoordinateTransformer();
-        $eq = $transformer->eclipticToEquatorial($ecliptic, $obl);
-
-        return $eq->declination;
-    }
-
-    /**
-     * Moon's horizontal parallax in degrees at a given JD.
-     *
-     * π = arcsin(6378.14 / distance_km)
-     * Mean value ≈ 57′02″ ≈ 0.9508°
-     */
-    private function moonHorizontalParallax(float $jd): float
-    {
-        $instant = $this->timeFactory->fromJulianDay($jd);
-        $pos = $this->lunarPosition->calculate($instant);
-
-        // Moon distance is in km in our EclipticPosition
-        $distanceKm = $pos->distance;
-
-        if ($distanceKm <= 0.0) {
-            return 0.9508; // fallback to mean parallax
-        }
-
-        return Angle::asin(6378.14 / $distanceKm);
-    }
-
-    /**
-     * Estimate transit JD (Moon crossing the observer's meridian).
+     * Estimate transit JD (Moon crossing the observer's meridian), nearest
+     * to the given anchor time.
      */
     private function estimateTransit(float $jd0, float $ra, GeoLocation $location): float
     {
         $gmst0 = $this->siderealTime->greenwichMeanSiderealTime($jd0);
 
-        // Hour angle at 0h UT
+        // Hour angle at the anchor time
         $h = Angle::normalize($gmst0 + $location->longitude - $ra);
         if ($h > 180.0) {
             $h -= 360.0;
@@ -217,7 +425,7 @@ final class LunarEventCalculator
      */
     private function refineTransit(float $jdTransit, GeoLocation $location): float
     {
-        for ($i = 0; $i < self::MAX_ITER; $i++) {
+        for ($i = 0; $i < 50; $i++) {
             $ra = $this->moonRA($jdTransit);
             $lmst = $this->siderealTime->localMeanSiderealTime($jdTransit, $location->longitude);
 
@@ -230,7 +438,7 @@ final class LunarEventCalculator
 
             $newJd = $jdTransit + $correction;
 
-            if (abs($newJd - $jdTransit) < self::TOLERANCE_MINUTES / (24.0 * 60.0)) {
+            if (abs($newJd - $jdTransit) < 0.5 / (24.0 * 60.0)) {
                 return $newJd;
             }
 
@@ -238,99 +446,5 @@ final class LunarEventCalculator
         }
 
         return $jdTransit;
-    }
-
-    /**
-     * Estimate moonrise and moonset JDs from a transit JD.
-     *
-     * @return array{0: float|null, 1: float|null} [rise JD, set JD]
-     */
-    private function estimateRiseset(float $jdTransit, GeoLocation $location, float $h0): array
-    {
-        $dec = $this->moonDec($jdTransit);
-        $lat = $location->latitude;
-
-        // cos(H₀) = (sin(h₀) − sin(φ)·sin(δ)) / (cos(φ)·cos(δ))
-        $denominator = Angle::cos($lat) * Angle::cos($dec);
-
-        if (abs($denominator) < 1e-10) {
-            return [null, null];
-        }
-
-        $cosH0 = (Angle::sin($h0) - Angle::sin($lat) * Angle::sin($dec))
-               / $denominator;
-
-        // Moon never rises or never sets at this latitude
-        if ($cosH0 < -1.0 || $cosH0 > 1.0) {
-            return [null, null];
-        }
-
-        $hourAngle = Angle::acos($cosH0); // degrees
-
-        // Convert to fraction of day, accounting for Moon's motion
-        // Use effective rate ~347.8°/day instead of 360°
-        $h0Day = $hourAngle / 347.8;
-
-        $riseJd = $jdTransit - $h0Day;
-        $setJd  = $jdTransit + $h0Day;
-
-        return [$riseJd, $setJd];
-    }
-
-    /**
-     * Iteratively refine a moonrise or moonset Julian Day.
-     *
-     * @param string $type 'rise' or 'set'
-     */
-    private function refineEvent(float $jdEvent, GeoLocation $location, string $type): float
-    {
-        $lat = $location->latitude;
-
-        for ($i = 0; $i < self::MAX_ITER; $i++) {
-            $instant = $this->timeFactory->fromJulianDay($jdEvent);
-            $ecliptic = $this->lunarPosition->calculate($instant);
-            $obl = $this->obliquity->true($instant);
-            $transformer = new CoordinateTransformer();
-            $eq = $transformer->eclipticToEquatorial($ecliptic, $obl);
-            $ra  = $eq->rightAscension;
-            $dec = $eq->declination;
-
-            // Get parallax at this moment
-            $hp = $this->moonHorizontalParallax($jdEvent);
-            $h0 = self::PARALLAX_FACTOR * $hp - self::REFRACTION;
-
-            $lmst = $this->siderealTime->localMeanSiderealTime($jdEvent, $location->longitude);
-
-            // Hour angle
-            $h = Angle::normalize($lmst - $ra);
-            if ($h > 180.0) {
-                $h -= 360.0;
-            }
-
-            // Altitude of the Moon at this hour angle
-            $sinAlt = Angle::sin($lat) * Angle::sin($dec)
-                    + Angle::cos($lat) * Angle::cos($dec) * Angle::cos($h);
-            $altitude = Angle::asin($sinAlt);
-
-            // Correction
-            $denom = Angle::cos($dec) * Angle::cos($lat) * Angle::sin($h);
-
-            if (abs($denom) < 1e-10) {
-                break; // Avoid division by zero near meridian
-            }
-
-            // Use effective daily rate for Moon (347.8° instead of 360°)
-            $correction = ($altitude - $h0) / (347.8 * $denom);
-
-            $newJd = $jdEvent + $correction;
-
-            if (abs($newJd - $jdEvent) < self::TOLERANCE_MINUTES / (24.0 * 60.0)) {
-                return $newJd;
-            }
-
-            $jdEvent = $newJd;
-        }
-
-        return $jdEvent;
     }
 }
