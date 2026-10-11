@@ -13,6 +13,7 @@ use Vittix\Panchang\Enum\MonthSystem;
 use Vittix\Panchang\Enum\AyanamshaSystem;
 use Psr\SimpleCache\CacheInterface;
 use Vittix\Panchang\Festivals\FestivalEngine;
+use Vittix\Panchang\Panchang;
 use Vittix\Panchang\Time\AstroTimeFactory;
 use Vittix\Panchang\ValueObject\AstronomyResult;
 use Vittix\Panchang\ValueObject\GeoLocation;
@@ -24,6 +25,10 @@ use Vittix\Panchang\ValueObject\PanchangResult;
  * This service composes the astronomy engine, panchanga calculator, and
  * calendar calculator into structured, JSON-ready outputs. It is the
  * canonical API surface for Phase 5 (REST API) and Phase 6 (CLI).
+ *
+ * The default factory shares the object graph of the {@see Panchang} facade
+ * (one engine, one set of calculators); the astrology features of the facade
+ * are reachable through the pass-through methods below.
  *
  * Usage:
  *
@@ -40,6 +45,9 @@ final class PanchangService
 {
     private readonly AstroTimeFactory $timeFactory;
 
+    /** Lazily shared facade, always present for factories; built on demand for the raw constructor. */
+    private ?Panchang $panchang = null;
+
     public function __construct(
         private readonly AstronomyEngineInterface $astronomy,
         private readonly PanchangaCalculator $panchangaCalculator,
@@ -49,43 +57,44 @@ final class PanchangService
     }
 
     /**
+     * Create a PanchangService that shares the object graph of an existing
+     * Panchang facade — a single engine and a single set of calculators are
+     * constructed, and both entry points delegate to them.
+     */
+    public static function fromPanchang(Panchang $panchang): self
+    {
+        $service = new self(
+            $panchang->engine(),
+            $panchang->calculator(),
+            $panchang->calendarCalculator(),
+        );
+        $service->panchang = $panchang;
+
+        return $service;
+    }
+
+    /**
      * Create a PanchangService with default configuration.
      *
-     * This is a convenience factory that creates all required dependencies
-     * using the standard pure-PHP Lahiri engine.
+     * This is a convenience factory that creates the standard pure-PHP Lahiri
+     * engine graph once (via the Panchang facade) and shares it.
      */
     public static function createDefault(
         AyanamshaSystem $ayanamshaSystem = AyanamshaSystem::Lahiri,
-        ?\Psr\SimpleCache\CacheInterface $cache = null
+        ?CacheInterface $cache = null
     ): self {
-        $panchang = \Vittix\Panchang\Panchang::createDefault($ayanamshaSystem, $cache);
-
-        // Extract internal dependencies from the Panchang facade.
-        // We re-create using the same pattern as Panchang::create().
-        $engine = \Vittix\Panchang\Astronomy\Engine\EngineFactory::createPurePhpEngine($ayanamshaSystem, $cache);
-
-        $lunarMonthCalc = new \Vittix\Panchang\Calendar\LunarMonthCalculator($engine);
-        $adhikaMasaCalc = new \Vittix\Panchang\Calendar\AdhikaMasaCalculator($engine, $lunarMonthCalc);
-
-        $calculator = new PanchangaCalculator(
-            astronomy:      $engine,
-            tithi:          new TithiCalculator($engine),
-            nakshatra:      new NakshatraCalculator($engine),
-            yoga:           new YogaCalculator($engine),
-            karana:         new KaranaCalculator($engine),
-            vara:           new VaraCalculator(),
-            transitions:    new TransitionFinder($engine),
-            lunarMonthCalc: $lunarMonthCalc,
-            adhikaMasaCalc: $adhikaMasaCalc,
+        return self::fromPanchang(
+            Panchang::createDefault($ayanamshaSystem, $cache)
         );
+    }
 
-        $calendar = new HinduCalendarCalculator(
-            $lunarMonthCalc,
-            $adhikaMasaCalc,
-            new \Vittix\Panchang\Calendar\SamvatCalculator()
-        );
-
-        return new self($engine, $calculator, $calendar);
+    /**
+     * The shared Panchang facade backing the astrology pass-throughs.
+     * Built lazily (once) when the service was constructed from raw parts.
+     */
+    private function panchang(): Panchang
+    {
+        return $this->panchang ??= Panchang::create($this->astronomy);
     }
 
     /**
@@ -189,5 +198,120 @@ final class PanchangService
             moonSiderealLongitude: $moonSiderealLon,
             solarMonth: $solarMonth,
         );
+    }
+
+    // -------------------------------------------------------------------------
+    // Facade pass-throughs (astrology features)
+    //
+    // Thin one-line delegations to the shared Panchang facade so the service
+    // is a complete REST-API surface. Each method matches the facade signature.
+    // -------------------------------------------------------------------------
+
+    /**
+     * Calculate the sunrise-anchored daily Panchang for a date and location.
+     */
+    public function day(DateTimeImmutable $date, GeoLocation $location): \Vittix\Panchang\ValueObject\PanchangDay
+    {
+        return $this->panchang()->day($date, $location);
+    }
+
+    /**
+     * Calculate all five Panchang limbs for a specific moment and location.
+     */
+    public function moment(DateTimeImmutable $moment, GeoLocation $location): \Vittix\Panchang\ValueObject\PanchangMoment
+    {
+        return $this->panchang()->moment($moment, $location);
+    }
+
+    /**
+     * Calculate the Janmarashi (Moon sign) at a specific moment.
+     */
+    public function janmarashi(DateTimeImmutable $moment): \Vittix\Panchang\Enum\Rashi
+    {
+        return $this->panchang()->janmarashi($moment);
+    }
+
+    /**
+     * Get the FestivalEngine pre-configured with default festivals.
+     */
+    public function festivals(): FestivalEngine
+    {
+        return $this->panchang()->festivals();
+    }
+
+    /**
+     * Get a MuhurtaCalculator instance.
+     */
+    public function muhurta(): \Vittix\Panchang\Muhurta\MuhurtaCalculator
+    {
+        return $this->panchang()->muhurta();
+    }
+
+    /**
+     * Get an ElectionalEvaluator instance.
+     */
+    public function electional(): \Vittix\Panchang\Electional\ElectionalEvaluator
+    {
+        return $this->panchang()->electional();
+    }
+
+    /**
+     * Get the Hindu Calendar information (Samvat, Adhika Masa, etc) for a date.
+     */
+    public function calendar(DateTimeImmutable $date): \Vittix\Panchang\Calendar\HinduCalendarResult
+    {
+        return $this->panchang()->calendar($date);
+    }
+
+    /**
+     * Calculate the Ascendant (Lagna) for a specific moment and location.
+     */
+    public function ascendant(DateTimeImmutable $moment, GeoLocation $location): \Vittix\Panchang\ValueObject\AscendantPosition
+    {
+        return $this->panchang()->ascendant($moment, $location);
+    }
+
+    /**
+     * Calculate the full Kundali (Birth Chart) for a specific moment and location.
+     */
+    public function kundali(DateTimeImmutable $moment, GeoLocation $location): \Vittix\Panchang\ValueObject\Kundali
+    {
+        return $this->panchang()->kundali($moment, $location);
+    }
+
+    /**
+     * Calculate the Vimshottari Dasha starting from a specific birth moment.
+     *
+     * @return array<\Vittix\Panchang\ValueObject\DashaPeriod>
+     */
+    public function vimshottariDasha(DateTimeImmutable $birthTime): array
+    {
+        return $this->panchang()->vimshottariDasha($birthTime);
+    }
+
+    /**
+     * Calculate a specific Divisional Chart (Varga) for a given moment and location.
+     */
+    public function varga(DateTimeImmutable $moment, GeoLocation $location, \Vittix\Panchang\Enum\Varga $varga): \Vittix\Panchang\ValueObject\Kundali
+    {
+        return $this->panchang()->varga($moment, $location, $varga);
+    }
+
+    /**
+     * Calculate the Shadbala (Six-fold planetary strength) for the visible planets.
+     */
+    public function shadbala(DateTimeImmutable $moment, GeoLocation $location): \Vittix\Panchang\ValueObject\Shadbala\Shadbala
+    {
+        return $this->panchang()->shadbala($moment, $location);
+    }
+
+    /**
+     * Detect all classical planetary Yogas present in the birth chart.
+     *
+     * @return array<int, \Vittix\Panchang\ValueObject\Yoga>
+     */
+    public function yogas(DateTimeImmutable $moment, GeoLocation $location): array
+    {
+        return $this->panchang()->yogas($moment, $location);
     }
 }

@@ -220,6 +220,26 @@ final class Panchang
     }
 
     /**
+     * Get the underlying astronomy engine.
+     *
+     * Exposed so higher-level entry points (e.g. PanchangService) can share
+     * the exact engine graph this facade built instead of constructing a
+     * second engine instance.
+     */
+    public function engine(): AstronomyEngineInterface
+    {
+        return $this->astronomy;
+    }
+
+    /**
+     * Get the underlying Hindu calendar calculator.
+     */
+    public function calendarCalculator(): HinduCalendarCalculator
+    {
+        return $this->calendar;
+    }
+
+    /**
      * Get the FestivalEngine pre-configured with default festivals.
      */
     public function festivals(): FestivalEngine
