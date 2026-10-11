@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Vittix\Panchang;
 
 use DateTimeImmutable;
-use Vittix\Panchang\Astronomy\Engine\PurePhpAstronomyEngine;
 use Vittix\Panchang\Enum\Body;
 use Vittix\Panchang\Astronomy\Contracts\AstronomyEngineInterface;
 use Vittix\Panchang\Astronomy\Coordinates\AscendantCalculator;
@@ -13,9 +12,6 @@ use Psr\SimpleCache\CacheInterface;
 use Vittix\Panchang\Astronomy\Coordinates\NutationCalculator;
 use Vittix\Panchang\Astronomy\Coordinates\ObliquityCalculator;
 use Vittix\Panchang\Astronomy\Sidereal\SiderealTimeCalculator;
-use Vittix\Panchang\Astronomy\Sidereal\LahiriAyanamsha;
-use Vittix\Panchang\Astronomy\Sidereal\RamanAyanamsha;
-use Vittix\Panchang\Astronomy\Sidereal\KrishnamurtiAyanamsha;
 use Vittix\Panchang\ValueObject\AscendantPosition;
 use Vittix\Panchang\Calendar\AdhikaMasaCalculator;
 use Vittix\Panchang\Calendar\LunarMonthCalculator;
