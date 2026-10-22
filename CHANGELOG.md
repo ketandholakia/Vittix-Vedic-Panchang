@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.0] - 2026-10-22
+
+### Added
+- Localization is now wired into the public API via `PanchangService`:
+  - `translate(UnitEnum $enum, string $lang)` - translate a Panchang limb (Tithi, Nakshatra, Yoga,
+    Karana, Vara, Paksha, Rashi, lunar/solar months) using the bundled `ArrayTranslator` datasets
+    (bn, en, gu, hi, kn, ml, mr, sa, ta, te) or a registered custom translator.
+  - `setTranslator(?TranslatorInterface $translator)` - inject a custom translator; pass `null`
+    to restore the bundled default.
+  - `translator()` - access the active translator.
+  - `getForDateLocalized($date, $location, $lang)` - the JSON-ready daily Panchang array with all
+    limb names localized.
+- `Support\LruCache` - shared bounded LRU cache used by the astronomy engine and the service result
+  cache, replacing three duplicated private implementations.
+
+### Fixed
+- `PurePhpAstronomyEngine::dailyMotion()` now advances UTC by exactly 86.4 s (0.001 days) instead
+  of 86 s; the clock/JD delta coupling is documented.
+- Sunrise fallback: the local-noon reference instant used when sunrise is undefined (polar
+  day/night) is single-sourced in `Time\SunriseFallback` instead of being repeated three times.
+- `.gitattributes`: `phpunit.xml.dist`, `.phpunit.result.cache`, `composer.lock` and `/memory` are
+  now excluded from dist archives.
+
+### Documented
+- Shadbala is explicitly labeled partial: Drik Bala is always 0.0 and Kala Bala is approximated by
+  Ayana Bala only (`ShadbalaCalculator` + public `shadbala()` docblocks).
+- DignityCalculator is explicitly labeled partial: Friendly/Neutral/Enemy states return `null`.
+- New "Localization" section in `docs/api.md`.
+
 ## [2.5.0] - 2026-10-11
 
 ### Added
