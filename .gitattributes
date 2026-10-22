@@ -13,4 +13,8 @@
 .gitattributes export-ignore
 phpstan.neon export-ignore
 phpunit.xml export-ignore
+phpunit.xml.dist export-ignore
+.phpunit.result.cache export-ignore
+composer.lock export-ignore
+/memory export-ignore
 *.patch export-ignore

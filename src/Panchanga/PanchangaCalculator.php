@@ -12,6 +12,7 @@ use Vittix\Panchang\Calendar\LunarMonthCalculator;
 use Vittix\Panchang\Enum\Body;
 use Vittix\Panchang\Enum\Tithi;
 use Vittix\Panchang\Time\AstroTimeFactory;
+use Vittix\Panchang\Time\SunriseFallback;
 use Vittix\Panchang\Enum\MonthSystem;
 use Vittix\Panchang\Calendar\PurnimantaMonthCalculator;
 use Vittix\Panchang\ValueObject\AccuracyInfo;
@@ -105,8 +106,8 @@ final class PanchangaCalculator
             $sunriseInstant = $this->timeFactory->fromDateTime($solarEvents->sunrise);
         }
 
-        // Fall back to local noon if no sunrise
-        $referenceTime  = $solarEvents->sunrise ?? $localDate->setTime(12, 0, 0);
+        // Fall back to local noon if no sunrise (shared convention)
+        $referenceTime  = SunriseFallback::referenceTime($localDate, $solarEvents->sunrise);
         $referenceInstant = $this->timeFactory->fromDateTime($referenceTime);
 
         // Five limbs at sunrise (or noon)

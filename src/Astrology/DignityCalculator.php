@@ -16,8 +16,10 @@ final class DignityCalculator
     /**
      * Determines the dignity of a planet.
      *
-     * Note: Currently implements the primary states (Exalted, Debilitated, Moolatrikona, Own Sign).
-     * Falls back to null if it does not fall into these primary categories (Friendly/Neutral/Enemy to be added).
+     * Note: PARTIAL — implements the primary states (Exalted, Debilitated,
+     * Moolatrikona, Own Sign). Returns null for planets that fall into the
+     * secondary states (Friendly/Neutral/Enemy), which are not yet
+     * implemented; callers must handle null accordingly.
      *
      * @param float $longitude The planet's ecliptic longitude, used only to derive the
      *                          degree-within-sign for the Exalted/Moolatrikona/OwnSign split.

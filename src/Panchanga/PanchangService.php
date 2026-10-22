@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vittix\Panchang\Panchanga;
 
 use DateTimeImmutable;
+use UnitEnum;
 use Vittix\Panchang\Astronomy\Contracts\AstronomyEngineInterface;
 use Vittix\Panchang\Calendar\HinduCalendarCalculator;
 use Vittix\Panchang\Enum\Body;
@@ -13,8 +14,12 @@ use Vittix\Panchang\Enum\MonthSystem;
 use Vittix\Panchang\Enum\AyanamshaSystem;
 use Psr\SimpleCache\CacheInterface;
 use Vittix\Panchang\Festivals\FestivalEngine;
+use Vittix\Panchang\Localization\ArrayTranslator;
+use Vittix\Panchang\Localization\TranslatorInterface;
 use Vittix\Panchang\Panchang;
+use Vittix\Panchang\Support\LruCache;
 use Vittix\Panchang\Time\AstroTimeFactory;
+use Vittix\Panchang\Time\SunriseFallback;
 use Vittix\Panchang\ValueObject\AstronomyResult;
 use Vittix\Panchang\ValueObject\GeoLocation;
 use Vittix\Panchang\ValueObject\PanchangResult;
@@ -54,11 +59,11 @@ final class PanchangService
     /**
      * Bounded LRU cache of computed results (PanchangResult / AstronomyResult),
      * keyed by result kind + date + timezone + location (+ month system).
-     * Oldest entries first; moved to the end on hit; evicted beyond capacity.
-     *
-     * @var array<string, object>
      */
-    private array $resultCache = [];
+    private readonly LruCache $resultCache;
+
+    /** Lazily created default translator (array-backed, 10 Indic languages). */
+    private ?TranslatorInterface $defaultTranslator = null;
 
     public function __construct(
         private readonly AstronomyEngineInterface $astronomy,
@@ -66,6 +71,7 @@ final class PanchangService
         private readonly HinduCalendarCalculator $calendarCalculator,
     ) {
         $this->timeFactory = new AstroTimeFactory();
+        $this->resultCache = new LruCache(self::RESULT_CACHE_CAPACITY);
     }
 
     /**
@@ -126,7 +132,7 @@ final class PanchangService
     ): PanchangResult {
         $key = $this->resultCacheKey('day', $date, $location) . '|' . $monthSystem->name;
 
-        $cached = $this->cacheGet($key);
+        $cached = $this->resultCache->get($key);
         if ($cached instanceof PanchangResult) {
             return $cached;
         }
@@ -141,7 +147,7 @@ final class PanchangService
 
         // Calendar context (Samvat, Adhika Masa, solar month)
         $instant = $this->timeFactory->fromDateTime(
-            $panchangDay->solarEvents->sunrise ?? $date->setTime(12, 0, 0)
+            SunriseFallback::referenceTime($date, $panchangDay->solarEvents->sunrise)
         );
         $calendarResult = $this->calendarCalculator->calculate($instant, $timezone);
 
@@ -177,7 +183,7 @@ final class PanchangService
             accuracy: $panchangDay->accuracy,
         );
 
-        $this->cacheSet($key, $result);
+        $this->resultCache->set($key, $result);
 
         return $result;
     }
@@ -190,7 +196,7 @@ final class PanchangService
      */
     public function clearCache(): void
     {
-        $this->resultCache = [];
+        $this->resultCache->clear();
 
         if (method_exists($this->astronomy, 'clearCache')) {
             $this->astronomy->clearCache();
@@ -210,7 +216,7 @@ final class PanchangService
     ): AstronomyResult {
         $key = $this->resultCacheKey('astro', $date, $location);
 
-        $cached = $this->cacheGet($key);
+        $cached = $this->resultCache->get($key);
         if ($cached instanceof AstronomyResult) {
             return $cached;
         }
@@ -221,7 +227,7 @@ final class PanchangService
         $lunarEvents = $this->astronomy->lunarEvents($date, $location, $timezone);
 
         // Use sunrise (or noon) as reference instant
-        $referenceTime = $solarEvents->sunrise ?? $date->setTime(12, 0, 0);
+        $referenceTime = SunriseFallback::referenceTime($date, $solarEvents->sunrise);
         $instant = $this->timeFactory->fromDateTime($referenceTime);
 
         $ayanamsha = $this->astronomy->ayanamsa($instant);
@@ -242,9 +248,74 @@ final class PanchangService
             solarMonth: $solarMonth,
         );
 
-        $this->cacheSet($key, $result);
+        $this->resultCache->set($key, $result);
 
         return $result;
+    }
+
+    // -------------------------------------------------------------------------
+    // Localization
+    // -------------------------------------------------------------------------
+
+    /**
+     * Translate an Enum value (Tithi, Nakshatra, Yoga, Karana, Vara, Rashi,
+     * Paksha, LunarMonth, SolarMonth) into the given language.
+     *
+     * Uses the translator registered via {@see setTranslator()} when present,
+     * otherwise a lazily-created {@see ArrayTranslator} backed by the bundled
+     * locale datasets (bn, en, gu, hi, kn, ml, mr, sa, ta, te).
+     */
+    public function translate(UnitEnum $enum, string $lang = 'en'): string
+    {
+        return $this->translator()->translate($enum, $lang);
+    }
+
+    /**
+     * Register a custom translator (e.g. a database- or gettext-backed one).
+     * Pass null to restore the bundled ArrayTranslator default.
+     */
+    public function setTranslator(?TranslatorInterface $translator): void
+    {
+        $this->defaultTranslator = $translator;
+    }
+
+    /**
+     * The active translator (custom if registered, ArrayTranslator otherwise).
+     */
+    public function translator(): TranslatorInterface
+    {
+        return $this->defaultTranslator ??= new ArrayTranslator();
+    }
+
+    /**
+     * Like {@see getForDate()}, but returns the JSON-ready array with the
+     * Panchang limb names localized to the given language.
+     *
+     * @return array<string, mixed>
+     */
+    public function getForDateLocalized(
+        DateTimeImmutable $date,
+        GeoLocation $location,
+        string $lang = 'en',
+        MonthSystem $monthSystem = MonthSystem::Amanta
+    ): array {
+        $result = $this->getForDate($date, $location, $monthSystem);
+        $t = fn (UnitEnum $enum): string => $this->translator()->translate($enum, $lang);
+
+        $array = $result->toArray();
+        $array['tithi']['name'] = $t($result->tithi);
+        $array['tithi']['paksha'] = $t($result->paksha);
+        if ($result->tithiSecond !== null) {
+            $array['tithi']['second']['name'] = $t($result->tithiSecond);
+        }
+        $array['nakshatra']['name'] = $t($result->nakshatra);
+        $array['yoga']['name'] = $t($result->yoga);
+        $array['karana']['name'] = $t($result->karana);
+        $array['vara'] = $t($result->vara);
+        $array['lunarMonth'] = $result->lunarMonth !== null ? $t($result->lunarMonth) : null;
+        $array['solarMonth'] = $result->solarMonth !== null ? $t($result->solarMonth) : null;
+
+        return $array;
     }
 
     // -------------------------------------------------------------------------
@@ -271,37 +342,6 @@ final class PanchangService
             $location->longitude,
             $location->elevationMeters,
         );
-    }
-
-    /**
-     * Fetch a cached result, moving it to the most-recently-used end.
-     */
-    private function cacheGet(string $key): ?object
-    {
-        if (!array_key_exists($key, $this->resultCache)) {
-            return null;
-        }
-
-        $value = $this->resultCache[$key];
-        unset($this->resultCache[$key]);
-        $this->resultCache[$key] = $value;
-
-        return $value;
-    }
-
-    /**
-     * Insert a result at the most-recently-used end, evicting the least
-     * recently used entries beyond {@see RESULT_CACHE_CAPACITY}.
-     */
-    private function cacheSet(string $key, object $value): void
-    {
-        unset($this->resultCache[$key]);
-        $this->resultCache[$key] = $value;
-
-        while (count($this->resultCache) > self::RESULT_CACHE_CAPACITY) {
-            $oldest = array_key_first($this->resultCache);
-            unset($this->resultCache[$oldest]);
-        }
     }
 
     // -------------------------------------------------------------------------
@@ -403,6 +443,9 @@ final class PanchangService
 
     /**
      * Calculate the Shadbala (Six-fold planetary strength) for the visible planets.
+     *
+     * ⚠️ Partial implementation: Drik Bala is always 0.0 and Kala Bala is
+     * approximated by Ayana Bala only — see ShadbalaCalculator for details.
      */
     public function shadbala(DateTimeImmutable $moment, GeoLocation $location): \Vittix\Panchang\ValueObject\Shadbala\Shadbala
     {

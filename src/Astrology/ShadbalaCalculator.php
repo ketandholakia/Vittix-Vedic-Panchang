@@ -16,6 +16,17 @@ use Vittix\Panchang\ValueObject\Shadbala\ShadbalaValues;
 
 /**
  * Calculates the Shadbala (Six-fold strength) of the 7 visible planets.
+ *
+ * ⚠️ PARTIAL IMPLEMENTATION — not the full classical Shadbala:
+ *  - Sthana, Dik, Naisargika, Ayana and Chesta Bala are implemented
+ *    (Chesta Bala as a simplified model).
+ *  - Kala Bala is *approximated* by Ayana Bala only; the Paksha, Vara,
+ *    Hora, Maasa and Drekkana sub-components are not yet computed.
+ *  - Drik Bala (aspect-based strength) is not implemented and always
+ *    returns 0.0.
+ *
+ * Consumers should treat the `kalaBala` and `drikBala` values as
+ * placeholders until these components are completed.
  */
 final class ShadbalaCalculator
 {

@@ -312,3 +312,28 @@ Creates the default pure-PHP engine (no extensions required).
   memory stays flat no matter how many dates you generate. Call `clearCache()`
   only to force recomputation.
 - **Caching**: PSR-16 cache persists across requests (recommended for production)
+---
+
+## Localization
+
+The service can translate Panchang limb names (Tithi, Nakshatra, Yoga, Karana,
+Vara, Paksha, Rashi, lunar and solar months) into any of the bundled languages:
+n, n, gu, hi, kn, ml, mr, sa, 	a, 	e.
+
+`php
+use Vittix\Panchang\Panchanga\PanchangService;
+
+ = PanchangService::createDefault();
+
+// Translate a single enum
+echo ->translate(->tithi, 'hi');
+
+// Full daily Panchang with localized names (JSON-ready array)
+ = ->getForDateLocalized(, , 'hi');
+
+// Register a custom translator (falls back to the bundled ArrayTranslator)
+->setTranslator();
+`
+
+	ranslate() falls back to English and then to the enum's internal name when a
+key is missing for the requested language.

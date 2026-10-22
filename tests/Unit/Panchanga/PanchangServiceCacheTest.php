@@ -164,38 +164,38 @@ final class PanchangServiceCacheTest extends TestCase
     {
         $service = PanchangService::createDefault();
         $reflection = new ReflectionClass($service);
-        $cacheSet = $reflection->getMethod('cacheSet');
         $resultCache = $reflection->getProperty('resultCache');
+        /** @var \Vittix\Panchang\Support\LruCache $cache */
+        $cache = $resultCache->getValue($service);
 
         for ($i = 0; $i < 600; $i++) {
-            $cacheSet->invoke($service, "key:$i", new \stdClass());
+            $cache->set("key:$i", new \stdClass());
         }
 
-        self::assertSame(PanchangService::RESULT_CACHE_CAPACITY, count($resultCache->getValue($service)));
-        self::assertFalse(array_key_exists('key:0', $resultCache->getValue($service)), 'oldest entry must be evicted');
-        self::assertTrue(array_key_exists('key:599', $resultCache->getValue($service)), 'newest entry must survive');
+        self::assertSame(PanchangService::RESULT_CACHE_CAPACITY, count($cache));
+        self::assertNull($cache->get('key:0'), 'oldest entry must be evicted');
+        self::assertNotNull($cache->get('key:599'), 'newest entry must survive');
     }
 
     public function testLruHitRefreshesRecency(): void
     {
         $service = PanchangService::createDefault();
         $reflection = new ReflectionClass($service);
-        $cacheSet = $reflection->getMethod('cacheSet');
-        $cacheGet = $reflection->getMethod('cacheGet');
         $resultCache = $reflection->getProperty('resultCache');
+        /** @var \Vittix\Panchang\Support\LruCache $cache */
+        $cache = $resultCache->getValue($service);
 
         for ($i = 0; $i < 512; $i++) {
-            $cacheSet->invoke($service, "key:$i", new \stdClass());
+            $cache->set("key:$i", new \stdClass());
         }
 
         // Touch key:0 (least recently used) so it becomes most recently used.
-        self::assertNotNull($cacheGet->invoke($service, 'key:0'));
+        self::assertNotNull($cache->get('key:0'));
 
         // One more insertion must evict key:1 (now the oldest), not key:0.
-        $cacheSet->invoke($service, 'key:512', new \stdClass());
+        $cache->set('key:512', new \stdClass());
 
-        $cache = $resultCache->getValue($service);
-        self::assertTrue(array_key_exists('key:0', $cache), 'touched entry must survive');
-        self::assertFalse(array_key_exists('key:1', $cache), 'untouched oldest entry must be evicted');
+        self::assertNotNull($cache->get('key:0'), 'touched entry must survive');
+        self::assertNull($cache->get('key:1'), 'untouched oldest entry must be evicted');
     }
 }

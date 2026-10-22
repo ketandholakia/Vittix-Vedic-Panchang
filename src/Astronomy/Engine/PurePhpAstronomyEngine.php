@@ -25,6 +25,7 @@ use Vittix\Panchang\Astronomy\Planetary\SaturnTerms;
 use Vittix\Panchang\Astronomy\Planetary\PlanetPositionCalculator;
 use Vittix\Panchang\Astronomy\Solar\SolarEventCalculator;
 use Vittix\Panchang\Astronomy\Solar\SolarPositionCalculator;
+use Vittix\Panchang\Support\LruCache;
 use Vittix\Panchang\Enum\Body;
 use Vittix\Panchang\Math\Angle;
 use Vittix\Panchang\ValueObject\AstroInstant;
@@ -72,19 +73,13 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
 
     /**
      * Bounded LRU cache (oldest first); entries moved to the end on hit.
-     *
-     * @var array<string, EclipticPosition>
      */
-    private array $positionCache = [];
+    private readonly LruCache $positionCache;
 
     /**
      * Bounded LRU cache (oldest first); entries moved to the end on hit.
-     *
-     * @var array<string, float>
      */
-    private array $ayanamshaCache = [];
-
-    private readonly int $memoryCacheCapacity;
+    private readonly LruCache $ayanamshaCache;
 
     private readonly LunarArgumentCalculator $lunarArguments;
 
@@ -93,10 +88,8 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
         private readonly ?CacheInterface $cache = null,
         int $memoryCacheCapacity = self::DEFAULT_MEMORY_CACHE_CAPACITY,
     ) {
-        if ($memoryCacheCapacity < 1) {
-            throw new \InvalidArgumentException('Memory cache capacity must be at least 1.');
-        }
-        $this->memoryCacheCapacity = $memoryCacheCapacity;
+        $this->positionCache  = new LruCache($memoryCacheCapacity);
+        $this->ayanamshaCache = new LruCache($memoryCacheCapacity);
         $this->nutation       = new NutationCalculator();
         $this->obliquity      = new ObliquityCalculator($this->nutation);
         $this->solarCalculator = new SolarPositionCalculator($this->nutation, $this->obliquity);
@@ -123,13 +116,14 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
     {
         $key = $this->positionKey($body, $instant);
 
-        if (array_key_exists($key, $this->positionCache)) {
-            return $this->cacheTouch($this->positionCache, $key);
+        $cachedPosition = $this->positionCache->get($key);
+        if ($cachedPosition !== null) {
+            return $cachedPosition;
         }
 
         if ($this->cache !== null && $this->cache->has($key)) {
             $position = $this->cache->get($key);
-            $this->cacheStore($this->positionCache, $key, $position);
+            $this->positionCache->set($key, $position);
 
             return $position;
         }
@@ -156,7 +150,7 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
             ),
         };
 
-        $this->cacheStore($this->positionCache, $key, $position);
+        $this->positionCache->set($key, $position);
         if ($this->cache !== null) {
             $this->cache->set($key, $position);
         }
@@ -181,20 +175,21 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
         // Add prefix to avoid collision with position keys (though structurally different)
         $key = 'ayan:jd:' . sprintf('%.6F', $instant->julianDayTt);
 
-        if (array_key_exists($key, $this->ayanamshaCache)) {
-            return $this->cacheTouch($this->ayanamshaCache, $key);
+        $cachedAyanamsa = $this->ayanamshaCache->get($key);
+        if ($cachedAyanamsa !== null) {
+            return $cachedAyanamsa;
         }
 
         if ($this->cache !== null && $this->cache->has($key)) {
             $ayanamsa = $this->cache->get($key);
-            $this->cacheStore($this->ayanamshaCache, $key, $ayanamsa);
+            $this->ayanamshaCache->set($key, $ayanamsa);
 
             return $ayanamsa;
         }
 
         $ayanamsa = $this->ayanamsha->calculate($instant);
 
-        $this->cacheStore($this->ayanamshaCache, $key, $ayanamsa);
+        $this->ayanamshaCache->set($key, $ayanamsa);
         if ($this->cache !== null) {
             $this->cache->set($key, $ayanamsa);
         }
@@ -213,12 +208,14 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
 
     public function dailyMotion(Body $body, AstroInstant $instant): float
     {
-        $deltaDays = 0.001; // ~1.44 minutes
+        // 0.001 days = 86.4 seconds exactly; the UTC clock is advanced by the
+        // same amount so both instants stay consistent.
+        $deltaDays = 0.001;
 
         $pos1 = $this->tropicalLongitude($body, $instant);
 
         $nextInstant = new AstroInstant(
-            $instant->utc->modify('+86 seconds'),
+            $instant->utc->modify(sprintf('+%d microseconds', (int) round($deltaDays * 86400 * 1_000_000))),
             $instant->julianDayUt + $deltaDays,
             $instant->julianDayTt + $deltaDays,
             $instant->deltaTSeconds
@@ -268,43 +265,8 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
      */
     public function clearCache(): void
     {
-        $this->positionCache  = [];
-        $this->ayanamshaCache = [];
-    }
-
-    /**
-     * Move an existing entry to the most-recently-used end and return it.
-     *
-     * @template T
-     * @param array<string, T> $cache
-     * @return T
-     */
-    private function cacheTouch(array &$cache, string $key): mixed
-    {
-        $value = $cache[$key];
-        unset($cache[$key]);
-        $cache[$key] = $value;
-
-        return $value;
-    }
-
-    /**
-     * Insert an entry at the most-recently-used end, evicting the least
-     * recently used entries beyond the capacity bound.
-     *
-     * @template T
-     * @param array<string, T> $cache
-     * @param T $value
-     */
-    private function cacheStore(array &$cache, string $key, mixed $value): void
-    {
-        unset($cache[$key]);
-        $cache[$key] = $value;
-
-        while (count($cache) > $this->memoryCacheCapacity) {
-            $oldest = array_key_first($cache);
-            unset($cache[$oldest]);
-        }
+        $this->positionCache->clear();
+        $this->ayanamshaCache->clear();
     }
 
     private function positionKey(Body $body, AstroInstant $instant): string

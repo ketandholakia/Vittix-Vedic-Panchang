@@ -327,6 +327,9 @@ final class Panchang
 
     /**
      * Calculates the Shadbala (Six-fold planetary strength) for the visible planets.
+     *
+     * ⚠️ Partial implementation: Drik Bala is always 0.0 and Kala Bala is
+     * approximated by Ayana Bala only — see ShadbalaCalculator for details.
      */
     public function shadbala(DateTimeImmutable $moment, GeoLocation $location): Shadbala
     {
