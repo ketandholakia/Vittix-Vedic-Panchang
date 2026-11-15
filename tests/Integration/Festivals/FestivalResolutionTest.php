@@ -52,7 +52,7 @@ final class FestivalResolutionTest extends TestCase
             new TithiCalculator($astronomy),
             $lunarMonth,
         );
-        foreach (FestivalCatalog::getDefaultFestivals() as $festival) {
+        foreach (FestivalCatalog::getDefaultFestivals(new PurePhpAstronomyEngine()) as $festival) {
             $this->engine->addFestival($festival);
         }
 
@@ -65,7 +65,7 @@ final class FestivalResolutionTest extends TestCase
     private function resolutions(int $year): array
     {
         $result = [];
-        foreach (FestivalCatalog::getDefaultFestivals() as $festival) {
+        foreach (FestivalCatalog::getDefaultFestivals(new PurePhpAstronomyEngine()) as $festival) {
             $result[$festival->name] = $this->engine->resolve($festival, $year, TestLocations::ahmedabad(), $this->timezone);
         }
 
@@ -77,7 +77,7 @@ final class FestivalResolutionTest extends TestCase
         foreach ([2023, 2024, 2025, 2026] as $year) {
             $resolutions = $this->resolutions($year);
 
-            foreach (FestivalCatalog::getDefaultFestivals() as $festival) {
+            foreach (FestivalCatalog::getDefaultFestivals(new PurePhpAstronomyEngine()) as $festival) {
                 $resolved = $resolutions[$festival->name] ?? null;
                 self::assertNotNull(
                     $resolved,

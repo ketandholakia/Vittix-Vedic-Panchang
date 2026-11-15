@@ -41,4 +41,15 @@ final class KaranaCalculator
 
         return (int) floor($elongation / 6.0);
     }
+
+    /**
+     * The half-tithi index (0–59) at the given instant.
+     */
+    public function indexAt(AstroInstant $instant): int
+    {
+        return $this->halfTithiIndex(
+            $this->astronomy->tropicalLongitude(Body::Sun, $instant),
+            $this->astronomy->tropicalLongitude(Body::Moon, $instant)
+        );
+    }
 }

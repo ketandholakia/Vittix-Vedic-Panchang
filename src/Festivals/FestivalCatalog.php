@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Vittix\Panchang\Festivals;
 
+use Vittix\Panchang\Astronomy\Contracts\AstronomyEngineInterface;
 use Vittix\Panchang\Enum\Kala;
+use Vittix\Panchang\Panchanga\KaranaCalculator;
 use Vittix\Panchang\Enum\LunarMonth;
 use Vittix\Panchang\Enum\Tithi;
+use Vittix\Panchang\Festivals\Rules\RakshaBandhanRule;
 use Vittix\Panchang\Festivals\Rules\SunriseTithiRule;
 use Vittix\Panchang\Festivals\Rules\ViddhaTithiRule;
 
@@ -32,7 +35,7 @@ final class FestivalCatalog
     /**
      * @return Festival[]
      */
-    public static function getDefaultFestivals(): array
+    public static function getDefaultFestivals(\Vittix\Panchang\Astronomy\Contracts\AstronomyEngineInterface $astronomy): array
     {
         return [
             // Chaitra Shukla Pratipada: sunrise rule; in years where
@@ -54,11 +57,14 @@ final class FestivalCatalog
                 'Akshaya Tritiya',
                 new ViddhaTithiRule(LunarMonth::Vaishakha, Tithi::ShuklaTritiya, Kala::Madhyahna)
             ),
-            // Shravana Purnima (nija Shravana; the Adhika Shravana Purnima
-            // is skipped — 2023 fires once, not on Aug 1 AND Aug 31).
+            // Shravana Purnima (nija Shravana; Adhika skipped) at Aparahna,
+            // excluding the Vishti (Bhadra) karana — drik's muhurta
+            // convention; fallback keeps a Bhadra-covered day eligible
+            // (2023-08-30 ✓ drik; 2025/2026/2027 divergences documented in
+            // the festival oracle fixture).
             new Festival(
                 'Raksha Bandhan',
-                new SunriseTithiRule(LunarMonth::Shravana, Tithi::Purnima)
+                new RakshaBandhanRule(new KaranaCalculator($astronomy))
             ),
             // Ashwina Amavasya at Pradosh — NOT at sunrise, which is one day
             // late when Amavasya begins in the afternoon (2023, 2025, 2026).

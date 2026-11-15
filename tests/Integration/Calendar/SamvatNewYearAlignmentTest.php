@@ -54,7 +54,7 @@ final class SamvatNewYearAlignmentTest extends TestCase
         $this->resolver = new NewYearResolver($astronomy, new TithiCalculator($astronomy), $lunarMonth);
         $this->location = TestLocations::ahmedabad();
 
-        foreach (FestivalCatalog::getDefaultFestivals() as $festival) {
+        foreach (FestivalCatalog::getDefaultFestivals(new PurePhpAstronomyEngine()) as $festival) {
             if ($festival->name === 'Gudi Padwa / Ugadi') {
                 $this->gudiPadwa = $festival;
             }

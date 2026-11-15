@@ -92,7 +92,7 @@ final class NewYearResolverEqualityTest extends TestCase
 
     private function festivalNamed(string $name): Festival
     {
-        foreach (FestivalCatalog::getDefaultFestivals() as $festival) {
+        foreach (FestivalCatalog::getDefaultFestivals(new PurePhpAstronomyEngine()) as $festival) {
             if ($festival->name === $name) {
                 return $festival;
             }

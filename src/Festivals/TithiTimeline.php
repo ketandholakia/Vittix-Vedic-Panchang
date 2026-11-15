@@ -48,6 +48,37 @@ final class TithiTimeline
     }
 
     /**
+     * The tithi segments covering [$from, $until]: a list of
+     * {start, end, index} runs whose union is exactly the window (the
+     * tithi index strictly increases from segment to segment).
+     *
+     * @return list<array{start: DateTimeImmutable, end: DateTimeImmutable, index: int}>
+     */
+    public function segmentsBetween(DateTimeImmutable $from, DateTimeImmutable $until): array
+    {
+        if ($until->getTimestamp() <= $from->getTimestamp()) {
+            return [];
+        }
+
+        $segments = [];
+        $cursor = $from;
+        $index = $this->indexAt($from);
+
+        while (true) {
+            $boundary = $this->endOfRunningTithi($cursor, $until);
+            if ($boundary === null) {
+                $segments[] = ['start' => $cursor, 'end' => $until, 'index' => $index];
+                break;
+            }
+            $segments[] = ['start' => $cursor, 'end' => $boundary, 'index' => $index];
+            $cursor = $boundary;
+            $index = ($index + 1) % 30;
+        }
+
+        return $segments;
+    }
+
+    /**
      * The instant within ($from, $until] at which the tithi running at
      * $from ends; null when the same tithi still runs at $until.
      */

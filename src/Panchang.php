@@ -246,7 +246,7 @@ final class Panchang
             new LunarMonthCalculator($this->astronomy),
         );
 
-        foreach (FestivalCatalog::getDefaultFestivals() as $festival) {
+        foreach (FestivalCatalog::getDefaultFestivals($this->astronomy) as $festival) {
             $engine->addFestival($festival);
         }
 

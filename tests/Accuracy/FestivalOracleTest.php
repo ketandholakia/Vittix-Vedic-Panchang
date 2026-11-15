@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
+use Vittix\Panchang\Astronomy\Engine\PurePhpAstronomyEngine;
 use Vittix\Panchang\Calendar\LunarMonthCalculator;
 use Vittix\Panchang\Festivals\Festival;
 use Vittix\Panchang\Festivals\FestivalCatalog;
@@ -40,7 +41,7 @@ final class FestivalOracleTest extends AccuracyTestCase
     private function catalog(): array
     {
         $byName = [];
-        foreach (FestivalCatalog::getDefaultFestivals() as $festival) {
+        foreach (FestivalCatalog::getDefaultFestivals(new PurePhpAstronomyEngine()) as $festival) {
             $byName[$festival->name] = $festival;
         }
 
@@ -53,7 +54,7 @@ final class FestivalOracleTest extends AccuracyTestCase
             $astronomy = $this->engine();
             $lunarMonth = new LunarMonthCalculator($astronomy);
             $this->engine = new FestivalEngine($astronomy, new TithiCalculator($astronomy), $lunarMonth);
-            foreach (FestivalCatalog::getDefaultFestivals() as $festival) {
+            foreach (FestivalCatalog::getDefaultFestivals(new PurePhpAstronomyEngine()) as $festival) {
                 $this->engine->addFestival($festival);
             }
         }
