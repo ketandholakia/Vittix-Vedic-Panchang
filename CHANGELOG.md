@@ -145,7 +145,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   divergent counts per city) and fails on any undocumented disagreement. After the
   tiered Raksha Bandhan rule: 37/40 exact, 3 documented convention divergences
   (Akshaya Tritiya 2027, Diwali 2024, Krishna Janmashtami 2027), explanations labeled
-  as hypotheses where drik does not state its rule.
+  as hypotheses where drik does not state its rule. The Janmashtami 2027 divergence is
+  re-verified against the drik page: drik's Nishita puja (00:01-00:45 AM Aug 26) falls
+  after their own Ashtami end (19:19 Aug 25) - a Rohini-combination judgment the
+  mechanical Ashtami-at-Nishita rule cannot reproduce (the rule holds for 2023-2026).
 
 ### Changed — round 2
 

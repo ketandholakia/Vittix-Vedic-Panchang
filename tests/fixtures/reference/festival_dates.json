@@ -45,8 +45,8 @@
                 "year": 2027,
                 "drikpanchang": "2027-08-25",
                 "engine": "2027-08-24",
-                "explanation": "HYPOTHESIS, UNVERIFIED (drik does not state why this midnight): the page facts show the Ashtami spans BOTH midnights (Aug 25 and Aug 26) and drik's Nishita puja for the Aug 25 festival is the night of Aug 25→26 (00:01–00:45 Aug 26). The engine's greater-overlap rule resolves Aug 24, whose night window (Aug 24→25) also has full Ashtami coverage (Ashtami from 20:24 Aug 24). Proposed reason: drik attributes the festival to the day whose second midnight Nishita carries the tithi.",
-                "drik_page_facts": "VERIFIED from the drik page: 'Ashtami Tithi Begins - 08:24 PM on Aug 24, 2027', 'Ashtami Tithi Ends - 07:19 PM on Aug 25, 2027', 'Nishita Puja Time - 12:01 AM to 12:45 AM, Aug 26'."
+                "explanation": "HYPOTHESIS, UNVERIFIED as a mechanical rule; the page facts are verified. For 2023-2026 drik's Nishita window (the night beginning on the festival date) carries the Ashtami, matching the engine's greater-overlap rule (2023: 23:57 Sep 6-00:42 Sep 7 inside Ashtami 15:37 Sep 6-16:14 Sep 7; 2024: 00:01-00:45 Aug 27 inside 03:39 Aug 26-02:19 Aug 27; 2025: 00:04-00:47 Aug 16 inside 23:49 Aug 15-21:34 Aug 16; 2026: 23:57 Sep 4-00:43 Sep 5 inside 02:25 Sep 4-00:13 Sep 5). For 2027 drik BREAKS that pattern: their Nishita 00:01-00:45 Aug 26 falls AFTER the Ashtami ended (19:19 Aug 25) - neither midnight has Ashtami+Rohini together (midnight Aug 25: Ashtami only, Rohini begins 12:27 PM Aug 25; midnight Aug 26: Rohini only). drik's page cites the 'most auspicious combination of Ashtami Tithi and Rohini Nakshatra during Nishita' - a judgment call that picked the Rohini midnight. The engine follows the mechanical Ashtami-at-Nishita rule (Aug 24) and cannot reproduce drik's 2027 judgment without the Rohini combination logic; reported, not tuned.",
+                "drik_page_facts": "VERIFIED from the drik page (re-fetched): 'Krishna Janmashtami on Wednesday, 25th August 2027'; 'Ashtami Tithi Begins - 08:24 PM on Aug 24, 2027'; 'Ashtami Tithi Ends - 07:19 PM on Aug 25, 2027'; 'Rohini Nakshatra Begins - 12:27 PM on Aug 25, 2027'; 'Rohini Nakshatra Ends - 11:42 AM on Aug 26, 2027'; 'Nishita Puja Time - 12:01 AM to 12:45 AM, Aug 26'; 'Mid Night Moment - 12:23 AM, Aug 26'. The Nishita puja 00:01-00:45 AM Aug 26 belongs to the night of Aug 25->26, which drik attributes to the festival date Aug 25."
             }
         ],
         "raksha_bandhan_page_facts": {
@@ -55,6 +55,13 @@
             "2025": "Purnima Tithi Begins - 02:12 PM on Aug 08, 2025; Purnima Tithi Ends - 01:24 PM on Aug 09, 2025; 'Raksha Bandhan Bhadra got over before Sunrise' (before sunrise Aug 9); 'Bhadra prevails during first half of Purnima Tithi'. Bhadra start = Purnima begin (14:12 Aug 8); Bhadra end before sunrise Aug 9. drik date Aug 9 = the Bhadra-free morning day, tier 3; thread ceremony muhurat 05:47 AM to 01:24 PM.",
             "2026": "Purnima Tithi Begins - 09:08 AM on Aug 27, 2026; Purnima Tithi Ends - 09:48 AM on Aug 28, 2026; 'Raksha Bandhan Bhadra got over before Sunrise' (before sunrise Aug 28); 'Bhadra prevails during first half of Purnima Tithi'. Bhadra start = Purnima begin (09:08 Aug 27); Bhadra end before sunrise Aug 28. drik date Aug 28 = the Bhadra-free morning day, tier 3.",
             "2027": "Purnima Tithi Begins - 10:28 AM on Aug 16, 2027; Purnima Tithi Ends - 12:58 PM on Aug 17, 2027; 'Raksha Bandhan Bhadra got over before Sunrise' (before sunrise Aug 17); 'Bhadra prevails during first half of Purnima Tithi'. Bhadra start = Purnima begin (10:28 Aug 16); Bhadra end before sunrise Aug 17. drik date Aug 17 = the Bhadra-free morning day, tier 3."
+        },
+        "janmashtami_page_facts": {
+            "2023": "Ashtami 15:37 Sep 6 - 16:14 Sep 7; Nishita puja 23:57 Sep 6 - 00:42 Sep 7 (night of Sep 6->7); Rohini 09:20 Sep 6 - 10:25 Sep 7.",
+            "2024": "Ashtami 03:39 Aug 26 - 02:19 Aug 27; Nishita puja 00:01 - 00:45 Aug 27 (night of Aug 26->27); Rohini 15:55 Aug 26 - 15:38 Aug 27.",
+            "2025": "Ashtami 23:49 Aug 15 - 21:34 Aug 16; Nishita puja 00:04 - 00:47 Aug 16 (night of Aug 15->16); 'Janmashtami without Rohini' (Rohini 04:38 Aug 17 - 03:17 Aug 18).",
+            "2026": "Ashtami 02:25 Sep 4 - 00:13 Sep 5; Nishita puja 23:57 Sep 4 - 00:43 Sep 5 (night of Sep 4->5).",
+            "2027": "Ashtami 20:24 Aug 24 - 19:19 Aug 25; drik Nishita puja 00:01 - 00:45 Aug 26 (night of Aug 25->26) - after the Ashtami ended; Rohini 12:27 Aug 25 - 11:42 Aug 26; Mid Night Moment 00:23 Aug 26."
         }
     },
     "samples": [
