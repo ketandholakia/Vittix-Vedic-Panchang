@@ -144,33 +144,38 @@ final class MuhurtaCalculator
     }
 
     /**
+     * All 14 Choghadiya rows are derived structurally from one cycle.
+     *
+     * The day row for a weekday starts at the weekday lord's offset into
+     * the cycle and advances by +1 per segment; the night row starts at
+     * (dayStart + 5) mod 7 and steps by -2 per segment. (The hardcoded
+     * tables this replaces had wrong Tuesday and Wednesday night rows.)
+     *
      * @return array<int, string>
      */
     private function getChoghadiyaSequence(int $weekdayIndex, bool $isDay): array
     {
-        // 0 = Sunday, 1 = Monday, etc.
-        // Choghadiya patterns are fixed based on weekday.
-        $baseDaySequence = [
-            0 => ['Udveg', 'Chal', 'Labh', 'Amrit', 'Kaal', 'Shubh', 'Rog', 'Udveg'], // Sun
-            1 => ['Amrit', 'Kaal', 'Shubh', 'Rog', 'Udveg', 'Chal', 'Labh', 'Amrit'], // Mon
-            2 => ['Rog', 'Udveg', 'Chal', 'Labh', 'Amrit', 'Kaal', 'Shubh', 'Rog'],   // Tue
-            3 => ['Labh', 'Amrit', 'Kaal', 'Shubh', 'Rog', 'Udveg', 'Chal', 'Labh'],  // Wed
-            4 => ['Shubh', 'Rog', 'Udveg', 'Chal', 'Labh', 'Amrit', 'Kaal', 'Shubh'], // Thu
-            5 => ['Chal', 'Labh', 'Amrit', 'Kaal', 'Shubh', 'Rog', 'Udveg', 'Chal'],  // Fri
-            6 => ['Kaal', 'Shubh', 'Rog', 'Udveg', 'Chal', 'Labh', 'Amrit', 'Kaal'],  // Sat
-        ];
+        // 0 = Sunday … 6 = Saturday.
+        $cycle = ['Udveg', 'Chal', 'Labh', 'Amrit', 'Kaal', 'Shubh', 'Rog'];
+        $dayStarts = [0, 3, 6, 2, 5, 1, 4]; // Sun 0, Mon 3, Tue 6, Wed 2, Thu 5, Fri 1, Sat 4
 
-        $baseNightSequence = [
-            0 => ['Shubh', 'Amrit', 'Chal', 'Rog', 'Kaal', 'Labh', 'Udveg', 'Shubh'], // Sun
-            1 => ['Chal', 'Rog', 'Kaal', 'Labh', 'Udveg', 'Shubh', 'Amrit', 'Chal'],  // Mon
-            2 => ['Rog', 'Kaal', 'Labh', 'Udveg', 'Shubh', 'Amrit', 'Chal', 'Rog'],   // Tue
-            3 => ['Kaal', 'Labh', 'Udveg', 'Shubh', 'Amrit', 'Chal', 'Rog', 'Kaal'],  // Wed
-            4 => ['Amrit', 'Chal', 'Rog', 'Kaal', 'Labh', 'Udveg', 'Shubh', 'Amrit'], // Thu
-            5 => ['Rog', 'Kaal', 'Labh', 'Udveg', 'Shubh', 'Amrit', 'Chal', 'Rog'],   // Fri
-            6 => ['Labh', 'Udveg', 'Shubh', 'Amrit', 'Chal', 'Rog', 'Kaal', 'Labh'],  // Sat
-        ];
+        $dayStart = $dayStarts[$weekdayIndex];
 
-        return $isDay ? $baseDaySequence[$weekdayIndex] : $baseNightSequence[$weekdayIndex];
+        $sequence = [];
+        if ($isDay) {
+            for ($i = 0; $i < 8; $i++) {
+                $sequence[] = $cycle[($dayStart + $i) % 7];
+            }
+
+            return $sequence;
+        }
+
+        $nightStart = ($dayStart + 5) % 7;
+        for ($i = 0; $i < 8; $i++) {
+            $sequence[] = $cycle[(($nightStart - 2 * $i) % 7 + 7) % 7];
+        }
+
+        return $sequence;
     }
 
     /**
