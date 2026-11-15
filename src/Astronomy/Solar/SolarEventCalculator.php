@@ -27,8 +27,8 @@ use Vittix\Panchang\ValueObject\SolarEvents;
  *    corrected for standard atmospheric refraction of 34′ and solar semi-
  *    diameter of 16′).
  *  • Upper limb of the Sun.
- *  • Elevation-dependent refraction correction is applied using a standard
- *    dip of 1.76′ × √(elevation in meters).
+ *  • Elevation-dependent correction: the horizon dip of 1.92′ ×
+ *    √(elevation in meters) is subtracted from the apparent altitude.
  *
  * Reference: Jean Meeus, "Astronomical Algorithms", 2nd ed., Ch. 15.
  */
