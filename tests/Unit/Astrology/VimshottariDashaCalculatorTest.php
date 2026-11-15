@@ -41,12 +41,24 @@ final class VimshottariDashaCalculatorTest extends TestCase
         $expectedEndSeconds = $birthTime->getTimestamp() + 110449332;
         $this->assertSame($expectedEndSeconds, $firstDasha->end->getTimestamp());
 
-        // Test Antardashas within the first Mahadasha
-        $this->assertCount(9, $firstDasha->subPeriods);
-        $this->assertSame(Body::KetuMean, $firstDasha->subPeriods[0]->body); // Ketu-Ketu
-        $this->assertSame(Body::Venus, $firstDasha->subPeriods[1]->body); // Ketu-Venus
+        // Test Antardashas within the first Mahadasha. Birth sits 3.5 years
+        // into the full 7-year Ketu Mahadasha: Ketu-Ketu, Ketu-Venus, Ketu-
+        // Sun, Ketu-Moon and Ketu-Mars are entirely before birth and are
+        // dropped; Ketu-Rahu (2.917–3.967y of the full timeline) is running
+        // at birth and is listed first, truncated.
+        $this->assertCount(4, $firstDasha->subPeriods);
+        $this->assertSame(Body::RahuMean, $firstDasha->subPeriods[0]->body); // Ketu-Rahu, running at birth
+        $this->assertSame(Body::Jupiter, $firstDasha->subPeriods[1]->body);
         $this->assertSame($birthTime, $firstDasha->subPeriods[0]->start);
-        $this->assertEquals($firstDasha->end, $firstDasha->subPeriods[8]->end);
+        $this->assertEquals($firstDasha->end, $firstDasha->subPeriods[3]->end);
+
+        // The listed Antardashas keep their FULL proportions (not scaled to
+        // the 3.5 remaining years): Ketu-Jupiter = 16 × 7 / 120 years.
+        $expectedJupiterSeconds = (int) round(16.0 * 7.0 / 120.0 * 31556952.0);
+        $this->assertSame(
+            $expectedJupiterSeconds,
+            $firstDasha->subPeriods[1]->end->getTimestamp() - $firstDasha->subPeriods[1]->start->getTimestamp()
+        );
 
         // Test the final Mahadasha correctly accounts for 120 years overall from birth minus elapsed first half
         $lastDasha = $dashas[8];
@@ -58,5 +70,62 @@ final class VimshottariDashaCalculatorTest extends TestCase
             $birthTime->getTimestamp() + $totalExpectedSeconds,
             $lastDasha->end->getTimestamp()
         );
+    }
+
+    /**
+     * Balance-dasha Antardashas must come from the FULL-length Antardasha
+     * timeline of the whole Mahadasha (starting at birth minus elapsed
+     * time), not be scaled to fit the remaining time. The first listed
+     * Antardasha is the one running at birth, truncated.
+     */
+    public function testBalanceDashaAntardashasAreNotScaledToRemainingTime(): void
+    {
+        $birthTime = new DateTimeImmutable('1990-05-05 10:00:00', new DateTimeZone('Asia/Kolkata'));
+
+        // Moon in Krittika (Sun's nakshatra) with 0.227 of the nakshatra
+        // traversed → Sun Mahadasha with ≈0.773 of the period remaining.
+        $nakshatraLength = 360.0 / 27.0;
+        $moonLongitude = 2.0 * $nakshatraLength + 0.227 * $nakshatraLength;
+
+        $dashas = $this->calculator->calculate($birthTime, $moonLongitude);
+
+        $sun = $dashas[0];
+        $this->assertSame(Body::Sun, $sun->body);
+
+        $remaining = ($sun->end->getTimestamp() - $birthTime->getTimestamp())
+            / (6.0 * 31556952.0);
+        $this->assertEqualsWithDelta(0.773, $remaining, 0.001);
+
+        // Birth sits 1.362 years into the full Sun Mahadasha: Sun-Sun
+        // (0–0.3y), Sun-Moon (0.3–0.8y) and Sun-Mars (0.8–1.15y) are gone;
+        // Sun-Rahu (1.15–2.05y) is running and must be listed first,
+        // truncated at birth.
+        $this->assertSame(Body::RahuMean, $sun->subPeriods[0]->body);
+        $this->assertEquals($birthTime, $sun->subPeriods[0]->start);
+
+        // Later Antardashas keep the FULL proportions (years × mahadasha
+        // years / 120) — Sun-Jupiter = 16 × 6 / 120 = 0.8 years.
+        $expectedJupiterSeconds = (int) round(16.0 * 6.0 / 120.0 * 31556952.0);
+        $this->assertSame(
+            $expectedJupiterSeconds,
+            $sun->subPeriods[1]->end->getTimestamp() - $sun->subPeriods[1]->start->getTimestamp()
+        );
+        $this->assertSame(
+            $expectedJupiterSeconds,
+            $sun->subPeriods[1]->end->getTimestamp() - $sun->subPeriods[0]->end->getTimestamp()
+        );
+
+        // Sequence continues from the running lord.
+        $this->assertSame(
+            [Body::RahuMean, Body::Jupiter, Body::Saturn, Body::Mercury, Body::KetuMean, Body::Venus],
+            array_map(static fn ($p) => $p->body, $sun->subPeriods)
+        );
+
+        // The listed Antardashas must sum exactly to the remaining time.
+        $sum = 0;
+        foreach ($sun->subPeriods as $sub) {
+            $sum += $sub->end->getTimestamp() - $sub->start->getTimestamp();
+        }
+        $this->assertSame($sun->end->getTimestamp() - $birthTime->getTimestamp(), $sum);
     }
 }

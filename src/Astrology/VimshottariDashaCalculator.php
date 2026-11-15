@@ -66,8 +66,19 @@ final class VimshottariDashaCalculator
         $fractionRemaining = 1.0 - $fractionTraversed;
 
         $startIndex = $nakshatraIndex % 9;
-        
+
         $dashas = [];
+
+        // The first Mahadasha began before birth: its true start is the birth
+        // instant minus the elapsed fraction of its full length. The
+        // Antardasha timeline must be built from that true start (the
+        // Antardasha running at birth is then listed first, truncated) —
+        // never from birth with the sub-periods scaled to the remainder.
+        $firstBody = self::SEQUENCE[$startIndex];
+        $firstYears = self::YEARS[$firstBody->value];
+        $elapsedSeconds = (int) round($firstYears * $fractionTraversed * self::YEAR_IN_SECONDS);
+        $trueStart = $birthTime->sub(new DateInterval('PT' . $elapsedSeconds . 'S'));
+
         $currentStart = $birthTime;
 
         for ($i = 0; $i < 9; $i++) {
@@ -77,12 +88,20 @@ final class VimshottariDashaCalculator
 
             // For the very first Mahadasha, we only live through the remaining fraction
             $actualYears = ($i === 0) ? ($years * $fractionRemaining) : $years;
-            
+
             $seconds = (int) round($actualYears * self::YEAR_IN_SECONDS);
             $currentEnd = $currentStart->add(new DateInterval('PT' . $seconds . 'S'));
 
-            // Calculate Antardashas
-            $subPeriods = $this->calculateAntardashas($body, $years, $currentStart, $currentEnd);
+            // Antardashas span the FULL Mahadasha (from its true start);
+            // parts before the visible window are dropped/truncated.
+            $antardashaTrueStart = ($i === 0) ? $trueStart : $currentStart;
+            $subPeriods = $this->calculateAntardashas(
+                $body,
+                $years,
+                $antardashaTrueStart,
+                $currentStart,
+                $currentEnd
+            );
 
             $dashas[] = new DashaPeriod(
                 body: $body,
@@ -98,13 +117,23 @@ final class VimshottariDashaCalculator
     }
 
     /**
+     * Antardashas of one Mahadasha.
+     *
+     * The nine sub-periods are laid out at their FULL proportional lengths
+     * (years × mahadasha years / 120) from the Mahadasha's true start; the
+     * ones entirely before $visibleStart are dropped and the first running
+     * one is truncated at it. Every listed period is clipped to
+     * $visibleEnd, so the listed lengths always sum exactly to the visible
+     * span (for every Mahadasha except the first, that is the full length).
+     *
      * @return array<DashaPeriod>
      */
     private function calculateAntardashas(
-        Body $mahadashaLord, 
-        float $mahadashaYears, 
-        DateTimeImmutable $mahadashaStart, 
-        DateTimeImmutable $mahadashaEnd
+        Body $mahadashaLord,
+        float $mahadashaYears,
+        DateTimeImmutable $trueStart,
+        DateTimeImmutable $visibleStart,
+        DateTimeImmutable $visibleEnd
     ): array {
         // Find the index of the Mahadasha lord in the sequence to start the sub-periods
         $startIndex = 0;
@@ -115,33 +144,45 @@ final class VimshottariDashaCalculator
             }
         }
 
+        // Full length of this Mahadasha in seconds (the first one's visible
+        // span is only the remaining fraction).
+        $fullSeconds = (int) round($mahadashaYears * self::YEAR_IN_SECONDS);
+        $fullEnd = $trueStart->add(new DateInterval('PT' . $fullSeconds . 'S'));
+
         $subPeriods = [];
-        $currentStart = $mahadashaStart;
-        
-        // Total actual duration of this segment in seconds (might be fractional if first period)
-        $totalSeconds = $mahadashaEnd->getTimestamp() - $mahadashaStart->getTimestamp();
+        $currentStart = $trueStart;
 
         for ($i = 0; $i < 9; $i++) {
             $currentIndex = ($startIndex + $i) % 9;
             $body = self::SEQUENCE[$currentIndex];
-            $antardashaYears = self::YEARS[$body->value];
-            
-            // The proportion of the Antardasha is (Antardasha Years / 120) * Total Segment Duration
-            $proportion = $antardashaYears / self::TOTAL_YEARS;
-            $seconds = (int) round($proportion * $totalSeconds);
+
+            // Full proportion: (Antardasha Years / 120) × Mahadasha years.
+            $proportion = self::YEARS[$body->value] * $mahadashaYears / self::TOTAL_YEARS;
+            $seconds = (int) round($proportion * self::YEAR_IN_SECONDS);
 
             $currentEnd = $currentStart->add(new DateInterval('PT' . $seconds . 'S'));
 
-            // The last period should exactly match the end to avoid rounding gaps
+            // The last period should exactly match the full end to avoid rounding gaps
             if ($i === 8) {
-                $currentEnd = $mahadashaEnd;
+                $currentEnd = $fullEnd;
             }
 
-            $subPeriods[] = new DashaPeriod(
-                body: $body,
-                start: $currentStart,
-                end: $currentEnd
-            );
+            // Drop Antardashas that ended before the visible window;
+            // truncate the one running at $visibleStart.
+            if ($currentEnd->getTimestamp() > $visibleStart->getTimestamp()) {
+                $listedStart = $currentStart->getTimestamp() < $visibleStart->getTimestamp()
+                    ? $visibleStart
+                    : $currentStart;
+                $listedEnd = $currentEnd->getTimestamp() > $visibleEnd->getTimestamp()
+                    ? $visibleEnd
+                    : $currentEnd;
+
+                $subPeriods[] = new DashaPeriod(
+                    body: $body,
+                    start: $listedStart,
+                    end: $listedEnd
+                );
+            }
 
             $currentStart = $currentEnd;
         }
