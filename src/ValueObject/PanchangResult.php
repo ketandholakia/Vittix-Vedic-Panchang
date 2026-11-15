@@ -60,6 +60,7 @@ final readonly class PanchangResult
         public readonly ?SolarMonth $solarMonth,
         public readonly int $vikramSamvat,
         public readonly int $shakaSamvat,
+        public readonly int $gujaratiSamvat,
 
         // Astronomy
         public readonly float $ayanamsha,
@@ -117,6 +118,7 @@ final readonly class PanchangResult
             'samvat' => [
                 'vikram' => $this->vikramSamvat,
                 'shaka' => $this->shakaSamvat,
+                'gujaratiSamvat' => $this->gujaratiSamvat,
             ],
             'ayanamsha' => round($this->ayanamsha, 4),
         ];

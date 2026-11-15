@@ -271,12 +271,17 @@ final class Panchang
 
     /**
      * Get the Hindu Calendar information (Samvat, Adhika Masa, etc) for a specific date.
+     *
+     * With a $location the Samvat years are resolved exactly from the lunar
+     * new years (Chaitra / Kartika Shukla Pratipada); without one the
+     * documented calendar-month approximations are used and
+     * `samvatIsApproximate` is true on the result.
      */
-    public function calendar(DateTimeImmutable $date): HinduCalendarResult
+    public function calendar(DateTimeImmutable $date, ?GeoLocation $location = null): HinduCalendarResult
     {
         $instant = (new AstroTimeFactory())->fromDateTime($date);
 
-        return $this->calendar->calculate($instant, $date->getTimezone());
+        return $this->calendar->calculate($instant, $date->getTimezone(), $location);
     }
 
     /**

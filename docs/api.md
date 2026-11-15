@@ -29,7 +29,7 @@ $panchang = Panchang::create($customEngine);
 | `day(DateTimeImmutable $date, GeoLocation $location, MonthSystem $monthSystem = MonthSystem::Amanta)` | `PanchangDay` | Complete daily Panchang (sunrise-to-sunrise) |
 | `moment(DateTimeImmutable $moment, GeoLocation $location)` | `PanchangMoment` | Five limbs at exact moment |
 | `janmarashi(DateTimeImmutable $moment)` | `Rashi` | Moon sign (Janmarashi) |
-| `calendar(DateTimeImmutable $date)` | `HinduCalendarResult` | Calendar info (Samvat, lunar month, etc.) |
+| `calendar(DateTimeImmutable $date, ?GeoLocation $location = null)` | `HinduCalendarResult` | Calendar info (Samvat, lunar month, etc.). With a location the Samvat years are exact; without one they are the documented approximations and `samvatIsApproximate` is true |
 | `ascendant(DateTimeImmutable $moment, GeoLocation $location)` | `AscendantPosition` | Lagna only |
 | `kundali(DateTimeImmutable $moment, GeoLocation $location)` | `Kundali` | Full birth chart |
 | `varga(DateTimeImmutable $moment, GeoLocation $location, Varga $varga)` | `Kundali` | Divisional chart |
@@ -74,7 +74,7 @@ The service also exposes pass-throughs for every `Panchang` facade feature
 | `festivals()` | `FestivalEngine` | Default festival catalog |
 | `muhurta()` | `MuhurtaCalculator` | Muhurta evaluation |
 | `electional()` | `ElectionalEvaluator` | Electional astrology |
-| `calendar(DateTimeImmutable $date)` | `HinduCalendarResult` | Samvat, Adhika Masa context |
+| `calendar(DateTimeImmutable $date, ?GeoLocation $location = null)` | `HinduCalendarResult` | Samvat, Adhika Masa context. Exact Samvat with a location; `samvatIsApproximate` flags the fallback |
 | `ascendant(DateTimeImmutable $moment, GeoLocation $location)` | `AscendantPosition` | Lagna |
 | `kundali(DateTimeImmutable $moment, GeoLocation $location)` | `Kundali` | Birth chart |
 | `vimshottariDasha(DateTimeImmutable $birthTime)` | `array<DashaPeriod>` | Dasha periods |

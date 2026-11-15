@@ -29,6 +29,13 @@ final readonly class HinduCalendarResult
         public readonly int                 $shakaSamvat,
         public readonly int                 $gujaratiSamvat,
         public readonly ?SolarMonth         $solarMonth,
+        /**
+         * True when the Samvat years above come from the documented
+         * calendar-month approximations rather than the exact lunar
+         * new-year resolution (no location was supplied, or the
+         * SamvatCalculator has no lunar support).
+         */
+        public readonly bool                $samvatIsApproximate = false,
     ) {
     }
 }
@@ -89,7 +96,8 @@ final class HinduCalendarCalculator
 
         $gregorianDate = $instant->utc->setTimezone($timezone);
 
-        if ($location !== null && $this->samvat->hasLunarSupport()) {
+        $exact = $location !== null && $this->samvat->hasLunarSupport();
+        if ($exact) {
             $vikram    = $this->samvat->vikramSamvatExact($instant, $location, $timezone);
             $shaka     = $this->samvat->shakaSamvatExact($instant, $location, $timezone);
             $gujarati  = $this->samvat->gujaratiSamvatExact($instant, $location, $timezone);
@@ -111,6 +119,7 @@ final class HinduCalendarCalculator
             shakaSamvat: $shaka,
             gujaratiSamvat: $gujarati,
             solarMonth: null, // Solar month requires the astronomy engine; set by PanchangService
+            samvatIsApproximate: !$exact,
         );
     }
 }

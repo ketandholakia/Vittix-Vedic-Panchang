@@ -179,6 +179,7 @@ final class PanchangService
             solarMonth: $solarMonth,
             vikramSamvat: $calendarResult->vikramSamvat,
             shakaSamvat: $calendarResult->shakaSamvat,
+            gujaratiSamvat: $calendarResult->gujaratiSamvat,
             ayanamsha: $this->astronomy->ayanamsa($instant),
             accuracy: $panchangDay->accuracy,
         );
@@ -401,10 +402,13 @@ final class PanchangService
 
     /**
      * Get the Hindu Calendar information (Samvat, Adhika Masa, etc) for a date.
+     *
+     * With a $location the Samvat years are exact (see
+     * {@see HinduCalendarResult::$samvatIsApproximate} for the fallback case).
      */
-    public function calendar(DateTimeImmutable $date): \Vittix\Panchang\Calendar\HinduCalendarResult
+    public function calendar(DateTimeImmutable $date, ?GeoLocation $location = null): \Vittix\Panchang\Calendar\HinduCalendarResult
     {
-        return $this->panchang()->calendar($date);
+        return $this->panchang()->calendar($date, $location);
     }
 
     /**
