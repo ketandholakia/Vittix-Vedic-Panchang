@@ -117,6 +117,42 @@ final class LunarMonthCalculator
     }
 
     /**
+     * Classify the Amanta lunation that begins at the given new moon.
+     *
+     * $newMoonStart must be the new moon opening the lunation (the search
+     * brackets it against the next new moon after it). The lunation is
+     * named after the sign the Sun enters during it; with no Sankranti it
+     * is Adhika and inherits the following lunation's name; with two
+     * Sankrantis it is Kshaya.
+     */
+    public function amantaLunation(AstroInstant $newMoonStart): Lunation
+    {
+        $nextNm = $this->nextNewMoon($newMoonStart);
+
+        $signAtStart = $this->siderealSolarSign($newMoonStart);
+        $signAtEnd   = $this->siderealSolarSign($nextNm);
+
+        if ($signAtEnd === $signAtStart) {
+            // Adhika Masa: no Sankranti in this lunation. The month is named
+            // after the *next* lunation's month. To be defensive against
+            // boundary precision issues, search from 1 day after nextNm.
+            $nextDay = $this->timeFactory->fromJulianDay($nextNm->julianDayUt + 1.0);
+            $nextNextNm = $this->nextNewMoon($nextDay);
+            $signAfter  = $this->siderealSolarSign($nextNextNm);
+
+            return new Lunation($this->signToMonth($signAfter), true, false);
+        }
+
+        $diff = ($signAtEnd - $signAtStart + 12) % 12;
+
+        return new Lunation(
+            $this->signToMonth($signAtEnd),
+            false,
+            $diff === 2, // Sun entered TWO signs during this lunation → Kshaya
+        );
+    }
+
+    /**
      * Determine if the lunar month containing the given instant is a Kshaya Masa (Decayed Month).
      *
      * Kshaya Masa occurs when the Sun transits through two sidereal signs during a single

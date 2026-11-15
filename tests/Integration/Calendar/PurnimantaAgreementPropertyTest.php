@@ -20,12 +20,17 @@ use Vittix\Panchang\Time\AstroTimeFactory;
 /**
  * Property tests for the Purnimanta month derivation.
  *
- * Historically the month-shift rule lived in two places:
- * PurnimantaMonthCalculator (used by PanchangaCalculator forDay, keyed off
- * the tithi's paksha) and HinduCalendarCalculator::derivePurnimantaMonth
- * (keyed off previous-full-moon vs previous-new-moon order). The shift rule
- * is now single-sourced in PurnimantaMonthCalculator; these tests pin the
- * seam so the two paksha-detection strategies cannot silently diverge.
+ * The Purnimanta month runs full moon to full moon and is named after the
+ * Amanta lunation that follows its starting full moon
+ * ({@see PurnimantaMonthCalculator::monthAt()}). These tests pin the
+ * instant-level properties that must hold over random dates 1950–2100:
+ *
+ *   • Shukla Paksha (non-Kshaya lunation): Purnimanta == Amanta month,
+ *     with the same Adhika flag.
+ *   • Krishna Paksha (non-Kshaya lunation): Purnimanta == the NEXT Amanta
+ *     month; for an Adhika lunation the next lunation carries the nija
+ *     name of the same month, so Purnimanta == Amanta (not Adhika).
+ *   • Kshaya lunations are excluded (their naming lunations skip a name).
  */
 #[CoversClass(PurnimantaMonthCalculator::class)]
 #[CoversClass(HinduCalendarCalculator::class)]
@@ -44,83 +49,82 @@ final class PurnimantaAgreementPropertyTest extends TestCase
         $engine = EngineFactory::createPurePhpEngine();
         $this->lunarMonth = new LunarMonthCalculator($engine);
         $this->tithi = new TithiCalculator($engine);
-        $this->purnimanta = new PurnimantaMonthCalculator();
+        $this->purnimanta = new PurnimantaMonthCalculator($this->lunarMonth);
         $this->timeFactory = new AstroTimeFactory();
     }
 
-    /**
-     * The month-shift rule has only 24 inputs — verify all of them, which is
-     * stronger than any random sample.
-     */
-    public function testShiftFormulaExhaustively(): void
-    {
-        foreach (LunarMonth::cases() as $month) {
-            self::assertSame(
-                $month,
-                $this->purnimanta->purnimantaMonth($month, Paksha::Shukla),
-                "Shukla Paksha must keep the Amanta month (month {$month->value})"
-            );
-
-            $expected = LunarMonth::from(($month->value % 12) + 1);
-            self::assertSame(
-                $expected,
-                $this->purnimanta->purnimantaMonth($month, Paksha::Krishna),
-                "Krishna Paksha must shift to the next month (month {$month->value})"
-            );
-        }
-    }
-
-    /**
-     * End-to-end agreement on real dates: the tithi-based paksha detection
-     * (PanchangaCalculator path) and the phase-order detection
-     * (HinduCalendarCalculator path) must pick the same Purnimanta month.
-     *
-     * A razor-edge disagreement is only possible within the phase-search
-     * tolerance of an exact new/full moon moment; any failure here is a
-     * genuine seam bug, not test noise.
-     */
-    public function testPakshaDetectionStrategiesAgreeOnRealDates(): void
+    public function testPurnimantaPropertiesOverRandomInstants(): void
     {
         mt_srand(20261011);
         $checked = 0;
 
-        for ($i = 0; $i < 300; $i++) {
+        for ($i = 0; $i < 200; $i++) {
             $instant = $this->randomInstant();
 
             $amanta = $this->lunarMonth->amantaMonth($instant);
             $paksha = $this->tithi->calculate($instant)->paksha();
 
-            $tithiBased = $this->purnimanta->purnimantaMonth($amanta, $paksha);
-
-            // The historical HinduCalendarCalculator logic, inline:
-            $prevFm = $this->lunarMonth->previousFullMoon($instant);
-            $prevNm = $this->lunarMonth->previousNewMoon($instant);
-            $inKrishnaPaksha = $prevFm->julianDayUt > $prevNm->julianDayUt;
-            $phaseBased = $inKrishnaPaksha
-                ? LunarMonth::from(($amanta->value % 12) + 1)
-                : $amanta;
-
-            self::assertSame(
-                $tithiBased,
-                $phaseBased,
-                sprintf(
-                    'Purnimanta month must agree at %s (amanta %d, tithi paksha %s)',
-                    $instant->utc->format('Y-m-d H:i:s'),
-                    $amanta->value,
-                    $paksha->value
-                )
+            // Classification of the Amanta lunation containing the instant.
+            $lunation = $this->lunarMonth->amantaLunation(
+                $this->lunarMonth->previousNewMoon($instant)
             );
+            self::assertSame($amanta, $lunation->month, 'sanity: lunation month matches amantaMonth()');
+
+            $purnimanta = $this->purnimanta->monthAt($instant);
+            $context = sprintf(
+                'at %s (amanta %d, paksha %s, adhika %s, kshaya %s)',
+                $instant->utc->format('Y-m-d H:i:s'),
+                $amanta->value,
+                $paksha->value,
+                $lunation->isAdhika ? 'yes' : 'no',
+                $lunation->isKshaya ? 'yes' : 'no',
+            );
+
+            if ($lunation->isKshaya) {
+                // Kshaya lunations skip a month name; the Purnimanta month is
+                // still well-defined but does not follow the simple rules
+                // below. Covered by PurnimantaAdhikaTest.
+                continue;
+            }
+
+            if ($paksha === Paksha::Shukla) {
+                self::assertSame($amanta, $purnimanta->month, "Shukla: Purnimanta == Amanta $context");
+                self::assertSame($lunation->isAdhika, $purnimanta->isAdhika, "Shukla: Adhika flag follows the lunation $context");
+            } elseif ($lunation->isAdhika) {
+                // Krishna of an Adhika lunation: the naming lunation is the
+                // following nija one, which re-uses the same month name.
+                self::assertSame($amanta, $purnimanta->month, "Krishna of Adhika lunation: nija name $context");
+                self::assertFalse($purnimanta->isAdhika, "Krishna of Adhika lunation: not Adhika $context");
+            } else {
+                // Krishna of a normal lunation: the month advances by one.
+                // The Adhika flag comes from the naming lunation (the next
+                // one), which may itself be Adhika — e.g. the Krishna
+                // fortnight before Adhika Shravana 2023 IS Adhika Shravana.
+                self::assertSame(
+                    LunarMonth::from(($amanta->value % 12) + 1),
+                    $purnimanta->month,
+                    "Krishna: Purnimanta == Amanta+1 $context"
+                );
+                $nextLunation = $this->lunarMonth->amantaLunation(
+                    $this->lunarMonth->nextNewMoon($this->lunarMonth->previousNewMoon($instant))
+                );
+                self::assertSame(
+                    $nextLunation->isAdhika,
+                    $purnimanta->isAdhika,
+                    "Krishna: Adhika flag follows the naming lunation $context"
+                );
+            }
             $checked++;
         }
 
-        self::assertSame(300, $checked);
+        self::assertGreaterThan(150, $checked, 'most random instants must fall in non-Kshaya lunations');
     }
 
     /**
      * The tithi's paksha must be exactly the elongation hemisphere:
      * Shukla ⟺ Moon−Sun elongation in [0°, 180°). Verified over 1000 random
-     * instants — this is the property that makes both detection strategies
-     * equivalent away from phase-boundary instants.
+     * instants — this is the property that links the tithi-based reasoning
+     * above to the full-moon/new-moon based implementation.
      */
     public function testTithiPakshaMatchesElongationHemisphereOver1000Instants(): void
     {

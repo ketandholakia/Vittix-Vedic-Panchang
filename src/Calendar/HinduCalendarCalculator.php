@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Vittix\Panchang\Enum\CalendarSystem;
 use Vittix\Panchang\Enum\LunarMonth;
-use Vittix\Panchang\Enum\Paksha;
 use Vittix\Panchang\Enum\SolarMonth;
 use Vittix\Panchang\ValueObject\AstroInstant;
 
@@ -21,6 +20,7 @@ final readonly class HinduCalendarResult
         public readonly ?LunarMonth         $amantaMonth,
         public readonly ?LunarMonth         $purnimantaMonth,
         public readonly bool                $isAdhikaMasa,
+        public readonly bool                $purnimantaIsAdhikaMasa,
         public readonly ?DateTimeImmutable  $previousNewMoon,
         public readonly ?DateTimeImmutable  $nextNewMoon,
         public readonly ?DateTimeImmutable  $nextFullMoon,
@@ -46,12 +46,15 @@ final readonly class HinduCalendarResult
  */
 final class HinduCalendarCalculator
 {
+    private readonly PurnimantaMonthCalculator $purnimantaMonthCalc;
+
     public function __construct(
         private readonly LunarMonthCalculator  $lunarMonth,
         private readonly AdhikaMasaCalculator  $adhikaMasa,
         private readonly SamvatCalculator      $samvat,
-        private readonly PurnimantaMonthCalculator $purnimantaMonthCalc = new PurnimantaMonthCalculator(),
+        ?PurnimantaMonthCalculator $purnimantaMonthCalc = null,
     ) {
+        $this->purnimantaMonthCalc = $purnimantaMonthCalc ?? new PurnimantaMonthCalculator($lunarMonth);
     }
 
     /**
@@ -71,17 +74,18 @@ final class HinduCalendarCalculator
         $amanta    = $this->lunarMonth->amantaMonth($instant);
         $adhika    = $this->adhikaMasa->isAdhikaMasa($instant);
 
-        // Purnimanta: same as Amanta in Shukla Paksha;
-        // one month ahead in Krishna Paksha (after full moon).
-        // For a simple implementation: check if we're past the full moon.
-        $purnimanta = $this->derivePurnimantaMonth($instant, $amanta);
+        // Purnimanta: full-moon-to-full-moon month named after the Amanta
+        // lunation that follows its starting full moon (correct around
+        // Adhika/Kshaya months, unlike a blind paksha-based shift).
+        $purnimanta = $this->purnimantaMonthCalc->monthAt($instant);
 
         $gregorianDate = $instant->utc->setTimezone($timezone);
 
         return new HinduCalendarResult(
             amantaMonth: $amanta,
-            purnimantaMonth: $purnimanta,
+            purnimantaMonth: $purnimanta->month,
             isAdhikaMasa: $adhika,
+            purnimantaIsAdhikaMasa: $purnimanta->isAdhika,
             previousNewMoon: $prevNm->utc->setTimezone($timezone),
             nextNewMoon: $nextNm->utc->setTimezone($timezone),
             nextFullMoon: $nextFm->utc->setTimezone($timezone),
@@ -89,42 +93,6 @@ final class HinduCalendarCalculator
             shakaSamvat: $this->samvat->shakaSamvat($gregorianDate),
             gujaratiSamvat: $this->samvat->gujaratiSamvat($gregorianDate),
             solarMonth: null, // Solar month requires the astronomy engine; set by PanchangService
-        );
-    }
-
-    // -------------------------------------------------------------------------
-    // Private helpers
-    // -------------------------------------------------------------------------
-
-    /**
-     * Derive the Purnimanta month from the Amanta month.
-     *
-     * In Purnimanta reckoning:
-     *  • Shukla Paksha: same month name as Amanta.
-     *  • Krishna Paksha: the month name is ONE AHEAD of Amanta.
-     *    (The Purnimanta Krishna Paksha "belongs" to the next month.)
-     *
-     * The month-shift rule itself is single-sourced in
-     * {@see PurnimantaMonthCalculator}; this method only detects the Paksha
-     * (by phase-event order: past the full moon = Krishna) and delegates.
-     */
-    private function derivePurnimantaMonth(
-        AstroInstant $instant,
-        ?LunarMonth $amantaMonth
-    ): ?LunarMonth {
-        if ($amantaMonth === null) {
-            return null;
-        }
-
-        // Check whether we are in Krishna Paksha (past full moon)
-        $prevFm = $this->lunarMonth->previousFullMoon($instant);
-        $prevNm = $this->lunarMonth->previousNewMoon($instant);
-
-        $inKrishnaPaksha = $prevFm->julianDayUt > $prevNm->julianDayUt;
-
-        return $this->purnimantaMonthCalc->purnimantaMonth(
-            $amantaMonth,
-            $inKrishnaPaksha ? Paksha::Krishna : Paksha::Shukla,
         );
     }
 }

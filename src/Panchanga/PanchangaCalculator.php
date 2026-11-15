@@ -31,6 +31,8 @@ final class PanchangaCalculator
 {
     private readonly AstroTimeFactory $timeFactory;
 
+    private readonly ?PurnimantaMonthCalculator $purnimantaMonthCalc;
+
     public function __construct(
         private readonly AstronomyEngineInterface $astronomy,
         private readonly TithiCalculator          $tithi,
@@ -41,9 +43,11 @@ final class PanchangaCalculator
         private readonly TransitionFinder         $transitions,
         private readonly ?LunarMonthCalculator    $lunarMonthCalc = null,
         private readonly ?AdhikaMasaCalculator    $adhikaMasaCalc = null,
-        private readonly PurnimantaMonthCalculator $purnimantaMonthCalc = new PurnimantaMonthCalculator(),
+        ?PurnimantaMonthCalculator $purnimantaMonthCalc = null,
     ) {
         $this->timeFactory = new AstroTimeFactory();
+        $this->purnimantaMonthCalc = $purnimantaMonthCalc
+            ?? ($lunarMonthCalc !== null ? new PurnimantaMonthCalculator($lunarMonthCalc) : null);
     }
 
     /**
@@ -169,16 +173,25 @@ final class PanchangaCalculator
         if ($this->lunarMonthCalc !== null) {
             $amantaMonth = $this->lunarMonthCalc->amantaMonth($referenceInstant);
             $isKshaya    = $this->lunarMonthCalc->isKshayaMasa($referenceInstant);
-            
+
             if ($monthSystem === MonthSystem::Purnimanta) {
-                $lunarMonth = $this->purnimantaMonthCalc->purnimantaMonth($amantaMonth, $tithiAtSunrise->paksha());
+                // Full-moon-to-full-moon month named after the Amanta
+                // lunation that follows its starting full moon; Adhika
+                // status follows that naming lunation (correct around
+                // Adhika/Kshaya months, unlike a blind paksha shift).
+                $purnimantaCalc = $this->purnimantaMonthCalc;
+                if ($purnimantaCalc !== null) {
+                    $purnimanta = $purnimantaCalc->monthAt($referenceInstant);
+                    $lunarMonth = $purnimanta->month;
+                    $isAdhika   = $purnimanta->isAdhika;
+                }
             } else {
                 $lunarMonth = $amantaMonth;
-            }
-        }
 
-        if ($this->adhikaMasaCalc !== null) {
-            $isAdhika = $this->adhikaMasaCalc->isAdhikaMasa($referenceInstant);
+                if ($this->adhikaMasaCalc !== null) {
+                    $isAdhika = $this->adhikaMasaCalc->isAdhikaMasa($referenceInstant);
+                }
+            }
         }
 
         return new PanchangDay(
