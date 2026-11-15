@@ -15,7 +15,16 @@
 // Historical hardcoded path (previous checkout location):
 // $file = 'd:/ketan/github/vittixvedic/tests/fixtures/oracle/daily_panchang_ahmedabad.json';
 $file = $argv[1] ?? __DIR__ . '/../tests/fixtures/oracle/daily_panchang_ahmedabad.json';
-$data = json_decode(file_get_contents($file), true);
+$raw = file_get_contents($file);
+if ($raw === false) {
+    fwrite(STDERR, "Cannot read fixture: $file\n");
+    exit(1);
+}
+$data = json_decode($raw, true);
+if (!is_array($data)) {
+    fwrite(STDERR, "Invalid JSON in fixture: $file\n");
+    exit(1);
+}
 $data['metadata'] = [
     'fixture_type' => 'independent_oracle',
     'location' => [

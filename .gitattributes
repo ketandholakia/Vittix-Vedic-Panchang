@@ -1,5 +1,6 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# Auto detect text files and perform LF normalization;
+# force LF in working trees so Windows checkouts stop producing CRLF/mixed files
+* text=auto eol=lf
 
 # Exclude development files from composer dist archives
 /tests export-ignore
