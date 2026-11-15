@@ -71,11 +71,11 @@ final class PanchangOracleTest extends TestCase
             // Format: Date, Timezone, Lat, Lon, Tithi, Paksha, Nakshatra, Yoga, Karana, Vara
             '2026-08-05 (Ahmedabad)' => [
                 '2026-08-05 06:00:00', $ist, $ahdLat, $ahdLon,
-                Tithi::KrishnaD7, Paksha::Krishna, Nakshatra::Ashwini, Yoga::Shoola, Karana::Vishti, Vara::Budhavara
+                Tithi::KrishnaSaptami, Paksha::Krishna, Nakshatra::Ashwini, Yoga::Shoola, Karana::Vishti, Vara::Budhavara
             ],
             '2026-01-14 Makar Sankranti (Ahmedabad)' => [
                 '2026-01-14 06:00:00', $ist, $ahdLat, $ahdLon,
-                Tithi::KrishnaD11, Paksha::Krishna, Nakshatra::Anuradha, Yoga::Ganda, Karana::Balava, Vara::Budhavara
+                Tithi::KrishnaEkadashi, Paksha::Krishna, Nakshatra::Anuradha, Yoga::Ganda, Karana::Balava, Vara::Budhavara
             ],
             '2024-03-25 Holi (Ahmedabad)' => [
                 '2024-03-25 06:00:00', $ist, $ahdLat, $ahdLon,
@@ -87,7 +87,7 @@ final class PanchangOracleTest extends TestCase
             ],
             '2024-01-22 Ram Mandir Pratishtha (Ayodhya)' => [
                 '2024-01-22 06:00:00', $ist, 26.7922, 82.1998,
-                Tithi::ShuklaD12, Paksha::Shukla, Nakshatra::Mrigashira, Yoga::Brahma, Karana::Bava, Vara::Somavara
+                Tithi::ShuklaDwadashi, Paksha::Shukla, Nakshatra::Mrigashira, Yoga::Brahma, Karana::Bava, Vara::Somavara
             ],
             '2023-08-15 Independence Day (New Delhi)' => [
                 '2023-08-15 06:00:00', $ist, 28.6139, 77.2090,
@@ -95,7 +95,7 @@ final class PanchangOracleTest extends TestCase
             ],
             '2025-01-01 New Year (London)' => [
                 '2025-01-01 06:00:00', 'Europe/London', 51.5074, -0.1278,
-                Tithi::ShuklaD2, Paksha::Shukla, Nakshatra::UttaraAshadha, Yoga::Vyaghata, Karana::Balava, Vara::Budhavara
+                Tithi::ShuklaDwitiya, Paksha::Shukla, Nakshatra::UttaraAshadha, Yoga::Vyaghata, Karana::Balava, Vara::Budhavara
             ],
             '2025-03-14 Holi (New York)' => [
                 '2025-03-14 06:00:00', 'America/New_York', 40.7128, -74.0060,
@@ -107,7 +107,7 @@ final class PanchangOracleTest extends TestCase
             ],
             '2024-02-29 Leap Day (Tokyo)' => [
                 '2024-02-29 06:00:00', 'Asia/Tokyo', 35.6762, 139.6503,
-                Tithi::KrishnaD4, Paksha::Krishna, Nakshatra::Chitra, Yoga::Vriddhi, Karana::Balava, Vara::Guruvara
+                Tithi::KrishnaChaturthi, Paksha::Krishna, Nakshatra::Chitra, Yoga::Vriddhi, Karana::Balava, Vara::Guruvara
             ]
         ];
     }

@@ -117,7 +117,7 @@ final class PanchangDaySmokeTest extends TestCase
         $london = new GeoLocation(51.5074, -0.1278);
         $result = $this->panchang->moment($moment, $london);
 
-        self::assertSame(\Vittix\Panchang\Enum\Tithi::KrishnaD11, $result->tithi);
+        self::assertSame(\Vittix\Panchang\Enum\Tithi::KrishnaEkadashi, $result->tithi);
     }
     public function testVriddhiTithiDoesNotCreateSecondTithi(): void
     {
@@ -131,7 +131,7 @@ final class PanchangDaySmokeTest extends TestCase
             TestLocations::ahmedabad()
         );
 
-        self::assertSame(\Vittix\Panchang\Enum\Tithi::KrishnaD5, $day->tithiAtSunrise);
+        self::assertSame(\Vittix\Panchang\Enum\Tithi::KrishnaPanchami, $day->tithiAtSunrise);
         self::assertNull($day->tithiSecond);
         self::assertNull($day->tithiSecondEndsAt);
     }

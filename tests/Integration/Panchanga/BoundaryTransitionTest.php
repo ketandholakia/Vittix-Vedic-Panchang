@@ -137,7 +137,7 @@ final class BoundaryTransitionTest extends TestCase
         $panchang = $this->calculator->forDay($dt, new GeoLocation(0, 0));
         
         // At sunrise, the Tithi should be Dwitiya (since Pratipada ended 30s ago)
-        self::assertSame(Tithi::ShuklaD2, $panchang->tithiAtSunrise);
+        self::assertSame(Tithi::ShuklaDwitiya, $panchang->tithiAtSunrise);
         
         // Dwitiya ends roughly 1 day later (in our mock engine, Moon moves 12 deg/day)
         self::assertNotNull($panchang->tithiEndsAt);
@@ -157,7 +157,7 @@ final class BoundaryTransitionTest extends TestCase
         // Technically Pratipada ends exactly at sunrise. 
         // In Panchanga, if elongation is >= 12.0, it's the next Tithi.
         // So at exactly 12.0, it's Dwitiya.
-        self::assertSame(Tithi::ShuklaD2, $panchang->tithiAtSunrise);
+        self::assertSame(Tithi::ShuklaDwitiya, $panchang->tithiAtSunrise);
         
         // And it should end exactly 1 day later (since Moon speed is 12 deg/day)
         $tithiEndsAt = $panchang->tithiEndsAt;

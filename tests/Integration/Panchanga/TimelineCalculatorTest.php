@@ -41,7 +41,7 @@ final class TimelineCalculatorTest extends TestCase
         // We expect Dwitiya to start at 'from' and end around 22:32, then Tritiya starts.
         self::assertCount(2, $windows);
 
-        self::assertSame(Tithi::KrishnaD2, $windows[0]['tithi']);
+        self::assertSame(Tithi::KrishnaDwitiya, $windows[0]['tithi']);
         self::assertNotNull($windows[0]['end']);
 
         // Check end time is around 22:32 IST
@@ -53,7 +53,7 @@ final class TimelineCalculatorTest extends TestCase
             'Timeline Tithi end time mismatch'
         );
 
-        self::assertSame(Tithi::KrishnaD3, $windows[1]['tithi']);
+        self::assertSame(Tithi::KrishnaTritiya, $windows[1]['tithi']);
         self::assertNotNull($windows[1]['end']);
     }
 }

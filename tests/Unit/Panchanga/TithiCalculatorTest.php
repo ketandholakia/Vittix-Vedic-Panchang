@@ -51,7 +51,7 @@ final class TithiCalculatorTest extends TestCase
             [11.999999, 0.0, Tithi::ShuklaPratipada],
 
             // 12° -> Shukla Dwitiya
-            [12.0, 0.0, Tithi::ShuklaD2],
+            [12.0, 0.0, Tithi::ShuklaDwitiya],
 
             // 179.999999° -> Purnima
             [179.999999, 0.0, Tithi::Purnima],
@@ -63,7 +63,7 @@ final class TithiCalculatorTest extends TestCase
             [191.999999, 0.0, Tithi::KrishnaPratipada],
 
             // 192° -> Krishna Dwitiya
-            [192.0, 0.0, Tithi::KrishnaD2],
+            [192.0, 0.0, Tithi::KrishnaDwitiya],
 
             // 359.999999° -> Amavasya
             [359.999999, 0.0, Tithi::Amavasya],
@@ -71,7 +71,7 @@ final class TithiCalculatorTest extends TestCase
             // 360° normalized 0° -> Shukla Pratipada
             [360.0, 0.0, Tithi::ShuklaPratipada],
             [10.0, 10.0, Tithi::ShuklaPratipada], // Moon and Sun at same longitude
-            [30.0, 15.0, Tithi::ShuklaD2], // 15° elongation -> Shukla Dwitiya
+            [30.0, 15.0, Tithi::ShuklaDwitiya], // 15° elongation -> Shukla Dwitiya
             [15.0, 30.0, Tithi::KrishnaChaturdashi], // 345° elongation -> Krishna Chaturdashi (Index 28)
             [20.0, 30.0, Tithi::Amavasya], // 350° elongation -> Amavasya (Index 29)
         ];

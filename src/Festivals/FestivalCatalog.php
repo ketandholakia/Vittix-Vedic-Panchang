@@ -46,13 +46,13 @@ final class FestivalCatalog
             // Navami is observed when Navami prevails at midday).
             new Festival(
                 'Rama Navami',
-                new ViddhaTithiRule(LunarMonth::Chaitra, Tithi::ShuklaD9, Kala::Madhyahna)
+                new ViddhaTithiRule(LunarMonth::Chaitra, Tithi::ShuklaNavami, Kala::Madhyahna)
             ),
             // Vaishakha Shukla Tritiya at Madhyahna (2026-04-19: Tritiya
             // ends 07:27 on Apr 20, before that day's Madhyahna).
             new Festival(
                 'Akshaya Tritiya',
-                new ViddhaTithiRule(LunarMonth::Vaishakha, Tithi::ShuklaD3, Kala::Madhyahna)
+                new ViddhaTithiRule(LunarMonth::Vaishakha, Tithi::ShuklaTritiya, Kala::Madhyahna)
             ),
             // Shravana Purnima (nija Shravana; the Adhika Shravana Purnima
             // is skipped — 2023 fires once, not on Aug 1 AND Aug 31).
@@ -70,7 +70,7 @@ final class FestivalCatalog
             // Bhadrapada Shukla Chaturthi at Madhyahna (vyapini).
             new Festival(
                 'Ganesha Chaturthi',
-                new ViddhaTithiRule(LunarMonth::Bhadrapada, Tithi::ShuklaD4, Kala::Madhyahna)
+                new ViddhaTithiRule(LunarMonth::Bhadrapada, Tithi::ShuklaChaturthi, Kala::Madhyahna)
             ),
             // Shravana Krishna Ashtami during the Nishita of the night
             // beginning the festival day (2026: Ashtami ends 00:14, the

@@ -40,14 +40,14 @@ final class MajorFestivalsTest extends TestCase
         // Setup 12 Key Festivals
         $this->festivalEngine->addFestival(new Festival('Maha Shiva Ratri', new SunriseTithiRule(LunarMonth::Magha, Tithi::KrishnaChaturdashi)));
         $this->festivalEngine->addFestival(new Festival('Holi', new SunriseTithiRule(LunarMonth::Phalguna, Tithi::Purnima)));
-        $this->festivalEngine->addFestival(new Festival('Rama Navami', new SunriseTithiRule(LunarMonth::Chaitra, Tithi::ShuklaD9)));
+        $this->festivalEngine->addFestival(new Festival('Rama Navami', new SunriseTithiRule(LunarMonth::Chaitra, Tithi::ShuklaNavami)));
         $this->festivalEngine->addFestival(new Festival('Buddha Purnima', new SunriseTithiRule(LunarMonth::Vaishakha, Tithi::Purnima)));
-        $this->festivalEngine->addFestival(new Festival('Rath Yatra', new SunriseTithiRule(LunarMonth::Ashadha, Tithi::ShuklaD2)));
+        $this->festivalEngine->addFestival(new Festival('Rath Yatra', new SunriseTithiRule(LunarMonth::Ashadha, Tithi::ShuklaDwitiya)));
         $this->festivalEngine->addFestival(new Festival('Raksha Bandhan', new SunriseTithiRule(LunarMonth::Shravana, Tithi::Purnima)));
         $this->festivalEngine->addFestival(new Festival('Krishna Janmashtami', new SunriseTithiRule(LunarMonth::Shravana, Tithi::KrishnaAshtami)));
-        $this->festivalEngine->addFestival(new Festival('Ganesha Chaturthi', new SunriseTithiRule(LunarMonth::Bhadrapada, Tithi::ShuklaD4)));
+        $this->festivalEngine->addFestival(new Festival('Ganesha Chaturthi', new SunriseTithiRule(LunarMonth::Bhadrapada, Tithi::ShuklaChaturthi)));
         $this->festivalEngine->addFestival(new Festival('Navaratri Begins', new SunriseTithiRule(LunarMonth::Ashwina, Tithi::ShuklaPratipada)));
-        $this->festivalEngine->addFestival(new Festival('Dussehra', new SunriseTithiRule(LunarMonth::Ashwina, Tithi::ShuklaD10)));
+        $this->festivalEngine->addFestival(new Festival('Dussehra', new SunriseTithiRule(LunarMonth::Ashwina, Tithi::ShuklaDashami)));
         $this->festivalEngine->addFestival(new Festival('Diwali', new SunriseTithiRule(LunarMonth::Ashwina, Tithi::Amavasya)));
     }
 
