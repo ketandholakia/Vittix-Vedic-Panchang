@@ -21,6 +21,7 @@ final class FixtureRepository
         'sun_moon_events' => 'sun_moon_events.json',
         'ascendant_positions' => 'ascendant_positions.json',
         'festival_dates' => 'festival_dates.json',
+        'festival_dates_holdout' => 'festival_dates_holdout.json',
     ];
 
     public function __construct(

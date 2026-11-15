@@ -1,0 +1,596 @@
+{
+  "metadata": {
+    "fixture_type": "festival_dates_holdout",
+    "source": "drikpanchang.com",
+    "source_urls": {
+      "Raksha Bandhan": "https://www.drikpanchang.com/festivals/raksha-bandhan/raksha-bandhan-date-time.html?year=<YEAR>",
+      "Krishna Janmashtami": "https://www.drikpanchang.com/dashavatara/lord-krishna/krishna-janmashtami-date-time.html?year=<YEAR>",
+      "Ganesha Chaturthi": "https://www.drikpanchang.com/festivals/ganesh-chaturthi/ganesh-chaturthi-date-time.html?year=<YEAR>",
+      "Gudi Padwa / Ugadi": "https://www.drikpanchang.com/festivals/gudi-padwa/gudi-padwa-date-time.html?year=<YEAR>"
+    },
+    "note": "Held-out years (2015-2022, 2028-2030) NOT used for rule development. drikpanchang began rate-limiting/blocking this environment (HTTP 403 / reCAPTCHA) mid-session; only the entries below with a 'date' field were successfully fetched from drik pages. Years marked 'unavailable' could not be fetched and are NOT asserted. The 2018/2019/2020 Raksha pages geo-located to San Mateo, CA (US) from the reader service - those dates differ from the Indian dates and were not used.",
+    "fetched_on": "2026-11-15",
+    "holdout_years": [
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2028,
+      2029,
+      2030
+    ],
+    "known_divergences": [
+      {
+        "festival": "Krishna Janmashtami",
+        "year": 2029,
+        "drikpanchang": "2029-09-01",
+        "engine": "2029-08-31",
+        "explanation": "HYPOTHESIS, UNVERIFIED (dates from the drik Recent Years list; no per-year tithi/Nishita timings available for 2029). Engine resolves one day early — same pattern as 2027 where drik applies its Ashtami+Rohini combination judgment at the second midnight rather than the first."
+      },
+      {
+        "festival": "Krishna Janmashtami",
+        "year": 2030,
+        "drikpanchang": "2030-08-21",
+        "engine": "2030-08-20",
+        "explanation": "HYPOTHESIS, UNVERIFIED (dates from the drik Recent Years list; no per-year tithi/Nishita timings available for 2030). Engine resolves one day early — same Rohini-judgment pattern."
+      }
+    ]
+  },
+  "samples": [
+    {
+      "festival": "Raksha Bandhan",
+      "year": 2015,
+      "date": "2015-08-29",
+      "holdout": true,
+      "drik_page_facts": "Purnima Tithi Begins - 03:35 AM on Aug 29; Purnima Tithi Ends - 12:05 AM on Aug 30; Bhadra End Time - 01:50 PM (Aug 29).",
+      "source_url": "https://www.drikpanchang.com/festivals/raksha-bandhan/raksha-bandhan-date-time.html?year=2015"
+    },
+    {
+      "festival": "Raksha Bandhan",
+      "year": 2016,
+      "date": "2016-08-18",
+      "holdout": true,
+      "drik_page_facts": "Purnima Tithi Begins - 04:27 PM on Aug 17; Purnima Tithi Ends - 02:56 PM on Aug 18; 'Bhadra got over before Sunrise'.",
+      "source_url": "https://www.drikpanchang.com/festivals/raksha-bandhan/raksha-bandhan-date-time.html?year=2016"
+    },
+    {
+      "festival": "Raksha Bandhan",
+      "year": 2017,
+      "date": "2017-08-07",
+      "holdout": true,
+      "drik_page_facts": "Purnima Tithi Begins - 10:29 PM on Aug 06; Purnima Tithi Ends - 11:41 PM on Aug 07; Bhadra End Time - 11:05 AM (Aug 07).",
+      "source_url": "https://www.drikpanchang.com/festivals/raksha-bandhan/raksha-bandhan-date-time.html?year=2017"
+    },
+    {
+      "festival": "Raksha Bandhan",
+      "year": 2018,
+      "holdout": true,
+      "unavailable": "drik page geo-located to San Mateo CA (US) / 403; Indian date not verifiable from this environment"
+    },
+    {
+      "festival": "Raksha Bandhan",
+      "year": 2019,
+      "holdout": true,
+      "unavailable": "drik page 403 Forbidden / captcha from this environment"
+    },
+    {
+      "festival": "Raksha Bandhan",
+      "year": 2020,
+      "holdout": true,
+      "unavailable": "drik page 403 Forbidden / captcha from this environment"
+    },
+    {
+      "festival": "Raksha Bandhan",
+      "year": 2021,
+      "date": "2021-08-22",
+      "holdout": true,
+      "drik_page_facts": "Purnima Tithi Begins - 07:00 PM on Aug 22; Purnima Tithi Ends - 05:31 PM on Aug 23; Bhadra End Time - 06:15 AM (Aug 23).",
+      "source_url": "https://www.drikpanchang.com/festivals/raksha-bandhan/raksha-bandhan-date-time.html?year=2021"
+    },
+    {
+      "festival": "Raksha Bandhan",
+      "year": 2022,
+      "date": "2022-08-11",
+      "holdout": true,
+      "drik_page_facts": "Purnima Tithi Begins - 10:38 AM on Aug 11; Purnima Tithi Ends - 07:05 AM on Aug 12; Bhadra End Time - 08:51 PM (Aug 11).",
+      "source_url": "https://www.drikpanchang.com/festivals/raksha-bandhan/raksha-bandhan-date-time.html?year=2022"
+    },
+    {
+      "festival": "Raksha Bandhan",
+      "year": 2028,
+      "date": "2028-08-05",
+      "holdout": true,
+      "drik_page_facts": "Purnima Tithi Begins - 11:51 AM on Aug 05; Purnima Tithi Ends - 01:39 PM on Aug 06; 'Bhadra got over before Sunrise'.",
+      "source_url": "https://www.drikpanchang.com/festivals/raksha-bandhan/raksha-bandhan-date-time.html?year=2028"
+    },
+    {
+      "festival": "Raksha Bandhan",
+      "year": 2029,
+      "date": "2029-08-23",
+      "holdout": true,
+      "drik_page_facts": "Purnima Tithi Begins - 06:47 AM on Aug 23; Purnima Tithi Ends - 07:20 AM on Aug 24; Bhadra End Time - 07:04 PM (Aug 23).",
+      "source_url": "https://www.drikpanchang.com/festivals/raksha-bandhan/raksha-bandhan-date-time.html?year=2029"
+    },
+    {
+      "festival": "Raksha Bandhan",
+      "year": 2030,
+      "date": "2030-08-13",
+      "holdout": true,
+      "drik_page_facts": "Purnima Tithi Begins - 06:23 PM on Aug 12; Purnima Tithi Ends - 04:13 PM on Aug 13; 'Bhadra got over before Sunrise'.",
+      "source_url": "https://www.drikpanchang.com/festivals/raksha-bandhan/raksha-bandhan-date-time.html?year=2030"
+    },
+    {
+      "festival": "Krishna Janmashtami",
+      "year": 2028,
+      "date": "2028-08-13",
+      "holdout": true,
+      "source_url": "https://www.drikpanchang.com/dashavatara/lord-krishna/krishna-janmashtami-date-time.html?year=2027"
+    },
+    {
+      "festival": "Krishna Janmashtami",
+      "year": 2029,
+      "date": "2029-09-01",
+      "holdout": true,
+      "source_url": "https://www.drikpanchang.com/dashavatara/lord-krishna/krishna-janmashtami-date-time.html?year=2027"
+    },
+    {
+      "festival": "Krishna Janmashtami",
+      "year": 2030,
+      "date": "2030-08-21",
+      "holdout": true,
+      "source_url": "https://www.drikpanchang.com/dashavatara/lord-krishna/krishna-janmashtami-date-time.html?year=2027"
+    },
+    {
+      "festival": "Ganesha Chaturthi",
+      "year": 2028,
+      "date": "2028-08-23",
+      "holdout": true,
+      "source_url": "https://www.drikpanchang.com/festivals/ganesh-chaturthi/ganesh-chaturthi-date-time.html?year=2026"
+    },
+    {
+      "festival": "Ganesha Chaturthi",
+      "year": 2029,
+      "date": "2029-09-11",
+      "holdout": true,
+      "source_url": "https://www.drikpanchang.com/festivals/ganesh-chaturthi/ganesh-chaturthi-date-time.html?year=2026"
+    },
+    {
+      "festival": "Ganesha Chaturthi",
+      "year": 2030,
+      "date": "2030-09-01",
+      "holdout": true,
+      "source_url": "https://www.drikpanchang.com/festivals/ganesh-chaturthi/ganesh-chaturthi-date-time.html?year=2026"
+    },
+    {
+      "festival": "Gudi Padwa / Ugadi",
+      "year": 2020,
+      "date": "2020-03-25",
+      "holdout": true,
+      "source_url": "https://www.drikpanchang.com/festivals/gudi-padwa/gudi-padwa-date-time.html?year=2020"
+    },
+    {
+      "festival": "Gudi Padwa / Ugadi",
+      "year": 2015,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Gudi Padwa / Ugadi",
+      "year": 2016,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Gudi Padwa / Ugadi",
+      "year": 2017,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Gudi Padwa / Ugadi",
+      "year": 2018,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Gudi Padwa / Ugadi",
+      "year": 2019,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Gudi Padwa / Ugadi",
+      "year": 2021,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Gudi Padwa / Ugadi",
+      "year": 2022,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Gudi Padwa / Ugadi",
+      "year": 2028,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Gudi Padwa / Ugadi",
+      "year": 2029,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Gudi Padwa / Ugadi",
+      "year": 2030,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Rama Navami",
+      "year": 2015,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Rama Navami",
+      "year": 2016,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Rama Navami",
+      "year": 2017,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Rama Navami",
+      "year": 2018,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Rama Navami",
+      "year": 2019,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Rama Navami",
+      "year": 2020,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Rama Navami",
+      "year": 2021,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Rama Navami",
+      "year": 2022,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Rama Navami",
+      "year": 2028,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Rama Navami",
+      "year": 2029,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Rama Navami",
+      "year": 2030,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Akshaya Tritiya",
+      "year": 2015,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Akshaya Tritiya",
+      "year": 2016,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Akshaya Tritiya",
+      "year": 2017,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Akshaya Tritiya",
+      "year": 2018,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Akshaya Tritiya",
+      "year": 2019,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Akshaya Tritiya",
+      "year": 2020,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Akshaya Tritiya",
+      "year": 2021,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Akshaya Tritiya",
+      "year": 2022,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Akshaya Tritiya",
+      "year": 2028,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Akshaya Tritiya",
+      "year": 2029,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Akshaya Tritiya",
+      "year": 2030,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Diwali",
+      "year": 2015,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Diwali",
+      "year": 2016,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Diwali",
+      "year": 2017,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Diwali",
+      "year": 2018,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Diwali",
+      "year": 2019,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Diwali",
+      "year": 2020,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Diwali",
+      "year": 2021,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Diwali",
+      "year": 2022,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Diwali",
+      "year": 2028,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Diwali",
+      "year": 2029,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Diwali",
+      "year": 2030,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Ganesha Chaturthi",
+      "year": 2015,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Ganesha Chaturthi",
+      "year": 2016,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Ganesha Chaturthi",
+      "year": 2017,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Ganesha Chaturthi",
+      "year": 2018,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Ganesha Chaturthi",
+      "year": 2019,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Ganesha Chaturthi",
+      "year": 2020,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Ganesha Chaturthi",
+      "year": 2021,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Ganesha Chaturthi",
+      "year": 2022,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Krishna Janmashtami",
+      "year": 2015,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Krishna Janmashtami",
+      "year": 2016,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Krishna Janmashtami",
+      "year": 2017,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Krishna Janmashtami",
+      "year": 2018,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Krishna Janmashtami",
+      "year": 2019,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Krishna Janmashtami",
+      "year": 2020,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Krishna Janmashtami",
+      "year": 2021,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Krishna Janmashtami",
+      "year": 2022,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Maha Shivaratri",
+      "year": 2015,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Maha Shivaratri",
+      "year": 2016,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Maha Shivaratri",
+      "year": 2017,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Maha Shivaratri",
+      "year": 2018,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Maha Shivaratri",
+      "year": 2019,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Maha Shivaratri",
+      "year": 2020,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Maha Shivaratri",
+      "year": 2021,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Maha Shivaratri",
+      "year": 2022,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Maha Shivaratri",
+      "year": 2028,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Maha Shivaratri",
+      "year": 2029,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    },
+    {
+      "festival": "Maha Shivaratri",
+      "year": 2030,
+      "holdout": true,
+      "unavailable": "drik page 403/blocked from this environment"
+    }
+  ]
+}
