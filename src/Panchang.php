@@ -152,7 +152,7 @@ final class Panchang
         $calendar = new HinduCalendarCalculator(
             $lunarMonthCalc,
             $adhikaMasaCalc,
-            new SamvatCalculator()
+            new SamvatCalculator($lunarMonthCalc, $engine)
         );
 
         $nutation  = new NutationCalculator();

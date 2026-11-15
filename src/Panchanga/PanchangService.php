@@ -149,7 +149,7 @@ final class PanchangService
         $instant = $this->timeFactory->fromDateTime(
             SunriseFallback::referenceTime($date, $panchangDay->solarEvents->sunrise)
         );
-        $calendarResult = $this->calendarCalculator->calculate($instant, $timezone);
+        $calendarResult = $this->calendarCalculator->calculate($instant, $timezone, $location);
 
         // Solar month from Sun's sidereal longitude
         $sunSiderealLon = $this->astronomy->siderealLongitude(Body::Sun, $instant);

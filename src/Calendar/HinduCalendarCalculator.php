@@ -10,6 +10,7 @@ use Vittix\Panchang\Enum\CalendarSystem;
 use Vittix\Panchang\Enum\LunarMonth;
 use Vittix\Panchang\Enum\SolarMonth;
 use Vittix\Panchang\ValueObject\AstroInstant;
+use Vittix\Panchang\ValueObject\GeoLocation;
 
 /**
  * Result of a Hindu calendar calculation for a given moment.
@@ -62,10 +63,17 @@ final class HinduCalendarCalculator
      *
      * @param AstroInstant     $instant  The query moment.
      * @param DateTimeZone     $timezone Local timezone for output times.
+     * @param GeoLocation|null $location Observer location. When given (and
+     *                                 the SamvatCalculator was built with
+     *                                 the lunar machinery) the Samvat years
+     *                                 are computed exactly from the lunar
+     *                                 new years; otherwise the deprecated
+     *                                 date-only approximations are used.
      */
     public function calculate(
         AstroInstant $instant,
-        DateTimeZone $timezone
+        DateTimeZone $timezone,
+        ?GeoLocation $location = null
     ): HinduCalendarResult {
         $prevNm    = $this->lunarMonth->previousNewMoon($instant);
         $nextNm    = $this->lunarMonth->nextNewMoon($instant);
@@ -81,6 +89,16 @@ final class HinduCalendarCalculator
 
         $gregorianDate = $instant->utc->setTimezone($timezone);
 
+        if ($location !== null && $this->samvat->hasLunarSupport()) {
+            $vikram    = $this->samvat->vikramSamvatExact($instant, $location, $timezone);
+            $shaka     = $this->samvat->shakaSamvatExact($instant, $location, $timezone);
+            $gujarati  = $this->samvat->gujaratiSamvatExact($instant, $location, $timezone);
+        } else {
+            $vikram    = $this->samvat->vikramSamvat($gregorianDate);
+            $shaka     = $this->samvat->shakaSamvat($gregorianDate);
+            $gujarati  = $this->samvat->gujaratiSamvat($gregorianDate);
+        }
+
         return new HinduCalendarResult(
             amantaMonth: $amanta,
             purnimantaMonth: $purnimanta->month,
@@ -89,9 +107,9 @@ final class HinduCalendarCalculator
             previousNewMoon: $prevNm->utc->setTimezone($timezone),
             nextNewMoon: $nextNm->utc->setTimezone($timezone),
             nextFullMoon: $nextFm->utc->setTimezone($timezone),
-            vikramSamvat: $this->samvat->vikramSamvat($gregorianDate),
-            shakaSamvat: $this->samvat->shakaSamvat($gregorianDate),
-            gujaratiSamvat: $this->samvat->gujaratiSamvat($gregorianDate),
+            vikramSamvat: $vikram,
+            shakaSamvat: $shaka,
+            gujaratiSamvat: $gujarati,
             solarMonth: null, // Solar month requires the astronomy engine; set by PanchangService
         );
     }
