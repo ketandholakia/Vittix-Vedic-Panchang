@@ -292,6 +292,12 @@ echo "Total: " . $sunStrength->getTotalVirupas() . " virupas ("
      . $sunStrength->getTotalRupas() . " rupas)" . PHP_EOL;
 ```
 
+> ⚠️ **Partial components:** Kala Bala is currently approximated by Ayana
+> Bala alone and Drik Bala is a 0 placeholder. Use
+> `$sunStrength->isPartial('kala')` / `isPartial('drik')` (component
+> names: sthana, dik, kala, chesta, naisargika, drik) to detect partial
+> computations instead of mistaking them for full classical values.
+
 ### Components
 
 1. **Sthana Bala** - Positional (house, sign, navamsha)

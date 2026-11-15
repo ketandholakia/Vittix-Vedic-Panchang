@@ -68,6 +68,26 @@ class ShadbalaCalculatorTest extends TestCase
         $this->assertEquals(240.0, $sunValues->getTotalVirupas());
         $this->assertEquals(240.0 / 60.0, $sunValues->getTotalRupas());
     }
+
+    public function testPartialComponentsAreFlagged(): void
+    {
+        $ascendant = new AscendantPosition(15.0, 15.0, Rashi::Mesha, 15.0);
+        $placements = [
+            Body::Sun->value => new PlanetPlacement(Body::Sun, 10.0, Rashi::Mesha, 1, [], null, 0.0, 0.0),
+        ];
+        $shadbala = $this->calculator->calculate(new Kundali($ascendant, $placements));
+        $sunValues = $shadbala->planets[Body::Sun->value];
+
+        // Kala Bala is only Ayana Bala and Drik Bala is a 0 placeholder —
+        // both must be flagged so consumers do not mistake them for real
+        // classical values. The implemented components are not flagged.
+        $this->assertTrue($sunValues->isPartial('kala'));
+        $this->assertTrue($sunValues->isPartial('drik'));
+        $this->assertFalse($sunValues->isPartial('sthana'));
+        $this->assertFalse($sunValues->isPartial('dik'));
+        $this->assertFalse($sunValues->isPartial('naisargika'));
+        $this->assertFalse($sunValues->isPartial('chesta'));
+    }
 }
 
 

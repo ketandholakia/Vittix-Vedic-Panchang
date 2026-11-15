@@ -213,6 +213,9 @@ $values->naisargikaBala;       // float (virupas)
 $values->drikBala;             // float (virupas)
 $values->getTotalVirupas();    // float
 $values->getTotalRupas();      // float
+$values->isPartial('kala');    // bool — true while a component is a partial
+                               //   computation (kala = Ayana Bala only,
+                               //   drik = 0 placeholder)
 ```
 
 ### `Yoga` (from `yogas()`)

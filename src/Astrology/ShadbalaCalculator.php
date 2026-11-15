@@ -25,8 +25,8 @@ use Vittix\Panchang\ValueObject\Shadbala\ShadbalaValues;
  *  - Drik Bala (aspect-based strength) is not implemented and always
  *    returns 0.0.
  *
- * Consumers should treat the `kalaBala` and `drikBala` values as
- * placeholders until these components are completed.
+ * Consumers can detect the placeholders programmatically via
+ * `ShadbalaValues::isPartial('kala')` / `isPartial('drik')`.
  */
 final class ShadbalaCalculator
 {
@@ -82,7 +82,8 @@ final class ShadbalaCalculator
                 kalaBala: $kala,
                 chestaBala: $chesta,
                 naisargikaBala: $naisargika,
-                drikBala: $drik
+                drikBala: $drik,
+                partialComponents: ['kala' => true, 'drik' => true]
             );
         }
 

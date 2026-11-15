@@ -94,6 +94,10 @@ echo "Drik Bala (Aspectual): " . $sunStrength->drikBala . " virupas" . PHP_EOL;
 
 echo "Total: " . $sunStrength->getTotalVirupas() . " virupas ("
      . $sunStrength->getTotalRupas() . " rupas)" . PHP_EOL;
+
+// Partial components: Kala Bala is currently Ayana Bala only and Drik
+// Bala is a 0 placeholder — detect them instead of trusting the numbers.
+var_dump($sunStrength->isPartial('kala'), $sunStrength->isPartial('drik'));
 ```
 
 ### Six Components
