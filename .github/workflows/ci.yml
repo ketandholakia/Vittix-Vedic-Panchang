@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [ "main" ]
+    tags: [ "v*" ]
   pull_request:
     branches: [ "main" ]
 
@@ -36,6 +37,22 @@ jobs:
     - name: Run code quality checks (Tests & PHPStan)
       run: composer quality
 
+  gate:
+    needs: [build, slow-tests]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+    - name: Require every job green (PRs and tags)
+      run: |
+        results="${{ join(needs.*.result, ' ') }}"
+        echo "job results: $results"
+        for r in $results; do
+          if [ "$r" != "success" ]; then
+            echo "::error::Required CI job did not succeed ($r)."
+            exit 1
+          fi
+        done
+
   slow-tests:
     runs-on: ubuntu-latest
 
@@ -56,5 +73,5 @@ jobs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
 
-    - name: Run slow test suites (property, oracle, boundary, year-scan)
-      run: composer test:slow
+    - name: Run the full suite including slow tests (property, oracle, boundary, year-scan)
+      run: composer test:all
