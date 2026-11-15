@@ -22,12 +22,16 @@ use Vittix\Panchang\ValueObject\GeoLocation;
  * Formula (Meeus, "Astronomical Algorithms" 2nd ed., Ch. 32, eq. 32.1,
  * rearranged for longitude of the Ascendant on the ecliptic):
  *
- *   tan(λ_asc) = −cos(θ) / (sin(ε)·tan(φ) + cos(ε)·sin(θ))
+ *   tan(λ_asc) = cos(θ) / −(sin(ε)·tan(φ) + cos(ε)·sin(θ))
  *
  * where:
  *   θ = Local Sidereal Time (RAMC), expressed as an angle
  *   ε = true obliquity of the ecliptic
  *   φ = observer's geographic latitude
+ *
+ * The overall sign matters: with the opposite sign convention the formula
+ * yields the Descendant (Ascendant + 180°) instead. The equator/RAMC=0 case
+ * (λ = 90°) and the sunrise ≈ Sun longitude property pin this down.
  *
  * Implemented here via atan2 for correct quadrant resolution rather than a
  * bare tan()/atan(), matching the atan2-based style already used elsewhere
@@ -61,8 +65,8 @@ final class AscendantCalculator
         $eps = $this->obliquity->true($instant);
         $lat = $location->latitude;
 
-        $y = -Angle::cos($ramc);
-        $x = Angle::sin($eps) * Angle::tan($lat) + Angle::cos($eps) * Angle::sin($ramc);
+        $y = Angle::cos($ramc);
+        $x = -(Angle::sin($eps) * Angle::tan($lat) + Angle::cos($eps) * Angle::sin($ramc));
 
         return Angle::normalize(Angle::atan2($y, $x));
     }
