@@ -5,13 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.0.0] - 2026-11-15
 
-> ⚠️ **Version bump required (2.7.0 or 3.0.0).** The "Changed output" entries below alter
-> previously published Panchang values — Ascendant/Kundali (1), Purnimanta months and
-> Adhika flags (3), Samvat years (4), festival dates (5) and balance-dasha Antardashas (6)
-> all produce different (correct) numbers than 2.6.0. Items 2 and 8a additionally change
-> API signatures (interface method, cache keys, `getHoras` parameters).
+> ⚠️ **BREAKING RELEASE.** In addition to the corrected outputs below (Ascendant/Kundali,
+> Purnimanta months and Adhika flags, Samvat years, festival dates, balance-dasha
+> Antardashas — all produce different, correct numbers than 2.6.0), the API changed:
+> `AyanamshaCalculatorInterface::id()`, `FestivalRuleInterface::score()`, the
+> `FestivalEngine` constructor, `ViddhaTithiRule` taking `Kala`, the removal of
+> `PurnimantaMonthCalculator::purnimantaMonth(month, paksha)` and the new `getHoras()`
+> signature. See **UPGRADE.md → "Upgrade to v3.0"** for the migration steps, and flush
+> persistent PSR-16 caches (the key format changed).
 
 ### Fixed — output-changing (verify downstream consumers before upgrading)
 
@@ -107,11 +110,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   classification (month name, isAdhika, isKshaya) for a lunation starting at a given new
   moon.
 
-### Docs
+### Fixed — round 2 (wiring + oracle findings)
 
-- `docs/api.md`, `docs/astrology.md`, `docs/USAGE.md` updated for the Hora mode, the
-  Shadbala partial flags and the new calendar APIs; `CODE_REVIEW_REPORT.md` regenerated
-  (CRIT-01/CRIT-02/HIGH-03 verified fixed; the November defect round documented).
+- **Exact Samvat was not wired into `calendar()`**: `Panchang::calendar()` and
+  `PanchangService::calendar()` silently used the approximate date-only Samvat. Both now
+  take `?GeoLocation` (exact years with a location) and the result carries
+  `samvatIsApproximate` so callers can tell. `PanchangResult` gained `gujaratiSamvat`
+  (also in `toArray()` under `samvat.gujaratiSamvat`).
+- **Samvat new-year day disagreed with the festival engine**: the shared
+  `Festivals\NewYearResolver` now derives the new-year civil day with the same
+  Shukla-Pratipada rule the festival engine uses (greater-overlap fallback included);
+  the year changes at 00:00 local on that day. 2026-03-19 (Gudi Padwa) now carries VS
+  2083, not 2082.
+- **Mean obliquity ran ten times too fast** (caught by the new Swiss Ascendant oracle):
+  the Laskar polynomial was evaluated at julian millennia instead of millennia/10 —
+  −105″ off by 2025 and −445″ by 2100, skewing Ascendant/MC by up to ~0.2° at high
+  latitudes and slightly shifting sunrise/sunset. Now matches IAU 2006 / Swiss to
+  ~0.01″. Ephemeris-derived Panchang limbs (tithi/nakshatra/yoga/karana) are
+  elongation-based and unaffected.
+- Dead `$eventsToday` computation removed from `FestivalEngine::resolveYear()`.
+
+### Added — round 2
+
+- `Festivals\NewYearResolver` — shared lunar-new-year civil-day resolution used by the
+  festival engine and the Samvat calculator.
+- Swiss-Ephemeris **Ascendant/MC oracle**: `ascendant_positions.json` (200 random
+  instant/location pairs, latitudes ±60°, 1950–2100) via `swe.houses_ex` with
+  `SEFLG_SIDEREAL` + `SIDM_LAHIRI`; `AscendantOracleTest` (0.05° tolerance, `accuracy`
+  group). 200/200 samples within tolerance.
+- drikpanchang **festival oracle**: `festival_dates.json` — the 8 catalog festivals for
+  2023–2027 (Ahmedabad + Delhi) with source URLs and per-festival conventions;
+  `FestivalOracleTest` asserts exact equality and fails on any undocumented
+  disagreement (4 deliberate convention divergences documented in the fixture).
+
+### Changed — round 2
+
+- Slow property/oracle/boundary/year-scan suites are tagged `#[Group('slow')]`;
+  `composer test` excludes them (~2.4 min, inside Composer's 300 s timeout) and new
+  `composer test:slow` / `test:all` run them; CI runs the slow group as its own job.
+- Repository hygiene: dev scripts are untracked/ignored, `update_oracle.php` moved into
+  `tools/`, assistant-workspace files get `export-ignore`, and `* text=auto eol=lf`
+  normalizes line endings.
+- `docs/`: deprecated `Tithi::ShuklaD<n>` spellings replaced with canonical names;
+  `UPGRADE.md` gained the full "Upgrade to v3.0" migration section; `CODE_REVIEW_REPORT.md`
+  regenerated with per-claim verification methods (oracle/property/code reading) and an
+  explicit unreviewed-areas list.
+
+### Known divergences (documented, not bugs)
+
+- The festival oracle records 4 drikpanchang-vs-engine date divergences (Akshaya Tritiya
+  2027, Raksha Bandhan 2023, Diwali 2024, Krishna Janmashtami 2027) — all cases where
+  drik's vyapini/dominant-day selection differs from the catalog's documented
+  greater-overlap convention. See `tests/fixtures/reference/festival_dates.json`
+  (`known_divergences`).
+- Vimshottari oracle coverage remains open: pyjhora was unavailable and no trusted
+  reference was fabricated.
+
+### Docs (round 2)
+
+- `docs/api.md` documents the `calendar()` signature and `samvatIsApproximate`;
+  `UPGRADE.md` the v3.0 migration; `CODE_REVIEW_REPORT.md` the verification methods.
 
 ## [2.6.0] - 2026-10-22
 

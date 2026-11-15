@@ -116,7 +116,6 @@ final class FestivalEngine
         $day = new DateTimeImmutable(sprintf('%d-01-01 00:00:00', $year), $timezone);
         $yearEnd = new DateTimeImmutable(sprintf('%d-01-01 00:00:00', $year + 1), $timezone);
 
-        $eventsToday = $this->astronomy->solarEvents($day->modify('-1 day'), $location, $timezone);
         $eventsNext = $this->astronomy->solarEvents($day, $location, $timezone);
 
         while ($day < $yearEnd) {

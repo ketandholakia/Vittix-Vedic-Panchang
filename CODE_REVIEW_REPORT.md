@@ -1,9 +1,10 @@
 # Vittix Panchang — Code Review & Audit Report
 
-> Regenerated 2026-11-15 against `main` after the November defect-fix round
-> (commits `11c3e70`…`26dcea3`).
+> Regenerated 2026-11-15 against `main` after the November defect-fix round and the
+> follow-up wiring round (commits `11c3e70`…`21b194f`).
 > Quality gate output verified live: **PHPStan level 8 → `[OK] No errors`**; **PHPUnit →
-> 398 tests, 4052 assertions, 0 failures** (`--exclude-group accuracy`).
+> 406 tests / 4115 assertions, 0 failures** (default suite, ~2.4 min after the slow-group
+> split; `composer test:slow` runs the 67 remaining property/oracle/boundary tests).
 
 ## Executive Summary
 
@@ -108,7 +109,12 @@ regression tests.
 | MED-05 Raman/KP ayanamshas lack reference validation | ⏳ Open — add `SE_SIDM_RAMAN`/`SE_SIDM_KRISHNAMURTI` to the accuracy harness |
 | Two parallel Purnimanta implementations | ✅ Fixed — single implementation in `Calendar\PurnimantaMonthCalculator` |
 | `PurnimantaMonthCalculator` re-created per `forDay()` call | ✅ Fixed — constructed from the injected `LunarMonthCalculator` |
-| Localization not wired into output | ✅ Wired — `PanchangService::translate()` and localized output use `ArrayTranslator` |
+| Localization not wired into output | ✅ Wired — `PanchangService::translate()` and `getForDateLocalized()` call `ArrayTranslator` (verified by reading `PanchangService` and the localization test suite) |
+| Exact Samvat not wired into `calendar()` (new, Nov round 2) | ✅ Fixed — `Panchang::calendar()`/`PanchangService::calendar()` take `?GeoLocation`; `samvatIsApproximate` flags the fallback; `PanchangResult.gujaratiSamvat` added (`SamvatWiringTest`) |
+| Samvat new-year day disagreed with the festival engine (new) | ✅ Fixed — shared `Festivals\NewYearResolver`; year flips at 00:00 local on the festival-resolved day (`SamvatNewYearAlignmentTest`, 2023–2027) |
+| Mean-obliquity polynomial ran 10× too fast (new, caught by the new Ascendant oracle) | ✅ Fixed — Laskar polynomial now evaluated at u = millennia/10; matches IAU 2006/Swiss to ~0.01″ (`AscendantOracleTest`, 200 samples ±60° lat) |
+| Dead `$eventsToday` in `FestivalEngine::resolveYear()` (new) | ✅ Removed |
+| Vimshottari oracle | ⏳ Open — pyjhora unavailable in the dev environment; no trusted reference, nothing fabricated |
 
 ---
 
@@ -130,32 +136,60 @@ regression tests.
 
 - 90+ test files. Every limb calculator, varga, dasha, dignity, shadbala (incl. sub-
   calculators), yogas, muhurta, electional, festivals, samvat, localization, plus
-  boundary/property/oracle suites (`BoundaryTransitionTest`, `RandomizedInvariantTest`,
-  `PurnimantaAgreementPropertyTest`, `FestivalResolutionTest`, `SankrantiMomentTest`,
-  `ElevationParallaxTest`, both `LocationChangeTest` variants).
+  boundary/property/oracle suites. Slow suites are tagged `#[Group('slow')]` and run by
+  `composer test:slow` (separate CI job); the default `composer test` suite is ~2.4 min.
 - The Swiss-Ephemeris accuracy harness (`tests/Accuracy/`, `tools/`,
   `tests/fixtures/reference/`) is **excluded** from the default `composer test` group
   (`composer accuracy` runs it); it self-skips when fixtures are absent. Default-green
   does not by itself prove Swiss parity — that lives in the accuracy group.
-- Note: the default suite currently takes ~6 minutes; if it keeps growing, split the
-  property/oracle suites into a dedicated group or raise `COMPOSER_PROCESS_TIMEOUT`
-  (composer's default 300 s process timeout aborts `composer test`).
+- Note: Vimshottari oracle coverage is still missing (pyjhora unavailable; no trusted
+  reference was fabricated).
 
-## 5. What was verified correct (this round)
+## 5. What was verified correct — and HOW
 
-- `LunarMonthCalculator` phase searches (0.5° scan + bisection, 10 s tolerance) and the
-  new per-instance memoization; `amantaLunation()` classification (normal/Adhika/Kshaya).
-- `PurnimantaMonthCalculator` full-moon-to-full-moon naming rule (property-tested over
-  200 random instants 1950–2100).
-- `TithiTimeline` bisection primitives (`endOfRunningTithi`, `startOfRunningTithi`) —
-  single-transition guarantees documented and used by the festival overlap scorer.
-- `SolarEventCalculator` (Meeus Ch. 15; h₀ = −0.8333°, dip 1.92′·√elevation — docblock
-  now matches the code).
-- `PurePhpAstronomyEngine` position/ayanamsha caching incl. the namespaced PSR-16 keys.
-- `SamvatCalculator` lunar new-year walk (bounded 16-lunation back-scan, sunrise-anchored
-  year change).
+Each entry records the verification method: **oracle** (independent reference data),
+**property test** (exhaustive/randomized invariant), or **code reading** (manual review
+against the cited algorithm — the weakest method; the Ascendant, Vimshottari and
+obliquity bugs survived exactly this way before oracles existed).
+
+- `AscendantCalculator` + MC — **oracle**: 200 Swiss-Ephemeris samples (±60° lat,
+  1950–2100) within 0.05° (`AscendantOracleTest`); found and fixed the obliquity bug.
+- Mean obliquity — **oracle**: matches IAU 2006 / Swiss to ~0.01″ across 1950–2100.
+- `LunarMonthCalculator` phase searches and per-instance memoization — **code reading**
+  + **property test** (`PurnimantaAgreementPropertyTest`, 200 random instants);
+  `amantaLunation()` classification — **property test** + drik-anchored boundary dates
+  (`PurnimantaAdhikaTest`).
+- `PurnimantaMonthCalculator` full-moon-to-full-moon naming — **property test** +
+  drik-anchored dates (`PurnimantaAdhikaTest`).
+- Festival engine — **oracle**: 8 catalog festivals × 2023–2027 × 2 cities vs
+  drikpanchang, 76/80 exact, 4 documented convention divergences (`FestivalOracleTest`).
+- Samvat years — **code reading** + boundary tests against drik-verified Yugadi/Diwali
+  dates (`SamvatCalculatorExactTest`, `SamvatNewYearAlignmentTest`, `SamvatWiringTest`).
+- `TithiTimeline` bisection primitives — **code reading** (single-transition guarantees)
+  + indirectly by the festival oracle.
+- `SolarEventCalculator` (h₀ = −0.8333°, dip 1.92′·√elevation) — **oracle**
+  (`SunMoonEventAccuracy`, 10 cities × 60 dates, two conventions).
+- Limb transitions (tithi/nakshatra/yoga/karana ends) — **oracle**
+  (`TransitionAccuracy`, sub-second root-found records).
+- Body longitudes (Sun/Moon/planets/mean node, tropical+sidereal) — **oracle**
+  (`LongitudeAccuracy`, 2000 instants vs Swiss).
+- `PurePhpAstronomyEngine` PSR-16 cache keys — **unit test**
+  (`PurePhpAstronomyEngineCacheKeyTest`).
+- Vimshottari Antardashas — **unit test** against a hand-computed full-length timeline
+  (`VimshottariDashaCalculatorTest`); no independent reference (see open item).
+
+### Unreviewed areas (no oracle, no thorough manual review this round)
+
+- **Planetary VSOP87 term tables** (`src/Astronomy/Planetary/*Terms.php`) — covered only
+  in aggregate by the body-longitude oracle (term errors could cancel).
+- **Nutation series** (`NutationCalculator`) — only indirectly via obliquity/ascendant.
+- **Ayanamsha constants** (Lahiri/Raman/KP polynomials) — Lahiri vs Swiss is within the
+  oracle tolerance; Raman/KP still lack reference validation (MED-05).
+- **Lunar rise/set** (`LunarEventCalculator` grazing/parabola recovery) — an oracle
+  exists (`sun_moon_events`) but the grazing-extremum recovery paths are not
+  independently verified.
 
 ---
 
-*Generated by live verification (PHPStan + PHPUnit + source inspection + drikpanchang
-cross-checks for festival dates) against `main`.*
+*Generated by live verification (PHPStan + PHPUnit + Swiss/drikpanchang oracles +
+source inspection) against `main`.*
