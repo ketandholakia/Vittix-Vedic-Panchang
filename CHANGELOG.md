@@ -5,6 +5,114 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+> ⚠️ **Version bump required (2.7.0 or 3.0.0).** The "Changed output" entries below alter
+> previously published Panchang values — Ascendant/Kundali (1), Purnimanta months and
+> Adhika flags (3), Samvat years (4), festival dates (5) and balance-dasha Antardashas (6)
+> all produce different (correct) numbers than 2.6.0. Items 2 and 8a additionally change
+> API signatures (interface method, cache keys, `getHoras` parameters).
+
+### Fixed — output-changing (verify downstream consumers before upgrading)
+
+- **Ascendant was 180° off (returned the Descendant).** Both signs in the tan(λ_asc)
+  formula were inverted, so every Ascendant, Kundali house assignment and any yoga/Varga
+  lagna derived from it was antipodal. Verified: sunrise Ascendant now equals the Sun's
+  sidereal longitude, sunset is opposite, equator/RAMC=0 gives 90° tropical. No test or
+  fixture had pinned the wrong values. (1)
+- **Purnimanta month wrong around Adhika months.** Krishna Paksha was blindly shifted +1
+  from the Amanta name — in 2023 (Adhika Shravana) Aug 5/10 were reported as Bhadrapada
+  instead of nija Shravana. Purnimanta is now computed properly: the month runs full moon
+  to full moon and is named after the Amanta lunation that begins with the first new moon
+  after its starting full moon; its Adhika status follows that lunation. New
+  `Lunation`/`amantaLunation()` classification is shared by `PanchangaCalculator::forDay`
+  and `HinduCalendarCalculator`; `PanchangDay::isAdhikaMasa` now follows the displayed
+  month system, and `HinduCalendarResult` gained `purnimantaIsAdhikaMasa`. The old
+  `PurnimantaMonthCalculator::purnimantaMonth(amantaMonth, paksha)` shortcut was removed
+  (it cannot express the correction). Kshaya months are named after the following
+  lunation instead of being shifted. (3)
+- **Samvat years changed on calendar-month shortcuts.** Vikram flipped on April 1, Shaka
+  on March 22 and Gujarati on November 1. New exact methods
+  `vikramSamvatExact()`/`shakaSamvatExact()`/`gujaratiSamvatExact()` resolve the lunar new
+  year (Chaitra / Kartika Shukla Pratipada) via the lunar machinery and the tithi at
+  sunrise; `HinduCalendarCalculator::calculate()` gained an optional location parameter
+  and `PanchangService` uses the exact years. The date-only methods remain as documented
+  `@deprecated` approximations. Examples: 2025-03-29 → VS 2081 / 2025-03-31 → VS 2082;
+  Gujarati 2025-10-21 → 2081 / 2025-10-25 → 2082. (4)
+- **Festival engine: Adhika double-fires, missed festivals, wrong-day results.**
+  - 2023 Raksha Bandhan and Janmashtami fired twice (Adhika Shravana not skipped) — rules
+    now skip Adhika months.
+  - 2026 Gudi Padwa (Mar 19) and Janmashtami (Sep 4) were never reported: rules sampled a
+    single instant instead of computing the tithi/kala overlap. Rules now score the exact
+    overlap of the tithi with their kala window (Madhyahna, Aparahna, Pradosh, Nishita,
+    Sunrise) across the window, using real next sunrises and bisection-located boundaries,
+    with a documented nearest-window fallback for razor-edge years.
+  - Diwali followed sunrise-Amavasya and was one day late in 2023/2025/2026; it now
+    follows Amavasya at Pradosh: 2023-11-12, 2025-10-20, 2026-11-08 (drikpanchang-verified).
+  - Akshaya Tritiya 2026-04-19 (Tritiya at Madhyahna; was Apr 20), Ganesha Chaturthi
+    Madhyahna (2026-09-14), Rama Navami Madhyahna; Nishita windows belong to the civil day
+    whose sunset begins the night (puja may fall past midnight).
+  - Every catalog festival now resolves to exactly one date per year (tested 2023–2026);
+    the per-date context is computed once and shared across rules. `FestivalEngine` is
+    constructed from (engine, TithiCalculator, LunarMonthCalculator) instead of a
+    `PanchangaCalculator`. (5)
+- **Vimshottari balance-dasha Antardashas were wrong.** For the first, partial Mahadasha
+  the nine Antardashas were rescaled to fit the remaining time. They are now built from
+  the full-length timeline starting at the Mahadasha's true start (birth − elapsed), with
+  pre-birth sub-periods dropped and the running one (e.g. Rahu, not Sun) listed first,
+  truncated. (6)
+
+### Fixed — non-output-changing
+
+- **PSR-16 cache keys** no longer contain the reserved `:` (strict caches such as
+  Symfony's rejected them): positions are `vpanchang.pos.<body>.<jd>` and ayanamsha values
+  `vpanchang.ayan.<system>.<jd>`. The ayanamsha key names the system via the new
+  `AyanamshaCalculatorInterface::id()` method, so two engines with different ayanamsha
+  systems sharing one cache no longer return each other's values. (2)
+- **Choghadiya** Tuesday and Wednesday night rows were wrong; all 14 rows are now derived
+  structurally from the cycle (day: weekday-lord offset +1/segment; night:
+  (dayStart+5) mod 7, −2/segment). Other 12 rows unchanged. (7)
+- `SolarEventCalculator` docblock now matches the code (horizon dip 1.92′·√elevation, not
+  1.76′). The dead `AdhikaMasaCalculator::findSankranti()` was already absent.
+- `LunarMonthCalculator` memoizes phase searches (bounded LRU) so a single
+  forDay()/calendar pass does not rescan the same previous/next new moon and full moon.
+
+### Changed
+
+- **Horas** default to the traditional scheme — 12 day Horas (sunrise→sunset ÷ 12) and 12
+  night Horas (sunset→next sunrise ÷ 12), sequence unbroken across the night boundary.
+  `getHoras()` now takes `(sunrise, sunset, nextSunrise, weekdayIndex, mode)`; the legacy
+  24-equal-segment variant remains behind `Enum\HoraMode::EqualHours`. (8)
+- **Shadbala partial components are detectable**: `ShadbalaValues::isPartial('kala')` /
+  `isPartial('drik')` (and the `partialComponents` array) flag Kala Bala = Ayana Bala only
+  and Drik Bala = 0 placeholder so they are not mistaken for real classical values.
+- **Tithi enum cases renamed consistently** (Sanskrit names: `ShuklaDwitiya`,
+  `ShuklaTritiya`, `ShuklaChaturthi`, `ShuklaPanchami`, `ShuklaShashthi`, `ShuklaSaptami`,
+  `ShuklaNavami`, `ShuklaDashami`, `ShuklaEkadashi`, `ShuklaDwadashi`, `ShuklaTrayodashi`
+  and the Krishna counterparts). The old `ShuklaD3`-style spellings remain as
+  `@deprecated` class-constant aliases bound to the identical canonical cases (PHP enums
+  forbid duplicate backing values); all 10 locale `tithi.php` tables gained the canonical
+  keys.
+- `FestivalRuleInterface` was redesigned from `isObserved(date, location, panchanga,
+  context): bool` to `score(FestivalDayContext): float` (overlap fraction), and
+  `ViddhaTithiRule` takes an `Enum\Kala` instead of a karmakala string + `MuhurtaCalculator`.
+
+### Added
+
+- `Enum\Kala` (Sunrise, Madhyahna, Aparahna, Pradosh, Nishita), `Enum\HoraMode`
+  (Traditional, EqualHours), `Calendar\Lunation` value object,
+  `Festivals\FestivalDayContext` + `Festivals\TithiTimeline`,
+  `Festivals\Rules\TithiKalaRule` shared base.
+- `LunarMonthCalculator::amantaLunation(newMoon)` — single-sourced lunation
+  classification (month name, isAdhika, isKshaya) for a lunation starting at a given new
+  moon.
+
+### Docs
+
+- `docs/api.md`, `docs/astrology.md`, `docs/USAGE.md` updated for the Hora mode, the
+  Shadbala partial flags and the new calendar APIs; `CODE_REVIEW_REPORT.md` regenerated
+  (CRIT-01/CRIT-02/HIGH-03 verified fixed; the November defect round documented).
+
 ## [2.6.0] - 2026-10-22
 
 ### Added
