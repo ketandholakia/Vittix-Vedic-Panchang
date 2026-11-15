@@ -22,6 +22,11 @@ final class KrishnamurtiAyanamsha implements AyanamshaCalculatorInterface
 {
     private const KP_J2000 = 23.771_194;
 
+    public function id(): string
+    {
+        return 'krishnamurti';
+    }
+
     public function calculate(AstroInstant $instant): float
     {
         $t = $instant->julianCenturiesTt(); // Julian centuries from J2000.0

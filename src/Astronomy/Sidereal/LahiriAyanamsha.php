@@ -35,6 +35,11 @@ final class LahiriAyanamsha implements AyanamshaCalculatorInterface
      */
     private const LAHIRI_J2000 = 23.853_749_1;
 
+    public function id(): string
+    {
+        return 'lahiri';
+    }
+
     public function calculate(AstroInstant $instant): float
     {
         $t = $instant->julianCenturiesTt(); // Julian centuries from J2000.0

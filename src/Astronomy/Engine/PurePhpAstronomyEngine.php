@@ -45,9 +45,12 @@ use Vittix\Panchang\ValueObject\SolarEvents;
  * All calculations use only PHP built-in math functions. No extensions,
  * no FFI, no external libraries.
  *
- * Cache strategy: position results are memoised per (body, JD_TT) string key.
- * Positions are geocentric, so the keys are location-independent by nature;
- * the ayanamsha is fixed per engine instance (one AyanamshaCalculatorInterface).
+ * Cache strategy: position results are memoised per (body, JD_TT) string key,
+ * ayanamsha values per (system id, JD_TT). Keys use dot separators and the
+ * `vpanchang.` prefix, e.g. `vpanchang.pos.sun.2461332.50000000` and
+ * `vpanchang.ayan.lahiri.2461332.50000000`; they contain no PSR-16 reserved
+ * characters ({}/\@:()) and the ayanamsha key names the ayanamsha system, so
+ * engines with different systems can share one PSR-16 cache safely.
  * Both in-memory caches are bounded LRU caches (default 512 entries) so that
  * long-running batch generation cannot grow without limit; evicted entries are
  * recomputed (or re-fetched from the optional PSR-16 cache). The in-memory
@@ -172,8 +175,9 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
 
     public function ayanamsa(AstroInstant $instant): float
     {
-        // Add prefix to avoid collision with position keys (though structurally different)
-        $key = 'ayan:jd:' . sprintf('%.6F', $instant->julianDayTt);
+        // Name the ayanamsha system in the key: two engines with different
+        // systems sharing one PSR-16 cache must not return each other's values.
+        $key = sprintf('vpanchang.ayan.%s.%.6F', $this->ayanamsha->id(), $instant->julianDayTt);
 
         $cachedAyanamsa = $this->ayanamshaCache->get($key);
         if ($cachedAyanamsa !== null) {
@@ -271,6 +275,8 @@ final class PurePhpAstronomyEngine implements AstronomyEngineInterface
 
     private function positionKey(Body $body, AstroInstant $instant): string
     {
-        return sprintf('pos:%s:%.8F', $body->value, $instant->julianDayTt);
+        // Dots, not ':' — a PSR-16 reserved character that strict caches
+        // (e.g. Symfony) reject.
+        return sprintf('vpanchang.pos.%s.%.8F', $body->value, $instant->julianDayTt);
     }
 }

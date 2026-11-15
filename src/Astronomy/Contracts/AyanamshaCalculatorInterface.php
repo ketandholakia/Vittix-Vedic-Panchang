@@ -21,6 +21,16 @@ use Vittix\Panchang\ValueObject\AstroInstant;
 interface AyanamshaCalculatorInterface
 {
     /**
+     * Stable, short identifier of this ayanamsha system
+     * (e.g. 'lahiri', 'raman', 'krishnamurti').
+     *
+     * Used to namespace cached ayanamsha values so that two engines with
+     * different systems sharing one PSR-16 cache cannot return each other's
+     * values. Must contain no PSR-16 reserved characters: {}()/\@:
+     */
+    public function id(): string;
+
+    /**
      * Return the Ayanamsha in decimal degrees for the given moment.
      */
     public function calculate(AstroInstant $instant): float;

@@ -15,6 +15,11 @@ use Vittix\Panchang\ValueObject\AstroInstant;
  */
 final class RamanAyanamsha implements AyanamshaCalculatorInterface
 {
+    public function id(): string
+    {
+        return 'raman';
+    }
+
     public function calculate(AstroInstant $instant): float
     {
         $t = $instant->julianCenturiesTt(); // Julian centuries from J2000.0
