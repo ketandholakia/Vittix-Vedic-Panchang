@@ -8,6 +8,7 @@ use Vittix\Panchang\Astronomy\Contracts\AstronomyEngineInterface;
 use Vittix\Panchang\Enum\Body;
 use Vittix\Panchang\Enum\LunarMonth;
 use Vittix\Panchang\Math\Angle;
+use Vittix\Panchang\Support\LruCache;
 use Vittix\Panchang\Time\AstroTimeFactory;
 use Vittix\Panchang\Time\JulianDay;
 use Vittix\Panchang\ValueObject\AstroInstant;
@@ -40,12 +41,25 @@ final class LunarMonthCalculator
     /** Maximum bisection iterations. */
     private const MAX_BISECT = 60;
 
+    /** Bound for the phase-search memo. */
+    private const PHASE_CACHE_CAPACITY = 1024;
+
     private readonly AstroTimeFactory $timeFactory;
+
+    /**
+     * Memoised phase searches. A single forDay()/calendar pass asks for the
+     * same previous/next new moon and full moon several times (amantaMonth,
+     * isKshayaMasa, AdhikaMasaCalculator, PurnimantaMonthCalculator, festival
+     * rules); the searches are pure functions of (start JD, direction,
+     * target), so results are memoised per instance in a bounded LRU.
+     */
+    private readonly LruCache $phaseCache;
 
     public function __construct(
         private readonly AstronomyEngineInterface $astronomy,
     ) {
         $this->timeFactory = new AstroTimeFactory();
+        $this->phaseCache = new LruCache(self::PHASE_CACHE_CAPACITY);
     }
 
     // -------------------------------------------------------------------------
@@ -184,6 +198,24 @@ final class LunarMonthCalculator
      * @param PhaseTarget  $target    NewMoon (0°) or FullMoon (180°)
      */
     private function findPhase(
+        float $startJd,
+        int $direction,
+        PhaseTarget $target
+    ): AstroInstant {
+        $cacheKey = sprintf('%s|%+d|%.8F', $target->name, $direction, $startJd);
+        $cached = $this->phaseCache->get($cacheKey);
+        if ($cached instanceof AstroInstant) {
+            return $cached;
+        }
+
+        $result = $this->scanPhase($startJd, $direction, $target);
+
+        $this->phaseCache->set($cacheKey, $result);
+
+        return $result;
+    }
+
+    private function scanPhase(
         float $startJd,
         int $direction,
         PhaseTarget $target
