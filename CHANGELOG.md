@@ -138,6 +138,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   instant/location pairs, latitudes ±60°, 1950–2100) via `swe.houses_ex` with
   `SEFLG_SIDEREAL` + `SIDM_LAHIRI`; `AscendantOracleTest` (0.05° tolerance, `accuracy`
   group). 200/200 samples within tolerance.
+- Vimshottari **closed-form regression test** (NOT an independent oracle — it shares
+  the engine's year length and reporting conventions): `VimshottariClosedFormTest`
+  computes expected Mahadasha/Antardasha boundaries in the test from the Swiss sidereal
+  Moon (body_longitudes fixture) and an in-test copy of the 120-year table, 20 births,
+  1-minute tolerance, plus two classic textbook-style worked examples.
 - drikpanchang **festival oracle**: `festival_dates.json` — 40 independent dates (the 8
   catalog festivals for 2023–2027; each asserted for Ahmedabad and Delhi) with source
   URLs, per-festival conventions and per-year Purnima/Bhadra timings;

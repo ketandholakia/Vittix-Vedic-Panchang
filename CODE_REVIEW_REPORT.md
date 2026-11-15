@@ -114,7 +114,7 @@ regression tests.
 | Samvat new-year day disagreed with the festival engine (new) | ✅ Fixed — shared `Festivals\NewYearResolver`; year flips at 00:00 local on the festival-resolved day (`SamvatNewYearAlignmentTest`, 2023–2027) |
 | Mean-obliquity polynomial ran 10× too fast (new, caught by the new Ascendant oracle) | ✅ Fixed — Laskar polynomial now evaluated at u = millennia/10; matches IAU 2006/Swiss to ~0.01″ (`AscendantOracleTest`, 200 samples ±60° lat) |
 | Dead `$eventsToday` in `FestivalEngine::resolveYear()` (new) | ✅ Removed |
-| Vimshottari oracle | ⏳ Open — pyjhora unavailable in the dev environment; no trusted reference, nothing fabricated |
+| Vimshottari independent reference | ⏳ Open — pyjhora unavailable in the dev environment; `VimshottariClosedFormTest` shares the engine's year length/conventions (regression check, not an oracle); nothing fabricated |
 
 ---
 
@@ -142,8 +142,9 @@ regression tests.
   `tests/fixtures/reference/`) is **excluded** from the default `composer test` group
   (`composer accuracy` runs it); it self-skips when fixtures are absent. Default-green
   does not by itself prove Swiss parity — that lives in the accuracy group.
-- Note: Vimshottari oracle coverage is still missing (pyjhora unavailable; no trusted
-  reference was fabricated).
+- Note: Vimshottari independent-reference coverage is still missing (pyjhora
+  unavailable; nothing fabricated). `VimshottariClosedFormTest` shares the engine's
+  year length and conventions — it is a regression check, not an oracle.
 
 ## 5. What was verified correct — and HOW
 
@@ -179,8 +180,14 @@ obliquity bugs survived exactly this way before oracles existed).
   (`LongitudeAccuracy`, 2000 instants vs Swiss).
 - `PurePhpAstronomyEngine` PSR-16 cache keys — **unit test**
   (`PurePhpAstronomyEngineCacheKeyTest`).
-- Vimshottari Antardashas — **unit test** against a hand-computed full-length timeline
-  (`VimshottariDashaCalculatorTest`); no independent reference (see open item).
+- Vimshottari Antardashas — **regression test, NOT an oracle**: `VimshottariClosedFormTest`
+  recomputes the expected boundaries in the test from the Swiss sidereal Moon and an
+  in-test copy of the 120-year table, but it deliberately shares the engine's year
+  length (365.2425 days) and the same reporting conventions, so it is a closed-form
+  consistency check that catches regressions — not an independent reference. (The
+  120-year table itself is corroborated by the classical texts; the missing piece is
+  an independent implementation, e.g. pyjhora — see open item.) `VimshottariDashaCalculatorTest`
+  covers the balance-dasha Antardashas against a hand-computed timeline.
 
 ### Unreviewed areas (no oracle, no thorough manual review this round)
 
