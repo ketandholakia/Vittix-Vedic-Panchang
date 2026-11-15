@@ -201,6 +201,10 @@ abstract class TithiKalaRule implements FestivalRuleInterface
 
     private function lunationAt(FestivalDayContext $context, DateTimeImmutable $moment): Lunation
     {
+        if ($context->preverifiedLunation !== null) {
+            return $context->preverifiedLunation;
+        }
+
         $instant = $context->tithi->instantAt($moment);
 
         return $context->lunarMonth->amantaLunation(

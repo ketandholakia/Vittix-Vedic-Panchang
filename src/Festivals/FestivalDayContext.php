@@ -6,6 +6,7 @@ namespace Vittix\Panchang\Festivals;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use Vittix\Panchang\Calendar\Lunation;
 use Vittix\Panchang\Calendar\LunarMonthCalculator;
 
 /**
@@ -26,6 +27,14 @@ final readonly class FestivalDayContext
         public readonly ?DateTimeImmutable $nextSunrise,
         public readonly TithiTimeline $tithi,
         public readonly LunarMonthCalculator $lunarMonth,
+        /**
+         * Caller-verified classification of the lunation containing the
+         * scored tithi span. When set, rules skip their own (expensive)
+         * month re-verification — used by bounded-window resolutions where
+         * the caller has already classified the lunation (e.g. the Samvat
+         * new-year walk). The whole-year scan leaves it null.
+         */
+        public readonly ?Lunation $preverifiedLunation = null,
     ) {
     }
 }

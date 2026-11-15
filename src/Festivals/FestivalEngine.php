@@ -9,6 +9,7 @@ use DateTimeZone;
 use Vittix\Panchang\Astronomy\Contracts\AstronomyEngineInterface;
 use Vittix\Panchang\Panchanga\TithiCalculator;
 use Vittix\Panchang\Calendar\LunarMonthCalculator;
+use Vittix\Panchang\Support\LruCache;
 use Vittix\Panchang\ValueObject\GeoLocation;
 
 /**
@@ -24,6 +25,9 @@ use Vittix\Panchang\ValueObject\GeoLocation;
  */
 final class FestivalEngine
 {
+    /** Bound for the per-year resolution cache (year-scans are ~0.5 s). */
+    public const RESOLUTION_CACHE_CAPACITY = 64;
+
     /** @var Festival[] */
     private array $catalog = [];
 
@@ -34,10 +38,10 @@ final class FestivalEngine
 
     /**
      * Cached per-year resolutions: "version|year|tz|lat|lon" → name → date.
-     *
-     * @var array<string, array<string, DateTimeImmutable|null>>
+     * Bounded LRU — batch consumers touching many locations must not grow
+     * the cache without limit (capacity 64 ≈ 64 year-scans).
      */
-    private array $resolutionCache = [];
+    private readonly LruCache $resolutionCache;
 
     public function __construct(
         private readonly AstronomyEngineInterface $astronomy,
@@ -45,6 +49,7 @@ final class FestivalEngine
         private readonly LunarMonthCalculator $lunarMonth,
     ) {
         $this->tithiTimeline = new TithiTimeline($astronomy, $tithiCalculator);
+        $this->resolutionCache = new LruCache(self::RESOLUTION_CACHE_CAPACITY);
     }
 
     public function addFestival(Festival $festival): void
@@ -106,8 +111,9 @@ final class FestivalEngine
             $location->longitude
         );
 
-        if (isset($this->resolutionCache[$cacheKey])) {
-            return $this->resolutionCache[$cacheKey];
+        $cached = $this->resolutionCache->get($cacheKey);
+        if (is_array($cached)) {
+            return $cached;
         }
 
         /** @var array<string, array{score: float, date: DateTimeImmutable}> $best */
@@ -159,8 +165,66 @@ final class FestivalEngine
             $resolutions[$festival->name] = $best[$festival->name]['date'] ?? null;
         }
 
-        $this->resolutionCache[$cacheKey] = $resolutions;
+        $this->resolutionCache->set($cacheKey, $resolutions);
 
         return $resolutions;
+    }
+
+    /**
+     * Resolve one festival to its single best civil day within a bounded
+     * window of $days days starting at $from (00:00 local). Same rule and
+     * tie-breaking as the whole-year scan (greatest score, later day wins
+     * on ties); no per-year cache is consulted or written.
+     */
+    public function resolveNear(
+        Festival $festival,
+        DateTimeImmutable $from,
+        int $days,
+        GeoLocation $location,
+        DateTimeZone $timezone,
+        ?\Vittix\Panchang\Calendar\Lunation $preverifiedLunation = null
+    ): ?DateTimeImmutable {
+        $day = $from->setTime(0, 0)->setTimezone($timezone);
+        $end = $day->modify(sprintf('+%d days', max(1, $days)));
+
+        /** @var array{score: float, date: DateTimeImmutable}|null $best */
+        $best = null;
+        $eventsNext = $this->astronomy->solarEvents($day, $location, $timezone);
+
+        while ($day < $end) {
+            $sunrise = $eventsNext->sunrise;
+            $sunset = $eventsNext->sunset;
+            $eventsNext = $this->astronomy->solarEvents($day->modify('+1 day'), $location, $timezone);
+
+            $context = new FestivalDayContext(
+                $day,
+                $timezone,
+                $sunrise,
+                $sunset,
+                $eventsNext->sunrise,
+                $this->tithiTimeline,
+                $this->lunarMonth,
+                $preverifiedLunation
+            );
+
+            $score = $festival->rule->score($context);
+            if ($score !== 0.0 && ($best === null || $score >= $best['score'])) {
+                $best = ['score' => $score, 'date' => $day];
+            }
+
+            $day = $day->modify('+1 day');
+        }
+
+        return $best['date'] ?? null;
+    }
+
+    /**
+     * Number of entries currently held by the per-year resolution cache.
+     *
+     * @internal exposed for cache-bound tests
+     */
+    public function resolutionCacheCount(): int
+    {
+        return count($this->resolutionCache);
     }
 }
