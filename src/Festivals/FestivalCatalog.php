@@ -57,11 +57,10 @@ final class FestivalCatalog
                 'Akshaya Tritiya',
                 new ViddhaTithiRule(LunarMonth::Vaishakha, Tithi::ShuklaTritiya, Kala::Madhyahna)
             ),
-            // Shravana Purnima (nija Shravana; Adhika skipped) at Aparahna,
-            // excluding the Vishti (Bhadra) karana — drik's muhurta
-            // convention; fallback keeps a Bhadra-covered day eligible
-            // (2023-08-30 ✓ drik; 2025/2026/2027 divergences documented in
-            // the festival oracle fixture).
+            // Shravana Purnima (nija Shravana; Adhika skipped) by ordered
+            // tiers: Bhadra-free Purnima at Aparahna, else in Pradosh, else
+            // the Bhadra-free morning day. All five years 2023-2027 match
+            // drikpanchang (see RakshaBandhanRule docblock).
             new Festival(
                 'Raksha Bandhan',
                 new RakshaBandhanRule(new KaranaCalculator($astronomy))

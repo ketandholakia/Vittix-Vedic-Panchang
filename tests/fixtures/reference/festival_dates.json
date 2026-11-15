@@ -47,29 +47,15 @@
                 "engine": "2027-08-24",
                 "explanation": "HYPOTHESIS, UNVERIFIED (drik does not state why this midnight): the page facts show the Ashtami spans BOTH midnights (Aug 25 and Aug 26) and drik's Nishita puja for the Aug 25 festival is the night of Aug 25→26 (00:01–00:45 Aug 26). The engine's greater-overlap rule resolves Aug 24, whose night window (Aug 24→25) also has full Ashtami coverage (Ashtami from 20:24 Aug 24). Proposed reason: drik attributes the festival to the day whose second midnight Nishita carries the tithi.",
                 "drik_page_facts": "VERIFIED from the drik page: 'Ashtami Tithi Begins - 08:24 PM on Aug 24, 2027', 'Ashtami Tithi Ends - 07:19 PM on Aug 25, 2027', 'Nishita Puja Time - 12:01 AM to 12:45 AM, Aug 26'."
-            },
-            {
-                "festival": "Raksha Bandhan",
-                "year": 2025,
-                "drikpanchang": "2025-08-09",
-                "engine": "2025-08-08",
-                "explanation": "HYPOTHESIS, UNVERIFIED (drik does not state its date rule): Bhadra (Vishti karana) covers the Purnima Aparahna on Aug 8; drik moves to the sunrise-Purnima day (Aug 9), the rule's documented fallback keeps the Purnima-Aparahna day (Aug 8)."
-            },
-            {
-                "festival": "Raksha Bandhan",
-                "year": 2026,
-                "drikpanchang": "2026-08-28",
-                "engine": "2026-08-27",
-                "explanation": "HYPOTHESIS, UNVERIFIED (drik does not state its date rule): Purnima begins during the Aug 27 Aparahna; the rule scores that partial Aparahna overlap while drik takes the sunrise-Purnima day (Aug 28)."
-            },
-            {
-                "festival": "Raksha Bandhan",
-                "year": 2027,
-                "drikpanchang": "2027-08-17",
-                "engine": "2027-08-16",
-                "explanation": "HYPOTHESIS, UNVERIFIED (drik does not state its date rule): Same pattern as 2026: Purnima begins during the Aug 16 Aparahna; drik takes the sunrise-Purnima day (Aug 17)."
             }
-        ]
+        ],
+        "raksha_bandhan_page_facts": {
+            "2023": "Purnima Tithi Begins - 10:58 AM on Aug 30, 2023; Purnima Tithi Ends - 07:05 AM on Aug 31, 2023; Bhadra End Time - 09:01 PM (Aug 30); 'Bhadra prevails during first half of Purnima Tithi'. Bhadra start = Purnima begin (10:58) per the first-half note; Bhadra end 21:01. drik date Aug 30 = the day Purnima begins, thread after Bhadra ends.",
+            "2024": "Purnima Tithi Begins - 03:04 AM on Aug 19, 2024; Purnima Tithi Ends - 11:55 PM on Aug 19, 2024; Bhadra End Time - 01:30 PM (Aug 19); Bhadra Punchha - 09:51 AM to 10:53 AM; Bhadra Mukha - 10:53 AM to 12:37 PM. Bhadra start = Purnima begin (03:04) per the first-half note; Bhadra end 13:30, before Aparahna. drik date Aug 19 = Purnima-begin day, tier 1.",
+            "2025": "Purnima Tithi Begins - 02:12 PM on Aug 08, 2025; Purnima Tithi Ends - 01:24 PM on Aug 09, 2025; 'Raksha Bandhan Bhadra got over before Sunrise' (before sunrise Aug 9); 'Bhadra prevails during first half of Purnima Tithi'. Bhadra start = Purnima begin (14:12 Aug 8); Bhadra end before sunrise Aug 9. drik date Aug 9 = the Bhadra-free morning day, tier 3; thread ceremony muhurat 05:47 AM to 01:24 PM.",
+            "2026": "Purnima Tithi Begins - 09:08 AM on Aug 27, 2026; Purnima Tithi Ends - 09:48 AM on Aug 28, 2026; 'Raksha Bandhan Bhadra got over before Sunrise' (before sunrise Aug 28); 'Bhadra prevails during first half of Purnima Tithi'. Bhadra start = Purnima begin (09:08 Aug 27); Bhadra end before sunrise Aug 28. drik date Aug 28 = the Bhadra-free morning day, tier 3.",
+            "2027": "Purnima Tithi Begins - 10:28 AM on Aug 16, 2027; Purnima Tithi Ends - 12:58 PM on Aug 17, 2027; 'Raksha Bandhan Bhadra got over before Sunrise' (before sunrise Aug 17); 'Bhadra prevails during first half of Purnima Tithi'. Bhadra start = Purnima begin (10:28 Aug 16); Bhadra end before sunrise Aug 17. drik date Aug 17 = the Bhadra-free morning day, tier 3."
+        }
     },
     "samples": [
         {
@@ -150,27 +136,32 @@
         {
             "festival": "Raksha Bandhan",
             "year": 2023,
-            "date": "2023-08-30"
+            "date": "2023-08-30",
+            "drik_page_facts": "Purnima Tithi Begins - 10:58 AM on Aug 30, 2023; Purnima Tithi Ends - 07:05 AM on Aug 31, 2023; Bhadra End Time - 09:01 PM (Aug 30); 'Bhadra prevails during first half of Purnima Tithi'. Bhadra start = Purnima begin (10:58) per the first-half note; Bhadra end 21:01. drik date Aug 30 = the day Purnima begins, thread after Bhadra ends."
         },
         {
             "festival": "Raksha Bandhan",
             "year": 2024,
-            "date": "2024-08-19"
+            "date": "2024-08-19",
+            "drik_page_facts": "Purnima Tithi Begins - 03:04 AM on Aug 19, 2024; Purnima Tithi Ends - 11:55 PM on Aug 19, 2024; Bhadra End Time - 01:30 PM (Aug 19); Bhadra Punchha - 09:51 AM to 10:53 AM; Bhadra Mukha - 10:53 AM to 12:37 PM. Bhadra start = Purnima begin (03:04) per the first-half note; Bhadra end 13:30, before Aparahna. drik date Aug 19 = Purnima-begin day, tier 1."
         },
         {
             "festival": "Raksha Bandhan",
             "year": 2025,
-            "date": "2025-08-09"
+            "date": "2025-08-09",
+            "drik_page_facts": "Purnima Tithi Begins - 02:12 PM on Aug 08, 2025; Purnima Tithi Ends - 01:24 PM on Aug 09, 2025; 'Raksha Bandhan Bhadra got over before Sunrise' (before sunrise Aug 9); 'Bhadra prevails during first half of Purnima Tithi'. Bhadra start = Purnima begin (14:12 Aug 8); Bhadra end before sunrise Aug 9. drik date Aug 9 = the Bhadra-free morning day, tier 3; thread ceremony muhurat 05:47 AM to 01:24 PM."
         },
         {
             "festival": "Raksha Bandhan",
             "year": 2026,
-            "date": "2026-08-28"
+            "date": "2026-08-28",
+            "drik_page_facts": "Purnima Tithi Begins - 09:08 AM on Aug 27, 2026; Purnima Tithi Ends - 09:48 AM on Aug 28, 2026; 'Raksha Bandhan Bhadra got over before Sunrise' (before sunrise Aug 28); 'Bhadra prevails during first half of Purnima Tithi'. Bhadra start = Purnima begin (09:08 Aug 27); Bhadra end before sunrise Aug 28. drik date Aug 28 = the Bhadra-free morning day, tier 3."
         },
         {
             "festival": "Raksha Bandhan",
             "year": 2027,
-            "date": "2027-08-17"
+            "date": "2027-08-17",
+            "drik_page_facts": "Purnima Tithi Begins - 10:28 AM on Aug 16, 2027; Purnima Tithi Ends - 12:58 PM on Aug 17, 2027; 'Raksha Bandhan Bhadra got over before Sunrise' (before sunrise Aug 17); 'Bhadra prevails during first half of Purnima Tithi'. Bhadra start = Purnima begin (10:28 Aug 16); Bhadra end before sunrise Aug 17. drik date Aug 17 = the Bhadra-free morning day, tier 3."
         },
         {
             "festival": "Diwali",

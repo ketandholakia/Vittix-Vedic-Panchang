@@ -20,12 +20,21 @@ use Vittix\Panchang\Tests\Support\TestLocations;
 use Vittix\Panchang\Time\AstroTimeFactory;
 
 /**
- * Raksha Bandhan: Shravana Purnima at Aparahna, excluding the Vishti
- * (Bhadra) karana — drik's convention.
+ * Raksha Bandhan: Shravana Purnima (nija Shravana) by ORDERED TIERS,
+ * highest tier wins, higher overlap wins within a tier:
  *
- * Regression anchor: 2023 must resolve to Aug 30 (the drik date; the old
- * sunrise rule gave Aug 31). 2024–2027 cross-checked against drik:
- *   2024-08-19, 2025-08-09, 2026-08-28, 2027-08-17.
+ *   1. Bhadra-free Purnima inside Aparahna.
+ *   2. Else Bhadra-free Purnima inside Pradosh (sunset -> +2 night-muhurtas).
+ *   3. Else the day on which Purnima prevails after sunrise with Bhadra-free
+ *      time before Purnima ends.
+ *
+ * All five years 2023-2027 match drikpanchang (New Delhi):
+ *   2023-08-30 (tier 3: Bhadra covers Aparahna AND Pradosh, ends 21:01;
+ *               the Bhadra-free Purnima evening outweighs Aug 31's morning),
+ *   2024-08-19 (tier 1: Bhadra ends 13:30, before Aparahna),
+ *   2025-08-09 (tier 3: Bhadra over before sunrise; Purnima until 13:24),
+ *   2026-08-28 (tier 3: same pattern; Purnima until 09:48),
+ *   2027-08-17 (tier 3: same pattern; Purnima until 12:58).
  */
 final class RakshaBandhanRuleTest extends TestCase
 {
@@ -64,29 +73,14 @@ final class RakshaBandhanRuleTest extends TestCase
         return $out;
     }
 
-    public function test2023MatchesDrikDateAug30(): void
+    public function testAllFiveYearsMatchDrik(): void
     {
         $resolved = $this->resolveAll('Ahmedabad');
-        self::assertSame('2023-08-30', $resolved[2023], 'Raksha Bandhan 2023 must be the drik date Aug 30');
-    }
-
-    public function test2024To2027(): void
-    {
-        // Engine vs drikpanchang (festival_dates.json values, NOT edited):
-        //   2024-08-19 = drik ✓
-        //   2025: engine Aug 8, drik Aug 9 — DOCUMENTED DIVERGENCE: Bhadra
-        //     covers the Purnima Aparahna on Aug 8, drik moves to the
-        //     sunrise-Purnima day (Aug 9); the rule's fallback keeps Aug 8.
-        //   2026: engine Aug 27, drik Aug 28 — Purnima begins during the
-        //     Aug 27 Aparahna; drik takes the sunrise-Purnima day (Aug 28).
-        //   2027: engine Aug 16, drik Aug 17 — same pattern as 2026.
-        // The three divergences are recorded in the festival oracle fixture
-        // (known_divergences) and reported per this item's instructions.
-        $resolved = $this->resolveAll('Ahmedabad');
-        self::assertSame('2024-08-19', $resolved[2024], 'matches drik');
-        self::assertSame('2025-08-08', $resolved[2025], 'engine: Purnima-Aparahna day (drik: Aug 9, reported divergence)');
-        self::assertSame('2026-08-27', $resolved[2026], 'engine: Purnima-Aparahna day (drik: Aug 28, reported divergence)');
-        self::assertSame('2027-08-16', $resolved[2027], 'engine: Purnima-Aparahna day (drik: Aug 17, reported divergence)');
+        self::assertSame('2023-08-30', $resolved[2023], 'tier 3: Bhadra covers Aparahna and Pradosh, ends 21:01 Aug 30');
+        self::assertSame('2024-08-19', $resolved[2024], 'tier 1: Bhadra ends 13:30, before Aparahna');
+        self::assertSame('2025-08-09', $resolved[2025], 'tier 3: Bhadra over before sunrise, Purnima until 13:24');
+        self::assertSame('2026-08-28', $resolved[2026], 'tier 3: Bhadra over before sunrise, Purnima until 09:48');
+        self::assertSame('2027-08-17', $resolved[2027], 'tier 3: Bhadra over before sunrise, Purnima until 12:58');
     }
 
     public function testDelhiMatchesAhmedabad(): void
