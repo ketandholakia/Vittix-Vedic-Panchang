@@ -6,6 +6,7 @@ namespace Vittix\Panchang\Tests\Integration\Panchanga;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Vittix\Panchang\Enum\SolarMonth;
 use Vittix\Panchang\Panchanga\PanchangService;
@@ -15,6 +16,7 @@ use Vittix\Panchang\ValueObject\GeoLocation;
  * Tests for extreme edge cases to ensure the library handles complex
  * chronological or geographical conditions without crashing.
  */
+#[Group('slow')]
 final class EdgeCaseTest extends TestCase
 {
     private PanchangService $service;

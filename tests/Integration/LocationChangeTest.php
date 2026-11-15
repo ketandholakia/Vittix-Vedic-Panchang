@@ -6,10 +6,12 @@ namespace Vittix\Panchang\Tests\Integration;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Vittix\Panchang\Panchang;
 use Vittix\Panchang\Tests\Support\TestLocations;
 
+#[Group('slow')]
 final class LocationChangeTest extends TestCase
 {
     public function testSunriseAndTithiEndDifferByLocation(): void

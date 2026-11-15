@@ -6,6 +6,7 @@ namespace Vittix\Panchang\Tests\Integration\Festivals;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Vittix\Panchang\Astronomy\Engine\PurePhpAstronomyEngine;
 use Vittix\Panchang\Calendar\LunarMonthCalculator;
@@ -34,6 +35,7 @@ use Vittix\Panchang\Tests\Support\TestLocations;
  *     Nishita muhurta of the night beginning Sep 4 starts ~00:15 — no
  *     overlap; the nearest-window fallback resolves Sep 4).
  */
+#[Group('slow')]
 final class FestivalResolutionTest extends TestCase
 {
     private FestivalEngine $engine;

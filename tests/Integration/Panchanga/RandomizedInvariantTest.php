@@ -6,10 +6,12 @@ namespace Vittix\Panchang\Tests\Integration\Panchanga;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Vittix\Panchang\Panchang;
 use Vittix\Panchang\ValueObject\GeoLocation;
 
+#[Group('slow')]
 final class RandomizedInvariantTest extends TestCase
 {
     private Panchang $panchang;

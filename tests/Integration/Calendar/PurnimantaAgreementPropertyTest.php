@@ -6,6 +6,7 @@ namespace Vittix\Panchang\Tests\Integration\Calendar;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Vittix\Panchang\Astronomy\Engine\EngineFactory;
 use Vittix\Panchang\Calendar\HinduCalendarCalculator;
@@ -34,6 +35,7 @@ use Vittix\Panchang\Time\AstroTimeFactory;
  */
 #[CoversClass(PurnimantaMonthCalculator::class)]
 #[CoversClass(HinduCalendarCalculator::class)]
+#[Group('slow')]
 final class PurnimantaAgreementPropertyTest extends TestCase
 {
     private LunarMonthCalculator $lunarMonth;

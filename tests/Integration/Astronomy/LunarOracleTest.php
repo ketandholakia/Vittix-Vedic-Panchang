@@ -6,6 +6,7 @@ namespace Vittix\Panchang\Tests\Integration\Astronomy;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Vittix\Panchang\Astronomy\Engine\PurePhpAstronomyEngine;
 use Vittix\Panchang\ValueObject\GeoLocation;
@@ -15,6 +16,7 @@ use Vittix\Panchang\ValueObject\GeoLocation;
  * Due to atmospheric refraction unpredictability and algorithm differences,
  * a tolerance of ±5 minutes is used.
  */
+#[Group('slow')]
 final class LunarOracleTest extends TestCase
 {
     private PurePhpAstronomyEngine $engine;

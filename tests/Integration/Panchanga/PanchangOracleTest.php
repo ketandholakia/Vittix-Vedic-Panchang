@@ -6,6 +6,7 @@ namespace Vittix\Panchang\Tests\Integration\Panchanga;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Vittix\Panchang\Enum\Karana;
 use Vittix\Panchang\Enum\Nakshatra;
@@ -20,6 +21,7 @@ use Vittix\Panchang\ValueObject\GeoLocation;
  * Extensive oracle tests against known reference data (Drik Panchang, Kalnirnay, etc.)
  * for various dates to ensure all 5 limbs align perfectly for a given location.
  */
+#[Group('slow')]
 final class PanchangOracleTest extends TestCase
 {
     private PanchangService $service;

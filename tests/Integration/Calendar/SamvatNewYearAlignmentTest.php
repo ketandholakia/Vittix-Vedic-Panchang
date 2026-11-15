@@ -6,6 +6,7 @@ namespace Vittix\Panchang\Tests\Integration\Calendar;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Vittix\Panchang\Calendar\SamvatCalculator;
 use Vittix\Panchang\Calendar\LunarMonthCalculator;
@@ -30,6 +31,7 @@ use Vittix\Panchang\ValueObject\GeoLocation;
  * "first sunrise at or after the new moon" rule put the new year on
  * Mar 20 — so Mar 19 was the festival but still carried the old year.
  */
+#[Group('slow')]
 final class SamvatNewYearAlignmentTest extends TestCase
 {
     private const TZ = 'Asia/Kolkata';

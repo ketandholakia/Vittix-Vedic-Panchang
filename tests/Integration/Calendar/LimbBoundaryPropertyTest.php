@@ -6,11 +6,13 @@ namespace Vittix\Panchang\Tests\Integration\Calendar;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Vittix\Panchang\Panchanga\PanchangService;
 use Vittix\Panchang\ValueObject\GeoLocation;
 use Vittix\Panchang\Enum\Tithi;
 
+#[Group('slow')]
 final class LimbBoundaryPropertyTest extends TestCase
 {
     public function testTithiMonotonicityOverPeriod(): void

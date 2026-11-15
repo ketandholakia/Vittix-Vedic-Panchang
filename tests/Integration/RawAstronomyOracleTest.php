@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Vittix\Panchang\Tests\Integration;
 
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Vittix\Panchang\Astronomy\Engine\PurePhpAstronomyEngine;
 use Vittix\Panchang\Enum\Body;
 use Vittix\Panchang\Time\AstroTimeFactory;
 use Vittix\Panchang\Time\JulianDay;
 
+#[Group('slow')]
 final class RawAstronomyOracleTest extends TestCase
 {
     private PurePhpAstronomyEngine $engine;

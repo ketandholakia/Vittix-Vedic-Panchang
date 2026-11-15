@@ -6,6 +6,7 @@ namespace Vittix\Panchang\Tests\Integration\Panchanga;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Vittix\Panchang\Panchanga\PanchangService;
 use Vittix\Panchang\ValueObject\GeoLocation;
@@ -16,6 +17,7 @@ use Vittix\Panchang\ValueObject\GeoLocation;
  * This test ensures that cached data is not incorrectly reused across locations,
  * and that astronomical calculations properly use the provided coordinates.
  */
+#[Group('slow')]
 final class LocationChangeTest extends TestCase
 {
     private PanchangService $service;

@@ -6,6 +6,7 @@ namespace Vittix\Panchang\Tests\Integration\Panchanga;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Vittix\Panchang\Astronomy\Contracts\AstronomyEngineInterface;
 use Vittix\Panchang\Enum\Body;
@@ -99,6 +100,7 @@ class BoundaryMockEngine implements AstronomyEngineInterface
     }
 }
 
+#[Group('slow')]
 final class BoundaryTransitionTest extends TestCase
 {
     private PanchangaCalculator $calculator;

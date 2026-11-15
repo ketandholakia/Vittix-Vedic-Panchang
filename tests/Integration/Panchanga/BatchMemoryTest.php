@@ -7,6 +7,7 @@ namespace Vittix\Panchang\Tests\Integration\Panchanga;
 use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Vittix\Panchang\Panchanga\PanchangService;
 use Vittix\Panchang\ValueObject\GeoLocation;
@@ -21,6 +22,7 @@ use Vittix\Panchang\ValueObject\GeoLocation;
  * memory stays flat across large batches, and repeated dates are faster.
  */
 #[CoversClass(PanchangService::class)]
+#[Group('slow')]
 final class BatchMemoryTest extends TestCase
 {
     private const BATCH_DAYS = 400;

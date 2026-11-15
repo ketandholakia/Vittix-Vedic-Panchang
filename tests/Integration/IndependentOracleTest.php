@@ -6,11 +6,13 @@ namespace Vittix\Panchang\Tests\Integration;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Vittix\Panchang\Panchang;
 use Vittix\Panchang\Tests\Support\TestLocations;
 
+#[Group('slow')]
 final class IndependentOracleTest extends TestCase
 {
     private Panchang $panchang;
