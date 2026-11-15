@@ -9,7 +9,8 @@ use DateTimeZone;
 use RuntimeException;
 use Vittix\Panchang\Astronomy\Contracts\AstronomyEngineInterface;
 use Vittix\Panchang\Enum\LunarMonth;
-use Vittix\Panchang\Time\AstroTimeFactory;
+use Vittix\Panchang\Festivals\NewYearResolver;
+use Vittix\Panchang\Panchanga\TithiCalculator;
 use Vittix\Panchang\ValueObject\AstroInstant;
 use Vittix\Panchang\ValueObject\GeoLocation;
 
@@ -19,17 +20,20 @@ use Vittix\Panchang\ValueObject\GeoLocation;
  * Exact rules (lunar-anchored):
  *
  *   • Vikram Samvat changes at Chaitra Shukla Pratipada (Yugadi / Gudi
- *     Padwa) — the first sunrise at which Shukla Pratipada prevails after
- *     the new moon that opens the Chaitra lunation. After it,
+ *     Padwa) — the civil day resolved by the SAME rule the festival engine
+ *     uses for Shukla Pratipada (see Festivals\NewYearResolver), including
+ *     the greater-overlap fallback when the tithi never prevails at a
+ *     sunrise. The year changes at 00:00 local on that day:
  *     VS = Gregorian year of the new-year day + 57.
  *   • Shaka Samvat changes on the same Chaitra Shukla Pratipada.
  *     After it, Shaka = Gregorian year of the new-year day − 78.
  *   • Gujarati Vikram Samvat changes at Kartika Shukla Pratipada (the day
- *     after Diwali). After it, the year number equals the Vikram year
- *     number (the year that began at the previous Chaitra).
+ *     after Diwali), resolved by the same shared rule. After it, the year
+ *     number equals the Vikram year number (the year that began at the
+ *     previous Chaitra).
  *
  * The exact variants ({@see vikramSamvatExact()} etc.) resolve the lunar
- * new year via {@see LunarMonthCalculator}. The plain date-only methods
+ * new year via the shared {@see NewYearResolver}. The plain date-only methods
  * are documented approximations kept for convenience and backward
  * compatibility: they use fixed Gregorian dividing points (April 1,
  * March 22, November 1) and can be off by days to weeks around the real
@@ -37,13 +41,12 @@ use Vittix\Panchang\ValueObject\GeoLocation;
  */
 final class SamvatCalculator
 {
-    private readonly AstroTimeFactory $timeFactory;
+    private ?NewYearResolver $newYearResolver = null;
 
     public function __construct(
         private readonly ?LunarMonthCalculator $lunarMonth = null,
         private readonly ?AstronomyEngineInterface $astronomy = null,
     ) {
-        $this->timeFactory = new AstroTimeFactory();
     }
 
     /**
@@ -151,15 +154,11 @@ final class SamvatCalculator
 
     /**
      * Gregorian year (in $timezone) of the most recent new-year day at or
-     * before $instant, where the new year is the Shukla Pratipada sunrise
-     * following the new moon that opens a (non-Adhika) lunation named
-     * $month.
-     *
-     * The day the year changes is the first sunrise at or after that new
-     * moon (Shukla Pratipada prevails at that sunrise in all but razor-edge
-     * cases; when the tithi is too short, the conventional fallback is the
-     * same or the next day, which cannot change the Gregorian year for the
-     * Chaitra/Kartika seasons).
+     * before $instant, where the new year is the Shukla Pratipada day of a
+     * (non-Adhika) lunation named $month — resolved with the same rule the
+     * festival engine uses ({@see NewYearResolver}), including the
+     * greater-overlap fallback. The year changes at 00:00 local on that
+     * civil day.
      */
     private function lunarNewYearGregorianYear(
         AstroInstant $instant,
@@ -176,59 +175,17 @@ final class SamvatCalculator
 
         $tz = $timezone ?? $instant->utc->getTimezone();
 
-        $newMoon = $this->lunarMonth->previousNewMoon($instant);
-
-        // Walk back through lunations (at most ~14 months) to the most
-        // recent new-year start at or before the instant.
-        for ($i = 0; $i < 16; $i++) {
-            $lunation = $this->lunarMonth->amantaLunation($newMoon);
-
-            if ($lunation->month === $month && !$lunation->isAdhika) {
-                $newYearSunrise = $this->firstSunriseAtOrAfter($newMoon, $location, $tz);
-
-                if ($newYearSunrise !== null && $newYearSunrise <= $instant->utc) {
-                    return (int) $newYearSunrise->setTimezone($tz)->format('Y');
-                }
-                // The instant lies between this new moon and its Pratipada
-                // sunrise: the year has not changed yet. Keep walking back.
-            }
-
-            $dayBefore = $newMoon->utc->modify('-1 day');
-            $newMoon = $this->lunarMonth->previousNewMoon(
-                $this->timeFactory->fromDateTime($dayBefore)
-            );
-        }
-
-        throw new RuntimeException(
-            sprintf('Could not locate a %s lunation within 16 lunations before the given instant.', $month->name)
-        );
+        return $this->newYearResolver()->newYearGregorianYear($month, $instant, $location, $tz);
     }
 
-    /**
-     * First sunrise at or after the given instant (searches up to 3 local
-     * days; null only at extreme latitudes without sunrise).
-     */
-    private function firstSunriseAtOrAfter(
-        AstroInstant $instant,
-        GeoLocation $location,
-        DateTimeZone $timezone,
-    ): ?DateTimeImmutable {
-        if ($this->astronomy === null) {
-            return null;
-        }
+    private function newYearResolver(): NewYearResolver
+    {
+        assert($this->lunarMonth !== null && $this->astronomy !== null);
 
-        $day = $instant->utc->setTimezone($timezone);
-
-        for ($i = 0; $i < 3; $i++) {
-            $events = $this->astronomy->solarEvents($day, $location, $timezone);
-
-            if ($events->sunrise !== null && $events->sunrise >= $instant->utc) {
-                return $events->sunrise;
-            }
-
-            $day = $day->modify('+1 day');
-        }
-
-        return null;
+        return $this->newYearResolver ??= new NewYearResolver(
+            $this->astronomy,
+            new TithiCalculator($this->astronomy),
+            $this->lunarMonth
+        );
     }
 }

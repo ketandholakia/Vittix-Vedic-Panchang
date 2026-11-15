@@ -58,8 +58,9 @@ final class SamvatCalculatorExactTest extends TestCase
         // Yugadi 2025 fell on March 30.
         self::assertSame(2081, $this->calc->vikramSamvatExact($this->instant('2025-03-29 12:00'), $this->location, $this->timezone));
         self::assertSame(2082, $this->calc->vikramSamvatExact($this->instant('2025-03-31 12:00'), $this->location, $this->timezone));
-        // On the new-year day itself: before sunrise still the old year.
-        self::assertSame(2081, $this->calc->vikramSamvatExact($this->instant('2025-03-30 04:00'), $this->location, $this->timezone));
+        // The year changes at 00:00 local on the new-year day (aligned with
+        // the festival engine's civil-day resolution), not at sunrise.
+        self::assertSame(2082, $this->calc->vikramSamvatExact($this->instant('2025-03-30 04:00'), $this->location, $this->timezone));
         self::assertSame(2082, $this->calc->vikramSamvatExact($this->instant('2025-03-30 12:00'), $this->location, $this->timezone));
     }
 
@@ -101,8 +102,8 @@ final class SamvatCalculatorExactTest extends TestCase
         // Diwali 2025-10-21, Gujarati New Year 2025-10-22.
         self::assertSame(2081, $this->calc->gujaratiSamvatExact($this->instant('2025-10-21 12:00'), $this->location, $this->timezone));
         self::assertSame(2082, $this->calc->gujaratiSamvatExact($this->instant('2025-10-25 12:00'), $this->location, $this->timezone));
-        // On the new-year day: before sunrise old year, after sunrise new.
-        self::assertSame(2081, $this->calc->gujaratiSamvatExact($this->instant('2025-10-22 04:00'), $this->location, $this->timezone));
+        // The year changes at 00:00 local on the new-year day.
+        self::assertSame(2082, $this->calc->gujaratiSamvatExact($this->instant('2025-10-22 04:00'), $this->location, $this->timezone));
         self::assertSame(2082, $this->calc->gujaratiSamvatExact($this->instant('2025-10-22 12:00'), $this->location, $this->timezone));
     }
 
