@@ -30,42 +30,44 @@
                 "year": 2027,
                 "drikpanchang": "2027-05-09",
                 "engine": "2027-05-08",
-                "explanation": "Tritiya ends late morning on May 9; drik still lists May 9 (the tithi's final day), the engine's Madhyahna-overlap rule picks May 8 where Tritiya covers the whole midday window. Greater-overlap vs last-day vyapini convention."
+                "explanation": "HYPOTHESIS, UNVERIFIED (drik does not state its date rule): the page facts show Tritiya covers the May 8 Madhyahna too, yet drik lists May 9 — the day with Tritiya at sunrise (their puja runs sunrise to tithi end 09:03). The engine's greater-Madhyahna-overlap rule resolves May 8. Proposed reason: drik prefers the day with the tithi at sunrise for this festival.",
+                "drik_page_facts": "VERIFIED from the drik page: 'Tritiya Tithi Begins - 11:42 AM on May 08, 2027', 'Tritiya Tithi Ends - 09:03 AM on May 09, 2027'; puja muhurat 05:35 AM to 09:03 AM on May 9 (sunrise to tithi end)."
             },
             {
                 "festival": "Diwali",
                 "year": 2024,
                 "drikpanchang": "2024-11-01",
                 "engine": "2024-10-31",
-                "explanation": "Amavasya spans both Pradosh windows (began during Oct 31). Both days qualify; drik selects Nov 1 (Amavasya-dominant day plus Sthir Lagna criteria), the engine picks the greater Pradosh overlap (Oct 31)."
+                "explanation": "HYPOTHESIS, UNVERIFIED (drik does not state its date rule): Amavasya spans both Pradosh windows (began during Oct 31). Both days qualify; drik selects Nov 1 (Amavasya-dominant day plus Sthir Lagna criteria), the engine picks the greater Pradosh overlap (Oct 31)."
             },
             {
                 "festival": "Krishna Janmashtami",
                 "year": 2027,
                 "drikpanchang": "2027-08-25",
                 "engine": "2027-08-24",
-                "explanation": "Ashtami ends early on Aug 25; drik lists Aug 25 (Smarta date, Ashtami prevailing at midnight into the 25th per its Nishita attribution), the engine's Nishita-overlap fallback resolves Aug 24. Razor-edge vyapti case."
+                "explanation": "HYPOTHESIS, UNVERIFIED (drik does not state why this midnight): the page facts show the Ashtami spans BOTH midnights (Aug 25 and Aug 26) and drik's Nishita puja for the Aug 25 festival is the night of Aug 25→26 (00:01–00:45 Aug 26). The engine's greater-overlap rule resolves Aug 24, whose night window (Aug 24→25) also has full Ashtami coverage (Ashtami from 20:24 Aug 24). Proposed reason: drik attributes the festival to the day whose second midnight Nishita carries the tithi.",
+                "drik_page_facts": "VERIFIED from the drik page: 'Ashtami Tithi Begins - 08:24 PM on Aug 24, 2027', 'Ashtami Tithi Ends - 07:19 PM on Aug 25, 2027', 'Nishita Puja Time - 12:01 AM to 12:45 AM, Aug 26'."
             },
             {
                 "festival": "Raksha Bandhan",
                 "year": 2025,
                 "drikpanchang": "2025-08-09",
                 "engine": "2025-08-08",
-                "explanation": "Bhadra (Vishti karana) covers the Purnima Aparahna on Aug 8; drik moves to the sunrise-Purnima day (Aug 9), the rule's documented fallback keeps the Purnima-Aparahna day (Aug 8)."
+                "explanation": "HYPOTHESIS, UNVERIFIED (drik does not state its date rule): Bhadra (Vishti karana) covers the Purnima Aparahna on Aug 8; drik moves to the sunrise-Purnima day (Aug 9), the rule's documented fallback keeps the Purnima-Aparahna day (Aug 8)."
             },
             {
                 "festival": "Raksha Bandhan",
                 "year": 2026,
                 "drikpanchang": "2026-08-28",
                 "engine": "2026-08-27",
-                "explanation": "Purnima begins during the Aug 27 Aparahna; the rule scores that partial Aparahna overlap while drik takes the sunrise-Purnima day (Aug 28)."
+                "explanation": "HYPOTHESIS, UNVERIFIED (drik does not state its date rule): Purnima begins during the Aug 27 Aparahna; the rule scores that partial Aparahna overlap while drik takes the sunrise-Purnima day (Aug 28)."
             },
             {
                 "festival": "Raksha Bandhan",
                 "year": 2027,
                 "drikpanchang": "2027-08-17",
                 "engine": "2027-08-16",
-                "explanation": "Same pattern as 2026: Purnima begins during the Aug 16 Aparahna; drik takes the sunrise-Purnima day (Aug 17)."
+                "explanation": "HYPOTHESIS, UNVERIFIED (drik does not state its date rule): Same pattern as 2026: Purnima begins during the Aug 16 Aparahna; drik takes the sunrise-Purnima day (Aug 17)."
             }
         ]
     },

@@ -20,11 +20,12 @@ use Vittix\Panchang\ValueObject\GeoLocation;
 /**
  * Festival oracle against drikpanchang.com.
  *
- * Fixture: tests/fixtures/reference/festival_dates.json — the 8 catalog
- * festivals for 2023–2027, fetched from the drikpanchang New Delhi pages
- * (source URL per festival in the fixture metadata; conventions noted).
- * Asserted for Ahmedabad AND Delhi: drikpanchang lists the same festival
- * date for Indian cities.
+ * Fixture: tests/fixtures/reference/festival_dates.json — 40 independent
+ * drikpanchang dates (8 catalog festivals x 2023–2027, fetched from the
+ * New Delhi pages; source URL per festival in the fixture metadata,
+ * conventions noted). Each date is asserted for Ahmedabad AND Delhi
+ * (80 comparisons from 40 independent references): drikpanchang lists the
+ * same festival date for Indian cities.
  *
  * On disagreement the test FAILS and lists every case — expected values
  * are never edited to make it pass; disagreements are reported.
@@ -158,6 +159,19 @@ final class FestivalOracleTest extends AccuracyTestCase
                 $report . implode("\n", $unexpected)
             )
         );
+    }
+
+    /**
+     * The oracle's independent reference size: 40 drikpanchang dates (8
+     * festivals x 5 years). Each is asserted for BOTH cities, so the two
+     * city tests perform 80 comparisons — but the oracle itself is 40
+     * dates, and is reported as such in docs and CODE_REVIEW_REPORT.md.
+     */
+    public function testOracleCoversFortyIndependentDates(): void
+    {
+        $this->skipWithoutFixture('festival_dates');
+
+        self::assertCount(40, $this->repo()->samples('festival_dates'));
     }
 
     public function testFestivalDatesMatchDrikpanchangForAhmedabad(): void

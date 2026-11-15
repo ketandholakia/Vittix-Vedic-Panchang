@@ -161,8 +161,9 @@ obliquity bugs survived exactly this way before oracles existed).
   (`PurnimantaAdhikaTest`).
 - `PurnimantaMonthCalculator` full-moon-to-full-moon naming — **property test** +
   drik-anchored dates (`PurnimantaAdhikaTest`).
-- Festival engine — **oracle**: 8 catalog festivals × 2023–2027 × 2 cities vs
-  drikpanchang, 76/80 exact, 4 documented convention divergences (`FestivalOracleTest`).
+- Festival engine — **oracle**: 40 drikpanchang dates (8 catalog festivals × 2023–2027,
+  each asserted for Ahmedabad and Delhi), 36/40 exact, 4 documented convention
+  divergences (`FestivalOracleTest`).
 - Samvat years — **code reading** + boundary tests against drik-verified Yugadi/Diwali
   dates (`SamvatCalculatorExactTest`, `SamvatNewYearAlignmentTest`, `SamvatWiringTest`).
 - `TithiTimeline` bisection primitives — **code reading** (single-transition guarantees)

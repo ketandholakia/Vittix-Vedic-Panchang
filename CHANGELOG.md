@@ -138,10 +138,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   instant/location pairs, latitudes ±60°, 1950–2100) via `swe.houses_ex` with
   `SEFLG_SIDEREAL` + `SIDM_LAHIRI`; `AscendantOracleTest` (0.05° tolerance, `accuracy`
   group). 200/200 samples within tolerance.
-- drikpanchang **festival oracle**: `festival_dates.json` — the 8 catalog festivals for
-  2023–2027 (Ahmedabad + Delhi) with source URLs and per-festival conventions;
-  `FestivalOracleTest` asserts exact equality and fails on any undocumented
-  disagreement (4 deliberate convention divergences documented in the fixture).
+- drikpanchang **festival oracle**: `festival_dates.json` — 40 independent dates (the 8
+  catalog festivals for 2023–2027; each asserted for Ahmedabad and Delhi) with source
+  URLs and per-festival conventions; `FestivalOracleTest` asserts exact equality and
+  fails on any undocumented disagreement (4 deliberate convention divergences documented
+  in the fixture, explanations labeled as hypotheses where drik does not state its rule).
 
 ### Changed — round 2
 
