@@ -360,7 +360,7 @@ use Vittix\Panchang\Enum\Tithi;
 $engine = $panchang->festivals();
 $engine->addFestival(new Festival(
     'Custom Festival',
-    new SunriseTithiRule(LunarMonth::Kartika, Tithi::ShuklaD11)
+    new SunriseTithiRule(LunarMonth::Kartika, Tithi::ShuklaEkadashi)
 ));
 ```
 

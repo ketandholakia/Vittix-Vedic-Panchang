@@ -1,5 +1,63 @@
 # Upgrade Guide
 
+## Upgrade to v3.0 (migration from 2.x)
+
+v3.0 contains **breaking changes** introduced by the 2026-11 defect round. All are
+mechanical; the numeric/behavioral fixes behind them are listed in CHANGELOG.md.
+
+### Tithi case renames
+- The `ShuklaD<n>`/`KrishnaD<n>` spellings are replaced by consistent Sanskrit case names:
+  `ShuklaDwitiya`, `ShuklaTritiya`, `ShuklaChaturthi`, `ShuklaPanchami`, `ShuklaShashthi`,
+  `ShuklaSaptami`, `ShuklaNavami`, `ShuklaDashami`, `ShuklaEkadashi`, `ShuklaDwadashi`,
+  `ShuklaTrayodashi` (and the Krishna counterparts).
+- The old spellings still work: they remain as `@deprecated` class constants bound to the
+  identical canonical case, so `Tithi::ShuklaD3 === Tithi::fromIndex(2)` stays true.
+- Note that `->name` (and localization lookups by case name) now return the canonical
+  name (`ShuklaTritiya`, not `ShuklaD3`).
+- Action: replace usages at your leisure; localize from the bundled tables which contain
+  both spellings, or add your canonical keys.
+
+### `AyanamshaCalculatorInterface::id()` is a new required method
+- Custom ayanamsha implementations must add `public function id(): string` returning a
+  short stable identifier (e.g. `'lahiri'`, `'raman'`). It namespaces the PSR-16 cache
+  keys so two engines with different systems cannot share each other's cached values.
+
+### `FestivalRuleInterface` redesigned
+- `isObserved(DateTimeImmutable $date, GeoLocation $location, PanchangaCalculator
+  $panchanga, mixed $context = null): bool` is replaced by
+  `score(FestivalDayContext $context): float` — the fraction of the rule's kala window
+  during which the target tithi prevails (0.0 = not observed). Custom rules must be
+  rewritten against `FestivalDayContext` (or extend `Rules\TithiKalaRule`).
+
+### `FestivalEngine` constructor change
+- `new FestivalEngine($panchangaCalculator)` becomes
+  `new FestivalEngine($astronomyEngine, $tithiCalculator, $lunarMonthCalculator)`.
+- `FestivalCatalog::getDefaultFestivals()` no longer takes a `MuhurtaCalculator`.
+
+### `ViddhaTithiRule` takes a `Kala` enum
+- `new ViddhaTithiRule($month, $tithi, 'Nishita', $muhurtaCalculator)` becomes
+  `new ViddhaTithiRule($month, $tithi, Kala::Nishita)` — one of `Sunrise`, `Madhyahna`,
+  `Aparahna`, `Pradosh`, `Nishita` (`Enum\Kala`). `SunriseTithiRule` gains an optional
+  `Kala` parameter (default `Sunrise`).
+
+### `PurnimantaMonthCalculator::purnimantaMonth(month, paksha)` removed
+- The paksha-based +1 shift was wrong around Adhika/Kshaya months. Use the new
+  `monthAt(AstroInstant): Lunation`, which returns the month plus its Adhika/Kshaya
+  flags. `LunarMonthCalculator::amantaLunation(newMoon)` provides the same
+  classification for Amanta lunations.
+
+### `getHoras()` signature change
+- `getHoras(sunrise, nextSunrise, weekdayIndex)` becomes
+  `getHoras(sunrise, sunset, nextSunrise, weekdayIndex, HoraMode $mode = HoraMode::Traditional)`.
+  The default now returns the traditional 12 day + 12 night Horas; pass
+  `HoraMode::EqualHours` for the old 24-equal-segment behavior.
+
+### PSR-16 cache key format changed — flush persistent caches on upgrade
+- Keys are now `vpanchang.pos.<body>.<jd>` and `vpanchang.ayan.<system>.<jd>` (the old
+  `pos:…`/`ayan:…` keys used PSR-16 reserved characters and omitted the ayanamsha
+  system). Stale entries under the old keys are simply never read again, but they will
+  linger: **flush your persistent PSR-16 cache when upgrading** to reclaim the space.
+
 ## Upgrade to v2.5.0
 
 ### What Changed
