@@ -22,6 +22,7 @@ final class FixtureRepository
         'ascendant_positions' => 'ascendant_positions.json',
         'festival_dates' => 'festival_dates.json',
         'festival_dates_holdout' => 'festival_dates_holdout.json',
+        'vimshottari_examples' => 'vimshottari_examples.json',
     ];
 
     public function __construct(

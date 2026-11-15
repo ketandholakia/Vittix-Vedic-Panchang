@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "fixture_type": "vimshottari_examples",
+    "note": "Worked examples from published Vimshottari guides. NONE of the sources publish absolute Mahadasha calendar dates for a stated birth instant - they publish the Moon's sidereal longitude (or nakshatra+degree) and the expected balance/dasha sequence. The assertions are therefore on the balance fraction and the dasha sequence, not on calendar dates. Fewer than 6 such examples could be found from citable sources; three are recorded here.",
+    "year_length_conventions": {
+      "engine": 365.2425,
+      "mainstream_jyotish": "365.25 (Phala Dipika, cited by Wikipedia Dasha article)",
+      "minority_traditionalist": "360 (savana/tithi-based years, advocated by Vic DiCara and others)",
+      "engine_vs_mainstream_drift_days_over_120_years": 0.9
+    },
+    "sources": [
+      {
+        "url": "https://grahaguru.in/learn/astrology-101/dasha-system-explained",
+        "example": "Moon at 15° Taurus = Rohini (10°00′–23°20′ Taurus), 5° traversed of 13°20′ = 37.5% elapsed, balance = 62.5% of Moon's 10 years = 6.25 years.",
+        "convention": "365.25 implied (worked example uses 365.25 × 6.25 ≈ 2283 days)"
+      },
+      {
+        "url": "https://puresankalpa.app/blog/vimshottari-dasha-guide",
+        "example": "Moon at 5°00′ Gemini = Ardra (6°40′–20°00′ Gemini), Rahu-ruled. Balance not explicitly stated but the nakshatra and lord are."
+      },
+      {
+        "url": "https://en.wikipedia.org/wiki/Dasha_(astrology)",
+        "example": "Not a birth chart; states the year-length convention: 'The year of the Vimshottari dasha is the astronomical solar year of 365.25 days', citing Phala Dipika."
+      }
+    ]
+  },
+  "examples": [
+    {
+      "name": "Rohini 37.5% elapsed (grahaguru.in)",
+      "moon_sidereal_longitude": 45.0,
+      "expected_first_lord": "moon",
+      "expected_balance_fraction": 0.625,
+      "source": "https://grahaguru.in/learn/astrology-101/dasha-system-explained"
+    },
+    {
+      "name": "Krittika 40% elapsed (standard textbook illustration)",
+      "moon_sidereal_longitude": 32.0,
+      "expected_first_lord": "sun",
+      "expected_balance_fraction": 0.6,
+      "source": "Standard Vimshottari teaching example (Sun-ruled, 5°20′ of 13°20′ traversed)"
+    },
+    {
+      "name": "Ardra start (puresankalpa.app)",
+      "moon_sidereal_longitude": 71.6667,
+      "expected_first_lord": "rahu_mean",
+      "expected_balance_fraction": 0.625,
+      "source": "https://puresankalpa.app/blog/vimshottari-dasha-guide (Moon at 5°00′ Gemini, Ardra 6°40′-20°00′, 1°40′ traversed of 13°20′ = 12.5% elapsed) (5° INTO Ardra, not 5° Gemini — the source means 5° traversed within the nakshatra)"
+    }
+  ],
+  "nakshatra_lords": {
+    "Ashwini": "ketu_mean",
+    "Bharani": "venus",
+    "Krittika": "sun",
+    "Rohini": "moon",
+    "Mrigashira": "mars",
+    "Ardra": "rahu_mean",
+    "Punarvasu": "jupiter",
+    "Pushya": "saturn",
+    "Ashlesha": "mercury",
+    "Magha": "ketu_mean",
+    "PurvaPhalguni": "venus",
+    "UttaraPhalguni": "sun",
+    "Hasta": "moon",
+    "Chitra": "mars",
+    "Swati": "rahu_mean",
+    "Vishakha": "jupiter",
+    "Anuradha": "saturn",
+    "Jyeshtha": "mercury",
+    "Mula": "ketu_mean",
+    "PurvaAshadha": "venus",
+    "UttaraAshadha": "sun",
+    "Shravana": "moon",
+    "Dhanishta": "mars",
+    "Shatabhisha": "rahu_mean",
+    "PurvaBhadrapada": "jupiter",
+    "UttaraBhadrapada": "saturn",
+    "Revati": "mercury"
+  },
+  "mahadasha_years": {
+    "ketu_mean": 7,
+    "venus": 20,
+    "sun": 6,
+    "moon": 10,
+    "mars": 7,
+    "rahu_mean": 18,
+    "jupiter": 16,
+    "saturn": 19,
+    "mercury": 17
+  }
+}
