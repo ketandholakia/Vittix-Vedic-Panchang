@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vittix\Panchang\Muhurta;
 
 use DateTimeImmutable;
+use Vittix\Panchang\Enum\HoraMode;
 use Vittix\Panchang\ValueObject\TimeWindow;
 
 final class MuhurtaCalculator
@@ -85,29 +86,65 @@ final class MuhurtaCalculator
     }
 
     /**
-     * Get 24 Hora segments for the full day (Sunrise to next Sunrise).
+     * Get the 24 Horas of a day.
+     *
+     * Traditional method (default): 12 day Horas divide sunrise → sunset
+     * and 12 night Horas divide sunset → next sunrise — each Hora is 1/12
+     * of its half of the day, not a clock hour. The ruler sequence starts
+     * at the weekday lord and runs unbroken across the night boundary
+     * (night Hora 1 = sequence position 13).
+     *
+     * The legacy 24-equal-hour variant remains available via
+     * HoraMode::EqualHours (24 equal segments of the full
+     * sunrise → next-sunrise span; $sunset is unused there).
      *
      * @return TimeWindow[]
      */
-    public function getHoras(DateTimeImmutable $sunrise, DateTimeImmutable $nextSunrise, int $weekdayIndex): array
-    {
-        $totalSeconds = $nextSunrise->getTimestamp() - $sunrise->getTimestamp();
-        // Hora divides the day and night into 24 parts (roughly 1 hour each)
-        $segmentSeconds = $totalSeconds / 24.0;
-
-        $windows = [];
-        $currentTs = (float) $sunrise->getTimestamp();
-        
+    public function getHoras(
+        DateTimeImmutable $sunrise,
+        DateTimeImmutable $sunset,
+        DateTimeImmutable $nextSunrise,
+        int $weekdayIndex,
+        HoraMode $mode = HoraMode::Traditional
+    ): array {
         $horaSequence = $this->getHoraSequence($weekdayIndex);
 
-        for ($i = 0; $i < 24; $i++) {
-            $windowStart = (new \DateTimeImmutable())->setTimestamp((int) round($currentTs))->setTimezone($sunrise->getTimezone());
-            $currentTs += $segmentSeconds;
-            $windowEnd = (new \DateTimeImmutable())->setTimestamp((int) round($currentTs))->setTimezone($sunrise->getTimezone());
-            
-            $nameIndex = $i % 7;
-            
-            $windows[] = new TimeWindow($horaSequence[$nameIndex], $windowStart, $windowEnd);
+        if ($mode === HoraMode::EqualHours) {
+            $names = [];
+            for ($i = 0; $i < 24; $i++) {
+                $names[] = $horaSequence[$i % 7];
+            }
+
+            return $this->divideIntoSegments($sunrise, $nextSunrise, 24, $names);
+        }
+
+        return array_merge(
+            $this->horasForSpan($sunrise, $sunset, $horaSequence, 0),
+            $this->horasForSpan($sunset, $nextSunrise, $horaSequence, 12)
+        );
+    }
+
+    /**
+     * @param array<int, string> $horaSequence
+     * @return array<int, TimeWindow>
+     */
+    private function horasForSpan(
+        DateTimeImmutable $spanStart,
+        DateTimeImmutable $spanEnd,
+        array $horaSequence,
+        int $offset
+    ): array {
+        $windows = [];
+        $total = $spanEnd->getTimestamp() - $spanStart->getTimestamp();
+        $segment = $total / 12.0;
+        $current = (float) $spanStart->getTimestamp();
+
+        for ($i = 0; $i < 12; $i++) {
+            $start = (new \DateTimeImmutable())->setTimestamp((int) round($current))->setTimezone($spanStart->getTimezone());
+            $current += $segment;
+            $end = (new \DateTimeImmutable())->setTimestamp((int) round($current))->setTimezone($spanStart->getTimezone());
+
+            $windows[] = new TimeWindow($horaSequence[($offset + $i) % 7], $start, $end);
         }
 
         return $windows;

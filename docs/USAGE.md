@@ -385,8 +385,10 @@ $nishita = $muhurta->getNishita($sunset, $nextSunrise);
 $dayChoghadiya = $muhurta->getDayChoghadiya($sunrise, $sunset, $weekdayIndex);
 $nightChoghadiya = $muhurta->getNightChoghadiya($sunset, $nextSunrise, $weekdayIndex);
 
-// Horas (24)
-$horas = $muhurta->getHoras($sunrise, $nextSunrise, $weekdayIndex);
+// Horas — traditional: 12 day Horas (sunrise→sunset ÷ 12) + 12 night
+// Horas (sunset→next sunrise ÷ 12); pass HoraMode::EqualHours for the
+// legacy 24-equal-segment variant
+$horas = $muhurta->getHoras($sunrise, $sunset, $nextSunrise, $weekdayIndex);
 ```
 
 ### Electional Evaluator
