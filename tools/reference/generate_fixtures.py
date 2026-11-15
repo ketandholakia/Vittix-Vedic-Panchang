@@ -2,7 +2,7 @@
 """
 Swiss Ephemeris reference-fixture generator for the Vittix Panchang accuracy harness.
 
-Generates three deterministic datasets under tests/fixtures/reference/:
+Generates four deterministic datasets under tests/fixtures/reference/:
 
   * body_longitudes.json  — 2000 random UTC instants (1950-01-01 .. 2100-12-31).
                             For Sun, Moon, Mercury .. Saturn and mean Rahu:
@@ -15,6 +15,12 @@ Generates three deterministic datasets under tests/fixtures/reference/:
                             on 60 dates spread across the year and 2000-2050, in TWO
                             rise/set conventions: (i) upper limb + standard refraction
                             and (ii) disc centre with no refraction.
+  * ascendant_positions.json — for 200 random (instant, location) pairs
+                            (1950-2100, latitudes in [-60, +60], longitudes in
+                            [-180, +180)): the Swiss Ephemeris Ascendant and MC in
+                            DEGREES, sidereal Lahiri (swe.houses_ex with
+                            SEFLG_SIDEREAL after set_sid_mode(SIDM_LAHIRI)),
+                            plus the tropical Ascendant for reference.
 
 Determinism: every random choice comes from a built-in 64-bit LCG seeded with a
 fixed constant (see SEED). The script does not depend on Python's `random`
@@ -600,6 +606,60 @@ def _module_version(name: str) -> str:
 # --------------------------------------------------------------------------- #
 
 
+ASC_COUNT = 200
+ASC_LAT_MAX = 60.0
+
+
+def generate_ascendants(count: int, flags: int, eph_label: str, rng: Lcg) -> Dict[str, object]:
+    """Sidereal Ascendant/MC oracle via swe.houses_ex (Placidus houses are
+    irrelevant here: only ascmc[0] (Asc) and ascmc[1] (MC) are house-system
+    independent)."""
+    sidereal_flags = flags | swe.FLG_SIDEREAL
+    samples: List[Dict[str, object]] = []
+
+    for _ in range(count):
+        year = rng.randint(1950, 2100)
+        month = rng.randint(1, 12)
+        day = rng.randint(1, 28)
+        second_of_day = rng.randint(0, 86399)
+        jd_ut = jd_ut_from_civil(year, month, day, second_of_day)
+
+        # Latitudes bounded to [-60, +60] per the oracle scope; longitudes
+        # span the whole globe.
+        lat = (rng.randint(-600000, 600000)) / 10000.0
+        lon = (rng.randint(-1800000, 1799999)) / 10000.0
+
+        cusps, ascmc = swe.houses_ex(jd_ut, lat, lon, b'P', sidereal_flags)
+        cusps_tropical, ascmc_tropical = swe.houses_ex(jd_ut, lat, lon, b'P', flags)
+
+        samples.append({
+            "utc": utc_to_iso(jd_to_utc(jd_ut)),
+            "jd_ut": round8(jd_ut),
+            "latitude": round(lat, 4),
+            "longitude": round(lon, 4),
+            "ascendant_sidereal": round8(wrap360(ascmc[0])),
+            "mc_sidereal": round8(wrap360(ascmc[1])),
+            "ascendant_tropical": round8(wrap360(ascmc_tropical[0])),
+        })
+
+    return {
+        "metadata": {
+            "fixture_type": "ascendant_positions",
+            "count": len(samples),
+            "ephemeris": eph_label,
+            "swisseph_version": swe.version,
+            "sid_mode": "SIDM_LAHIRI",
+            "houses_flag": "SEFLG_SIDEREAL",
+            "house_system": "P (only Asc/MC used - house-system independent)",
+            "latitude_range": [-ASC_LAT_MAX, ASC_LAT_MAX],
+            "longitude_range": [-180.0, 180.0],
+            "year_range": [1950, 2100],
+            "seed": _SEED_USED,
+        },
+        "samples": samples,
+    }
+
+
 def write_json(path: str, data: Dict[str, object], compact: bool) -> None:
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as handle:
@@ -645,6 +705,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     n_longitudes = 40 if args.quick else 2000
     n_transitions = 10 if args.quick else 300
+    n_ascendants = 10 if args.quick else ASC_COUNT
     event_years = EVENT_YEARS[:1] if args.quick else EVENT_YEARS
 
     flags, eph_label = setup_ephemeris(args.ephemeris, args.ephe_path)
@@ -667,10 +728,17 @@ def main(argv: Optional[List[str]] = None) -> int:
         compact=True,
     )
 
-    print("3/3 sun_moon_events ...")
+    print("3/4 sun_moon_events ...")
     write_json(
         os.path.join(out_dir, "sun_moon_events.json"),
         generate_events(flags, eph_label, event_years),
+        compact=True,
+    )
+
+    print("4/4 ascendant_positions ...")
+    write_json(
+        os.path.join(out_dir, "ascendant_positions.json"),
+        generate_ascendants(n_ascendants, flags, eph_label, rng),
         compact=True,
     )
 

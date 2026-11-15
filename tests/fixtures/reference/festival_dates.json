@@ -1,0 +1,260 @@
+{
+    "metadata": {
+        "fixture_type": "festival_dates",
+        "source": "drikpanchang.com",
+        "source_urls": {
+            "Gudi Padwa / Ugadi": "https://www.drikpanchang.com/festivals/gudi-padwa/gudi-padwa-date-time.html?year=<YEAR>",
+            "Rama Navami": "https://www.drikpanchang.com/dashavatara/rama-navami/rama-navami-date-time.html?year=<YEAR>",
+            "Akshaya Tritiya": "https://www.drikpanchang.com/festivals/akshaya-tritiya/akshaya-tritiya-date-time.html?year=<YEAR>",
+            "Raksha Bandhan": "https://www.drikpanchang.com/festivals/raksha-bandhan/raksha-bandhan-date-time.html?year=<YEAR>",
+            "Diwali": "https://www.drikpanchang.com/festivals/lakshmipuja/festivals-lakshmipuja-timings.html?year=<YEAR>",
+            "Ganesha Chaturthi": "https://www.drikpanchang.com/festivals/ganesh-chaturthi/ganesh-chaturthi-date-time.html?year=<YEAR>",
+            "Krishna Janmashtami": "https://www.drikpanchang.com/dashavatara/lord-krishna/krishna-janmashtami-date-time.html?year=<YEAR>",
+            "Maha Shivaratri": "https://www.drikpanchang.com/festivals/maha-shivaratri/maha-shivaratri-date-time.html?year=<YEAR>"
+        },
+        "conventions": {
+            "Gudi Padwa / Ugadi": "Chaitra Shukla Pratipada at sunrise, greater-overlap fallback (drik: same tithi, with 'smarter lunar calendar' fallback for no-sunrise years)",
+            "Rama Navami": "Chaitra Shukla Navami at Madhyahna (drik: Madhyahna vyapini)",
+            "Akshaya Tritiya": "Vaishakha Shukla Tritiya at Madhyahna (drik: Madhyahna vyapini)",
+            "Raksha Bandhan": "Shravana Purnima (nija Shravana). drik's headline date follows Purnima Madhyahna/Aparahna vyapini; the catalog's sunrise rule can differ by one day when Purnima starts around midday (2023).",
+            "Diwali": "Ashwina Amavasya at Pradosh (drik: Lakshmi Puja during Pradosh Kaal; 2026 marked on Chaturdashi because Amavasya begins 11:27 that day)",
+            "Ganesha Chaturthi": "Bhadrapada Shukla Chaturthi at Madhyahna (drik: Madhyahna vyapini)",
+            "Krishna Janmashtami": "Shravana Krishna Ashtami during Nishita of the night beginning the festival day (drik: Smarta Sampradaya date; Nishita puja may fall past midnight)",
+            "Maha Shivaratri": "Magha Krishna Chaturdashi during Nishita of the night beginning the festival day (drik: same)"
+        },
+        "city_note": "Dates were fetched from the drikpanchang New Delhi pages for each year (2023-2027). drikpanchang lists the same festival DATE for Indian cities (Ahmedabad included); the per-city pages differ only in muhurta times. Ahmedabad was not separately fetched for every festival/year - flagged here rather than assumed silently.",
+        "fetched_on": "2026-11-15",
+        "known_divergences": [
+            {
+                "festival": "Akshaya Tritiya",
+                "year": 2027,
+                "drikpanchang": "2027-05-09",
+                "engine": "2027-05-08",
+                "explanation": "Tritiya ends late morning on May 9; drik still lists May 9 (the tithi's final day), the engine's Madhyahna-overlap rule picks May 8 where Tritiya covers the whole midday window. Greater-overlap vs last-day vyapini convention."
+            },
+            {
+                "festival": "Raksha Bandhan",
+                "year": 2023,
+                "drikpanchang": "2023-08-30",
+                "engine": "2023-08-31",
+                "explanation": "Purnima began ~midday Aug 30. drik's headline Raksha Bandhan follows Purnima Madhyahna/Aparahna vyapini (Aug 30); the catalog's sunrise rule takes the day with Purnima at sunrise (Aug 31). Documented convention difference in FestivalCatalog."
+            },
+            {
+                "festival": "Diwali",
+                "year": 2024,
+                "drikpanchang": "2024-11-01",
+                "engine": "2024-10-31",
+                "explanation": "Amavasya spans both Pradosh windows (began during Oct 31). Both days qualify; drik selects Nov 1 (Amavasya-dominant day plus Sthir Lagna criteria), the engine picks the greater Pradosh overlap (Oct 31)."
+            },
+            {
+                "festival": "Krishna Janmashtami",
+                "year": 2027,
+                "drikpanchang": "2027-08-25",
+                "engine": "2027-08-24",
+                "explanation": "Ashtami ends early on Aug 25; drik lists Aug 25 (Smarta date, Ashtami prevailing at midnight into the 25th per its Nishita attribution), the engine's Nishita-overlap fallback resolves Aug 24. Razor-edge vyapti case."
+            }
+        ]
+    },
+    "samples": [
+        {
+            "festival": "Gudi Padwa / Ugadi",
+            "year": 2023,
+            "date": "2023-03-22"
+        },
+        {
+            "festival": "Gudi Padwa / Ugadi",
+            "year": 2024,
+            "date": "2024-04-09"
+        },
+        {
+            "festival": "Gudi Padwa / Ugadi",
+            "year": 2025,
+            "date": "2025-03-30"
+        },
+        {
+            "festival": "Gudi Padwa / Ugadi",
+            "year": 2026,
+            "date": "2026-03-19"
+        },
+        {
+            "festival": "Gudi Padwa / Ugadi",
+            "year": 2027,
+            "date": "2027-04-07"
+        },
+        {
+            "festival": "Rama Navami",
+            "year": 2023,
+            "date": "2023-03-30"
+        },
+        {
+            "festival": "Rama Navami",
+            "year": 2024,
+            "date": "2024-04-17"
+        },
+        {
+            "festival": "Rama Navami",
+            "year": 2025,
+            "date": "2025-04-06"
+        },
+        {
+            "festival": "Rama Navami",
+            "year": 2026,
+            "date": "2026-03-26"
+        },
+        {
+            "festival": "Rama Navami",
+            "year": 2027,
+            "date": "2027-04-15"
+        },
+        {
+            "festival": "Akshaya Tritiya",
+            "year": 2023,
+            "date": "2023-04-22"
+        },
+        {
+            "festival": "Akshaya Tritiya",
+            "year": 2024,
+            "date": "2024-05-10"
+        },
+        {
+            "festival": "Akshaya Tritiya",
+            "year": 2025,
+            "date": "2025-04-30"
+        },
+        {
+            "festival": "Akshaya Tritiya",
+            "year": 2026,
+            "date": "2026-04-19"
+        },
+        {
+            "festival": "Akshaya Tritiya",
+            "year": 2027,
+            "date": "2027-05-09"
+        },
+        {
+            "festival": "Raksha Bandhan",
+            "year": 2023,
+            "date": "2023-08-30"
+        },
+        {
+            "festival": "Raksha Bandhan",
+            "year": 2024,
+            "date": "2024-08-19"
+        },
+        {
+            "festival": "Raksha Bandhan",
+            "year": 2025,
+            "date": "2025-08-09"
+        },
+        {
+            "festival": "Raksha Bandhan",
+            "year": 2026,
+            "date": "2026-08-28"
+        },
+        {
+            "festival": "Raksha Bandhan",
+            "year": 2027,
+            "date": "2027-08-17"
+        },
+        {
+            "festival": "Diwali",
+            "year": 2023,
+            "date": "2023-11-12"
+        },
+        {
+            "festival": "Diwali",
+            "year": 2024,
+            "date": "2024-11-01"
+        },
+        {
+            "festival": "Diwali",
+            "year": 2025,
+            "date": "2025-10-20"
+        },
+        {
+            "festival": "Diwali",
+            "year": 2026,
+            "date": "2026-11-08"
+        },
+        {
+            "festival": "Diwali",
+            "year": 2027,
+            "date": "2027-10-29"
+        },
+        {
+            "festival": "Ganesha Chaturthi",
+            "year": 2023,
+            "date": "2023-09-19"
+        },
+        {
+            "festival": "Ganesha Chaturthi",
+            "year": 2024,
+            "date": "2024-09-07"
+        },
+        {
+            "festival": "Ganesha Chaturthi",
+            "year": 2025,
+            "date": "2025-08-27"
+        },
+        {
+            "festival": "Ganesha Chaturthi",
+            "year": 2026,
+            "date": "2026-09-14"
+        },
+        {
+            "festival": "Ganesha Chaturthi",
+            "year": 2027,
+            "date": "2027-09-04"
+        },
+        {
+            "festival": "Krishna Janmashtami",
+            "year": 2023,
+            "date": "2023-09-06"
+        },
+        {
+            "festival": "Krishna Janmashtami",
+            "year": 2024,
+            "date": "2024-08-26"
+        },
+        {
+            "festival": "Krishna Janmashtami",
+            "year": 2025,
+            "date": "2025-08-15"
+        },
+        {
+            "festival": "Krishna Janmashtami",
+            "year": 2026,
+            "date": "2026-09-04"
+        },
+        {
+            "festival": "Krishna Janmashtami",
+            "year": 2027,
+            "date": "2027-08-25"
+        },
+        {
+            "festival": "Maha Shivaratri",
+            "year": 2023,
+            "date": "2023-02-18"
+        },
+        {
+            "festival": "Maha Shivaratri",
+            "year": 2024,
+            "date": "2024-03-08"
+        },
+        {
+            "festival": "Maha Shivaratri",
+            "year": 2025,
+            "date": "2025-02-26"
+        },
+        {
+            "festival": "Maha Shivaratri",
+            "year": 2026,
+            "date": "2026-02-15"
+        },
+        {
+            "festival": "Maha Shivaratri",
+            "year": 2027,
+            "date": "2027-03-06"
+        }
+    ]
+}

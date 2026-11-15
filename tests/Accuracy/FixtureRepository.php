@@ -19,6 +19,8 @@ final class FixtureRepository
         'body_longitudes' => 'body_longitudes.json',
         'transitions' => 'transitions.json',
         'sun_moon_events' => 'sun_moon_events.json',
+        'ascendant_positions' => 'ascendant_positions.json',
+        'festival_dates' => 'festival_dates.json',
     ];
 
     public function __construct(

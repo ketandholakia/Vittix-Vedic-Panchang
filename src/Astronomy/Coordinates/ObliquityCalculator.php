@@ -26,9 +26,15 @@ final class ObliquityCalculator
      */
     public function mean(AstroInstant $instant): float
     {
-        $u = $instant->julianMillenniaTt();
+        // Meeus Table 22.a — Laskar polynomial (arcseconds from 23°26′21.448″),
+        // evaluated at u = T/10 where T is counted in **Julian millennia**
+        // from J2000 (i.e. u = julian centuries / 100). Evaluating at the
+        // millennia themselves makes the −4680.93″ leading term run ten
+        // times too fast (−468″/century instead of the real −46.84″/century,
+        // IAU 2006): −105″ by 2025 and −445″ by 2100. Cross-checked against
+        // IAU 2006 (ε0(2025.0) = 84369.696″) and Swiss Ephemeris.
+        $u = $instant->julianMillenniaTt() / 10.0;
 
-        // Meeus Table 22.a — Laskar polynomial (arcseconds from 23°26′21.448″)
         $arcsec = Polynomial::evaluate(
             $u,
             0.0,          // constant — added below
