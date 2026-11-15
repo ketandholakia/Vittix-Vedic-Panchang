@@ -140,9 +140,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   group). 200/200 samples within tolerance.
 - drikpanchang **festival oracle**: `festival_dates.json` — 40 independent dates (the 8
   catalog festivals for 2023–2027; each asserted for Ahmedabad and Delhi) with source
-  URLs and per-festival conventions; `FestivalOracleTest` asserts exact equality and
-  fails on any undocumented disagreement (4 deliberate convention divergences documented
-  in the fixture, explanations labeled as hypotheses where drik does not state its rule).
+  URLs, per-festival conventions and per-year Purnima/Bhadra timings;
+  `FestivalOracleTest` asserts exact equality (computing and printing the exact and
+  divergent counts per city) and fails on any undocumented disagreement. After the
+  tiered Raksha Bandhan rule: 37/40 exact, 3 documented convention divergences
+  (Akshaya Tritiya 2027, Diwali 2024, Krishna Janmashtami 2027), explanations labeled
+  as hypotheses where drik does not state its rule.
 
 ### Changed — round 2
 

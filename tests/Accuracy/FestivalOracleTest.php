@@ -105,6 +105,7 @@ final class FestivalOracleTest extends AccuracyTestCase
         $tz = new DateTimeZone('Asia/Kolkata');
         $unexpected = [];
         $matchedDivergences = [];
+        $exact = 0;
 
         foreach ($this->repo()->samples('festival_dates') as $sample) {
             $name = (string) $sample['festival'];
@@ -124,6 +125,7 @@ final class FestivalOracleTest extends AccuracyTestCase
             $expected = (string) $sample['date'];
             $actual = $resolved?->format('Y-m-d') ?? 'NOT RESOLVED';
             if ($actual === $expected) {
+                $exact++;
                 continue;
             }
 
@@ -149,6 +151,16 @@ final class FestivalOracleTest extends AccuracyTestCase
             $report .= "Known documented divergences (drik convention vs catalog convention):\n"
                 . implode("\n", $matchedDivergences) . "\n";
         }
+
+        // Surface the real counts: the oracle is 40 independent dates,
+        // asserted for both cities (80 comparisons).
+        printf(
+            "\n%s: %d/%d exact, %d documented divergences\n",
+            $cityName,
+            $exact,
+            count($this->repo()->samples('festival_dates')),
+            count($matchedDivergences)
+        );
 
         self::assertSame(
             [],
