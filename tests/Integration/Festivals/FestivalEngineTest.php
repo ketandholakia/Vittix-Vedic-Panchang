@@ -8,53 +8,32 @@ use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\TestCase;
 use Vittix\Panchang\Astronomy\Engine\PurePhpAstronomyEngine;
+use Vittix\Panchang\Calendar\LunarMonthCalculator;
+use Vittix\Panchang\Enum\Kala;
 use Vittix\Panchang\Enum\LunarMonth;
 use Vittix\Panchang\Enum\Tithi;
 use Vittix\Panchang\Festivals\Festival;
 use Vittix\Panchang\Festivals\FestivalEngine;
-use Vittix\Panchang\Festivals\Rules\SunriseTithiRule;
-use Vittix\Panchang\Panchanga\KaranaCalculator;
-use Vittix\Panchang\Panchanga\NakshatraCalculator;
-use Vittix\Panchang\Panchanga\PanchangaCalculator;
+use Vittix\Panchang\Festivals\Rules\ViddhaTithiRule;
 use Vittix\Panchang\Panchanga\TithiCalculator;
-use Vittix\Panchang\Panchanga\TransitionFinder;
-use Vittix\Panchang\Panchanga\VaraCalculator;
-use Vittix\Panchang\Panchanga\YogaCalculator;
-use Vittix\Panchang\Calendar\LunarMonthCalculator;
-use Vittix\Panchang\Calendar\AdhikaMasaCalculator;
 
 final class FestivalEngineTest extends TestCase
 {
-    public function testSunriseTithiFestival(): void
+    public function testMadhyahnaViddhaFestival(): void
     {
         $engine = new PurePhpAstronomyEngine();
-        $finder = new TransitionFinder($engine);
-        
+
         $tithiCalc = new TithiCalculator($engine);
-        $nakshatraCalc = new NakshatraCalculator($engine);
-        $yogaCalc = new YogaCalculator($engine);
-        $karanaCalc = new KaranaCalculator($engine);
-        $varaCalc = new VaraCalculator();
         $lunarMonthCalc = new LunarMonthCalculator($engine);
-        $adhikaCalc = new AdhikaMasaCalculator($engine, $lunarMonthCalc);
-        $panchangaCalc = new PanchangaCalculator(
-            $engine,
-            $tithiCalc,
-            $nakshatraCalc,
-            $yogaCalc,
-            $karanaCalc,
-            $varaCalc,
-            $finder,
-            $lunarMonthCalc,
-            $adhikaCalc
-        );
+        $festivalEngine = new FestivalEngine($engine, $tithiCalc, $lunarMonthCalc);
 
-        $festivalEngine = new FestivalEngine($panchangaCalc);
-
-        // Add Ganesha Chaturthi (Bhadrapada, Shukla Chaturthi)
+        // Ganesha Chaturthi: Bhadrapada Shukla Chaturthi at Madhyahna — the
+        // drik convention. In 2026 Chaturthi runs 07:06 Sep 14 → 07:44
+        // Sep 15 (no sunrise match on Sep 14), and the Madhyahna overlap
+        // resolves Sep 14, not Sep 15.
         $ganeshaChaturthi = new Festival(
             'Ganesha Chaturthi',
-            new SunriseTithiRule(LunarMonth::Bhadrapada, Tithi::ShuklaD4)
+            new ViddhaTithiRule(LunarMonth::Bhadrapada, Tithi::ShuklaD4, Kala::Madhyahna)
         );
         $festivalEngine->addFestival($ganeshaChaturthi);
 
@@ -64,10 +43,14 @@ final class FestivalEngineTest extends TestCase
         $festivals = $festivalEngine->getFestivalsForDate($wrongDate, $location);
         self::assertEmpty($festivals);
 
-        // Date where it IS Bhadrapada Shukla Chaturthi
-        // In 2026, Ganesha Chaturthi is roughly around September 15.
-        $correctDate = new DateTimeImmutable('2026-09-15 06:10:00', new DateTimeZone('Asia/Kolkata'));
-        $festivals = $festivalEngine->getFestivalsForDate($correctDate, $location);
-        self::assertContains('Ganesha Chaturthi', $festivals);
+        // Ganesha Chaturthi 2026 resolves to exactly one date, Sep 14.
+        $fired = [];
+        for ($d = 12; $d <= 17; $d++) {
+            $date = new DateTimeImmutable(sprintf('2026-09-%02d 06:10:00', $d), new DateTimeZone('Asia/Kolkata'));
+            if (in_array('Ganesha Chaturthi', $festivalEngine->getFestivalsForDate($date, $location), true)) {
+                $fired[] = $date->format('Y-m-d');
+            }
+        }
+        self::assertSame(['2026-09-14'], $fired);
     }
 }

@@ -240,10 +240,13 @@ final class Panchang
      */
     public function festivals(): FestivalEngine
     {
-        $muhurta = new MuhurtaCalculator();
-        $engine = new FestivalEngine($this->calculator);
+        $engine = new FestivalEngine(
+            $this->astronomy,
+            new TithiCalculator($this->astronomy),
+            new LunarMonthCalculator($this->astronomy),
+        );
 
-        foreach (FestivalCatalog::getDefaultFestivals($muhurta) as $festival) {
+        foreach (FestivalCatalog::getDefaultFestivals() as $festival) {
             $engine->addFestival($festival);
         }
 

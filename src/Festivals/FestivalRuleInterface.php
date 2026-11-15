@@ -4,21 +4,20 @@ declare(strict_types=1);
 
 namespace Vittix\Panchang\Festivals;
 
-use DateTimeImmutable;
-use Vittix\Panchang\Panchanga\PanchangaCalculator;
-
 /**
- * A rule that determines if a festival is observed on a given civil date.
+ * A rule that scores a festival against one civil date.
+ *
+ * The score is the fraction [0..1] of the rule's kala window during which
+ * the target tithi prevails (in the target, non-Adhika lunar month), so
+ * the festival engine can resolve each festival to the single best date
+ * of the year. Rules return 0.0 when the festival is not observed on the
+ * given date, when the lunar month is Adhika (skipped), or when the kala
+ * window does not exist (polar day/night).
  */
 interface FestivalRuleInterface
 {
     /**
-     * Determine if this festival is observed on the given date.
-     *
-     * @param DateTimeImmutable $date The civil date (usually 00:00 local time).
-     * @param \Vittix\Panchang\ValueObject\GeoLocation $location The observer's location.
-     * @param PanchangaCalculator $panchanga The calculator to fetch planetary positions and tithis.
-     * @param mixed $context Any additional context (like timeline calculators) can be passed if needed.
+     * Observation score for the given day; 0.0 = not observed.
      */
-    public function isObserved(DateTimeImmutable $date, \Vittix\Panchang\ValueObject\GeoLocation $location, PanchangaCalculator $panchanga, mixed $context = null): bool;
+    public function score(FestivalDayContext $context): float;
 }

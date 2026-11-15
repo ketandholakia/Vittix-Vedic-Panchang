@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\TestCase;
 use Vittix\Panchang\Astronomy\Engine\PurePhpAstronomyEngine;
+use Vittix\Panchang\Enum\Kala;
 use Vittix\Panchang\Enum\LunarMonth;
 use Vittix\Panchang\Enum\Tithi;
 use Vittix\Panchang\Festivals\Festival;
@@ -30,35 +31,16 @@ final class ViddhaTithiRuleTest extends TestCase
     public function testNishitaVyapiniFestival(): void
     {
         $engine = new PurePhpAstronomyEngine();
-        $finder = new TransitionFinder($engine);
-        
-        $tithiCalc = new TithiCalculator($engine);
-        $nakshatraCalc = new NakshatraCalculator($engine);
-        $yogaCalc = new YogaCalculator($engine);
-        $karanaCalc = new KaranaCalculator($engine);
-        $varaCalc = new VaraCalculator();
-        $lunarMonthCalc = new LunarMonthCalculator($engine);
-        $adhikaCalc = new AdhikaMasaCalculator($engine, $lunarMonthCalc);
-        
-        $panchangaCalc = new PanchangaCalculator(
-            $engine,
-            $tithiCalc,
-            $nakshatraCalc,
-            $yogaCalc,
-            $karanaCalc,
-            $varaCalc,
-            $finder,
-            $lunarMonthCalc,
-            $adhikaCalc
-        );
 
-        $festivalEngine = new FestivalEngine($panchangaCalc);
-        $muhurtaCalc = new MuhurtaCalculator();
+        $tithiCalc = new TithiCalculator($engine);
+        $lunarMonthCalc = new LunarMonthCalculator($engine);
+
+        $festivalEngine = new FestivalEngine($engine, $tithiCalc, $lunarMonthCalc);
 
         // Maha Shivaratri: Magha, Krishna Chaturdashi, Nishita vyapini
         $shivaratri = new Festival(
             'Maha Shivaratri',
-            new ViddhaTithiRule(LunarMonth::Magha, Tithi::KrishnaChaturdashi, 'Nishita', $muhurtaCalc)
+            new ViddhaTithiRule(LunarMonth::Magha, Tithi::KrishnaChaturdashi, Kala::Nishita)
         );
         $festivalEngine->addFestival($shivaratri);
 

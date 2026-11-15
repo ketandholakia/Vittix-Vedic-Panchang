@@ -26,29 +26,14 @@ final class MajorFestivalsTest extends TestCase
 
     protected function setUp(): void
     {
-        $panchang = Panchang::createDefault();
-        
-        // We need the internal calculator. We can use Reflection or recreate it.
-        // For testing, recreating the engine is fine.
         $engine = new \Vittix\Panchang\Astronomy\Engine\PurePhpAstronomyEngine();
-        $finder = new \Vittix\Panchang\Panchanga\TransitionFinder($engine);
-        
         $lunarMonthCalc = new \Vittix\Panchang\Calendar\LunarMonthCalculator($engine);
-        $adhikaCalc = new \Vittix\Panchang\Calendar\AdhikaMasaCalculator($engine, $lunarMonthCalc);
-        
-        $calculator = new \Vittix\Panchang\Panchanga\PanchangaCalculator(
+
+        $this->festivalEngine = new FestivalEngine(
             $engine,
             new \Vittix\Panchang\Panchanga\TithiCalculator($engine),
-            new \Vittix\Panchang\Panchanga\NakshatraCalculator($engine),
-            new \Vittix\Panchang\Panchanga\YogaCalculator($engine),
-            new \Vittix\Panchang\Panchanga\KaranaCalculator($engine),
-            new \Vittix\Panchang\Panchanga\VaraCalculator(),
-            $finder,
-            $lunarMonthCalc,
-            $adhikaCalc
+            $lunarMonthCalc
         );
-
-        $this->festivalEngine = new FestivalEngine($calculator);
         $this->location = new GeoLocation(28.6139, 77.2090); // New Delhi
         $this->timezone = new DateTimeZone('Asia/Kolkata');
 
